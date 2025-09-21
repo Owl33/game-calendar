@@ -7,12 +7,12 @@ import Image from "next/image";
 
 export default function Calendar() {
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1); // 1~12
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1); // 1~12
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   // 연월 문자열: "2025-01"
-  const yearMonth = `${year}-${month.toString().padStart(2, "0")}`;
+  const yearMonth = `${selectedYear}-${selectedMonth.toString().padStart(2, "0")}`;
 
   const { data: games = [], isLoading } = useQuery({
     queryKey: ["games", yearMonth],
@@ -20,17 +20,22 @@ export default function Calendar() {
       const { success, data } = await useApi.get(`/games/${yearMonth}`);
       return success ? data : [];
     },
-    placeholderData: (previousData) => previousData,
+    staleTime: Infinity, // 한 번 받아오면 페이지 머무는 동안 캐시만 사용
+    gcTime: Infinity, // 캐시를 지우지 않음
+    refetchOnWindowFocus: false, // 탭 전환 시 자동 fetch 방지
+    refetchOnReconnect: false, // 네트워크 재연결 시 fetch 방지
   });
+  //데이터가 바뀌면 백엔드에서 알려주고 이걸 호출해야한다함.
+  //  queryClient.invalidateQueries(["games", yearMonth]);
 
-  const firstDay = new Date(year, month - 1, 1).getDay();
-  const lastDay = new Date(year, month, 0).getDate();
+  const firstDay = new Date(selectedYear, selectedMonth - 1, 1).getDay();
+  const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
 
   // 날짜별 게임 매핑
   const gamesByDate: Record<number, any[]> = {};
   games.forEach((g: any) => {
     const released = new Date(g.released);
-    if (released.getFullYear() === year && released.getMonth() + 1 === month) {
+    if (released.getFullYear() === selectedYear && released.getMonth() + 1 === selectedMonth) {
       const day = released.getDate();
       if (!gamesByDate[day]) gamesByDate[day] = [];
       gamesByDate[day].push(g);
@@ -40,13 +45,16 @@ export default function Calendar() {
     ? games.filter((g: any) => {
         const released = new Date(g.released);
         return (
-          released.getFullYear() === year &&
-          released.getMonth() + 1 === month &&
+          released.getFullYear() === selectedYear &&
+          released.getMonth() + 1 === selectedMonth &&
           released.getDate() === selectedDay
         );
       })
     : games;
-
+  const onChangeMonth = (month: number) => {
+    setSelectedDay(null);
+    setSelectedMonth(month);
+  };
   return (
     <div className="px-8">
       {/* 연도/월 선택 */}
@@ -54,18 +62,18 @@ export default function Calendar() {
         <div className="col-span-8 bg-white rounded-2xl shadow-lg ">
           <div className="grid  grid-cols-7 text-center font-semibold text-gray-600 ">
             <div className="col-span-1">
-              <p className="font-semibold text-gray-800 text-3xl">{year}년</p>
+              <p className="font-semibold text-gray-800 text-3xl">{selectedYear}년</p>
             </div>
             <div className="col-span-6">
               <div className="flex">
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <div
-                    key={m}
-                    onClick={() => setMonth(m)}
+                    key={month}
+                    onClick={() => onChangeMonth(month)}
                     className={`py-1 flex-1 rounded-lg font-semibold text-lg text-center ${
-                      month === m ? "bg-blue-300 text-white" : "text-gray-800"
+                      month === selectedMonth ? "bg-blue-300 text-white" : "text-gray-800"
                     }`}>
-                    {m}월
+                    {month}월
                   </div>
                 ))}
               </div>
