@@ -2,8 +2,9 @@
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query";
-import "@/styles/globals.css";
-
+import { Header } from "@/components/layout/Header";
+import "../styles/globals.css";
+import "../styles/ani.css";
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
   display: "swap",
@@ -24,11 +25,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-            <header>Owl Clandar 
-
-              
-            </header>
-            <main>{children}</main>
+            <Header />
+            <main className="lg:h-[calc(100vh-64px)] p-8">{children}</main>
           </ThemeProvider>
         </QueryProvider>
       </body>
