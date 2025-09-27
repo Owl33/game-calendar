@@ -67,6 +67,11 @@ export function useGameCalendar() {
       setSelectedDay(null);
       setSelectedMonth(month);
     },
+    selectDate: (year: number, month: number) => {
+      setSelectedDay(null);
+      setSelectedYear(year);
+      setSelectedMonth(month);
+    },
     selectDay: (day: number | null) => {
       setSelectedDay(day);
     },

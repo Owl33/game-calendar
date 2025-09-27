@@ -10,6 +10,7 @@ interface GameCalendarProps {
   gamesByDate: GamesByDate;
   onMonthChange: (month: number) => void;
   onYearChange: (year: number) => void;
+  onDateChange?: (year: number, month: number) => void;
   onDaySelect: (day: number | null) => void;
   className?: string;
 }
@@ -21,6 +22,7 @@ export function GameCalendar({
   gamesByDate,
   onMonthChange,
   onYearChange,
+  onDateChange,
   onDaySelect,
   className,
 }: GameCalendarProps) {
@@ -31,6 +33,7 @@ export function GameCalendar({
         selectedMonth={month}
         onMonthChange={onMonthChange}
         onYearChange={onYearChange}
+        onDateChange={onDateChange}
       />
 
       <CalendarGrid

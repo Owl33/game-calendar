@@ -27,6 +27,7 @@ export default function Calendar() {
               gamesByDate={gamesByDate}
               onMonthChange={actions.selectMonth}
               onYearChange={actions.selectYear}
+              onDateChange={actions.selectDate}
               onDaySelect={actions.selectDay}
             />
           </div>
@@ -52,6 +53,7 @@ export default function Calendar() {
             selectedMonth={selectedDate.month}
             onMonthChange={actions.selectMonth}
             onYearChange={actions.selectYear}
+            onDateChange={actions.selectDate}
           />
         </div>
 

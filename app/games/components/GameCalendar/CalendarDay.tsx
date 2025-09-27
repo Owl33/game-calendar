@@ -136,10 +136,10 @@ export function CalendarDay({
         }}
         whileTap={{ scale: 0.95 }}
         transition={{
-          scale: { duration: 0.2, ease: "easeOut" },
-          y: { duration: 0.2, ease: "easeOut" },
+          scale: { duration: 0.15, ease: "easeOut" },
+          y: { duration: 0.15, ease: "easeOut" },
           boxShadow: {
-            duration: 0.6,
+            duration: 0.4,
             ease: "easeOut",
             times: [0, 0.3, 1],
           },

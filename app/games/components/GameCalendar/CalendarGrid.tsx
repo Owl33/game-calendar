@@ -71,7 +71,7 @@ export function CalendarGrid({
               className="h-32 rounded-xl bg-muted/30"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.01, duration: 0.25 }}
+              transition={{ delay: index * 0.007, duration: 0.17 }}
             />
           ))}
 
@@ -83,8 +83,8 @@ export function CalendarGrid({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{
-                delay: (firstDay + day - 1) * 0.008,
-                duration: 0.25,
+                delay: (firstDay + day - 1) * 0.005,
+                duration: 0.17,
                 ease: "easeOut",
               }}
               layout>
