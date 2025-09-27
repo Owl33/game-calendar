@@ -17,7 +17,7 @@ export default function Calendar() {
     <div className="h-full">
       {/* 데스크톱 레이아웃 */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-4 h-full">
-        {/* 캘린더 섹션 - glassmorphism 컨테이너 */}
+        {/* 캘린더 섹션 -  */}
         <div className="lg:col-span-8">
           <div className="">
             <GameCalendar
@@ -33,8 +33,8 @@ export default function Calendar() {
           </div>
         </div>
 
-        {/* 게임 리스트 섹션 - glassmorphism 컨테이너 */}
-        <div className="px-4 pb-4 lg:col-span-4 h-full overflow-y-auto overflow-x-hidden  [scrollbar-gutter:stable]">
+        {/* 게임 리스트 섹션 -  */}
+        <div className="px-4 pb-4 lg:col-span-4 h-full overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
           <GameList
             games={filteredGames}
             isLoading={isLoading}
@@ -47,7 +47,7 @@ export default function Calendar() {
       {/* 모바일 레이아웃 */}
       <div className="lg:hidden space-y-6">
         {/* 모바일 날짜 선택기 */}
-        <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
+        <div className="">
           <CalendarHeader
             year={selectedDate.year}
             selectedMonth={selectedDate.month}
@@ -58,7 +58,7 @@ export default function Calendar() {
         </div>
 
         {/* 모바일 게임 리스트 */}
-        <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl rounded-3xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-6">
+        <div className="px-4 pb-4">
           <GameList
             games={filteredGames}
             isLoading={isLoading}
