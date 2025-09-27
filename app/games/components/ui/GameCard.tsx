@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { AspectRatio } from "@radix-ui/react-aspect-ratio";
 import { platform } from "os";
+import { motion } from "motion/react";
 
 interface GameCardProps {
   game: Game;
@@ -94,42 +95,85 @@ export function GameCard({ game, className, onClick }: GameCardProps) {
   };
   // console.log(normalizePlatforms(gameData.platforms));
   return (
-    <div
+    <motion.div
       className={cn(
-        " transition-all duration-500 ease-out transform cursor-pointer group overflow-hidden relative rounded-xl",
+        "cursor-pointer group overflow-hidden relative rounded-xl",
         "shadow-[0_2px_6px_rgba(0,0,0,0.15)]",
-        // Apple 스타일 glassmorphism 베이스
-        // 호버 효과
-        "hover:shadow-[0_2px_6px_rgba(0,0,0,0.15)] hover:scale-[1.03] hover:-translate-y-1",
-        "hover:bg-gradient-to-br hover:from-white/15 hover:via-white/8 hover:to-white/5",
-        // AAA급 게임 특별 스타일
-        // 출시일 기반 스타일
         className
       )}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.9 }}
+      whileHover={{
+        scale: 1.05,
+        y: -6,
+        rotateX: 5,
+        rotateY: 7,
+        boxShadow: [
+          "0 2px 6px rgba(0,0,0,0.15)",
+          "0 5px 10px rgba(0,0,0,0.15)",
+          "0 7px 10px rgba(0,0,0,0.2)",
+        ],
+      }}
+      whileTap={{ scale: 0.95 }}
+      transition={{
+        scale: { duration: 0.2, ease: "easeOut" },
+        y: { duration: 0.2, ease: "easeOut" },
+        boxShadow: {
+          duration: 0.6,
+          ease: "easeOut",
+          times: [0, 0.3, 1],
+        },
+      }}
+      style={{ transformStyle: "preserve-3d" }}
       onClick={onClick}>
       {/* 배경 그라디언트 오버레이 */}
 
       <div className=" flex flex-col gap-4 relative z-10">
         {/* 게임 이미지 - 더 큰 사이즈와 시각적 효과 */}
-        <div className="lg:h-64 sm:h-84 w-full relative">
+        <div className="lg:h-64 rounded-t-lg sm:h-84 w-full relative overflow-hidden">
           <Image
             fill
             src={gameData.image}
             alt={gameData.name}
             priority={true}
             sizes="w-full"
-            className="h-full w-full rounded-t-lg"></Image>
+            className="h-full w-full object-cover"></Image>
         </div>
 
         {/* 게임 정보 */}
-        <div className="px-4 pb-4 flex-1 min-w-0 space-y-3">
+        <motion.div
+          className="px-4 pb-4 flex-1 min-w-0 space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.2 }}>
           <div>
-            <h3 className="mb-4 font-bold text-2xl text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-1">
-              {gameData.name}
-            </h3>
+            <div className="flex items-center gap-2 mb-4 ">
+              <motion.h3
+                className=" font-bold text-2xl text-foreground line-clamp-1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.3 }}>
+                {gameData.name}
+              </motion.h3>
+              {isAAAgame() && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.35, duration: 0.2 }}>
+                  <Badge className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-sm text-white  font-bold border-0">
+                    기대작
+                  </Badge>
+                </motion.div>
+              )}
+            </div>
 
             {/* 출시일과 상태 */}
-            <div className="flex items-center gap-3">
+            <motion.div
+              className="flex items-center gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}>
               <div className="flex items-center gap-1 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span
@@ -141,45 +185,63 @@ export function GameCard({ game, className, onClick }: GameCardProps) {
                   {new Date(gameData.released).toLocaleDateString("ko-KR")}
                 </span>
               </div>
-              {isAAAgame() && (
-                <Badge className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold border-0">
-                  기대작
-                </Badge>
-              )}
+
               {/* 출시 상태 배지 */}
               {isToday && (
-                <Badge className="px-2 py-1 bg-gradient-to-r from-blue-400 to-blue-500 text-white text-xs ">
-                  오늘 출시!
-                </Badge>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.45, duration: 0.2 }}>
+                  <Badge className="px-2 py-1 bg-gradient-to-r from-blue-400 to-blue-500 text-white text-xs ">
+                    오늘 출시!
+                  </Badge>
+                </motion.div>
               )}
               {isUpcoming && daysUntilRelease <= 7 && (
-                <Badge className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {daysUntilRelease}일 후
-                </Badge>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.45, duration: 0.2 }}>
+                  <Badge className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {daysUntilRelease}일 후
+                  </Badge>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           </div>
 
           {/* 장르 및 플랫폼 */}
-          <div className="space-y-3">
+          <motion.div
+            className="space-y-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}>
             {/* 장르 - 더 시각적으로 매력적이게 */}
             {gameData.genres && gameData.genres.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {gameData.genres.slice(0, 5).map((genre: string, index: number) => {
                   return (
-                    <Badge
+                    <motion.div
                       key={genre}
-                      className={cn("text-xs px-3 py-1  font-semibold shadow-lg", "border")}
-                      style={{ animationDelay: `${index * 100}ms` }}>
-                      {genre}
-                    </Badge>
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 0.4 + index * 0.07, duration: 0.2 }}>
+                      <Badge className={cn("text-xs px-3 py-1 font-semibold", "border")}>
+                        {genre}
+                      </Badge>
+                    </motion.div>
                   );
                 })}
                 {gameData.genres.length > 5 && (
-                  <Badge className="text-xs px-3 py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0">
-                    +{gameData.genres.length - 5}
-                  </Badge>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2, duration: 0.1 }}>
+                    <Badge className="text-xs px-3 py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0">
+                      +{gameData.genres.length - 5}
+                    </Badge>
+                  </motion.div>
                 )}
               </div>
             )}
@@ -190,38 +252,67 @@ export function GameCard({ game, className, onClick }: GameCardProps) {
                 {normalizePlatforms(gameData.platforms).map((platform: string, index: number) => {
                   const Icon = getPlatformIcon(platform);
                   return (
-                    <Badge
+                    <motion.div
                       key={platform}
-                      className={cn(
-                        "text-xs py-1 flex items-center ",
-                        "bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-sm",
-                        "border border-white/20 text-foreground hover:bg-white/30"
-                      )}
-                      style={{ animationDelay: `${index * 80}ms` }}>
-                      <Icon className="h-3 w-3" />
-                      {platform}
-                    </Badge>
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5 + index * 0.05, duration: 0.1 }}>
+                      <Badge
+                        className={cn(
+                          "text-xs py-1 flex items-center gap-1",
+                          "bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-sm",
+                          "border border-white/20 text-foreground"
+                        )}>
+                        <Icon className="h-3 w-3" />
+                        {platform}
+                      </Badge>
+                    </motion.div>
                   );
                 })}
               </div>
             )}
 
             {/* 개발사와 가격 - 더 프리미엄하게 */}
-            <div className="flex items-center justify-between pt-2 border-t border-white/10">
-              <div className="flex  items-center gap-2">
+            <motion.div
+              className="flex items-center justify-between pt-2 border-t border-white/10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.2 }}>
+              <motion.div
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}>
                 {gameData.price ? (
-                  <span className="text-lg font-bold text-green-600">{gameData.price}</span>
+                  <motion.span
+                    className="text-lg font-bold text-green-600"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3, duration: 0.1 }}
+                    whileHover={{ scale: 1.1 }}>
+                    {gameData.price}
+                  </motion.span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">가격미정</span>
+                  <motion.span
+                    className="text-sm text-muted-foreground"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.45, duration: 0.15 }}>
+                    가격미정
+                  </motion.span>
                 )}
-              </div>
-              <span className="text-sm font-semibold truncate font-medium text-foreground">
+              </motion.div>
+              <motion.span
+                className="text-sm font-semibold truncate font-medium text-foreground"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.75, duration: 0.2 }}
+                whileHover={{ scale: 1.02 }}>
                 {gameData.developers[0]}
-              </span>
-            </div>
-          </div>
-        </div>
+              </motion.span>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

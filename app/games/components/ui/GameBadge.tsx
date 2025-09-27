@@ -17,9 +17,8 @@ export function GameBadge({
       variant={variant}
       className={cn(
         "text-xs font-medium truncate max-w-full",
-        "transition-all duration-200 hover:scale-105",
         "bg-gradient-to-r from-primary/10 to-primary/5 text-primary",
-        "border border-primary/20 hover:border-primary/40",
+        "border border-primary/20",
         className
       )}
       title={name}

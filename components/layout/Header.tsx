@@ -39,8 +39,10 @@ export function Header({ className }: HeaderProps) {
   // 검색 결과 필터링 (샘플 데이터 사용)
   const getAllGames = () => {
     const allGames: any[] = [];
-    Object.values(sampleGamesData as any).forEach((monthGames) => {
-      allGames.push(...monthGames);
+    Object.values(sampleGamesData as any).forEach((monthGames: any) => {
+      if (Array.isArray(monthGames)) {
+        allGames.push(...monthGames);
+      }
     });
     return allGames;
   };
@@ -66,7 +68,7 @@ export function Header({ className }: HeaderProps) {
           <DialogTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-9 justify-start rounded-md border border-border/40 bg-background/50 px-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground min-w-[200px] hidden sm:flex">
+              className="relative  justify-start rounded-md border border-border/40 bg-background/50 px-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground min-w-[200px] hidden sm:flex">
               <Search className="mr-2 h-4 w-4" />
               <span>게임 검색...</span>
               <div className="ml-auto flex items-center gap-1">
@@ -100,8 +102,7 @@ export function Header({ className }: HeaderProps) {
             <DialogHeader className="h-16 px-6 py-4 border-b">
               <DialogTitle className="text-left">게임 검색</DialogTitle>
             </DialogHeader>
-
-            <div className="p-6 basis-full flex-1 h-full">
+            <div className="p-6 ">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
