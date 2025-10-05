@@ -12,25 +12,27 @@ export default function Calendar() {
     // 게임 클릭 시 처리 로직 (선택사항)
     console.log("게임 클릭:", game);
   };
+  let releaseDate: Date | undefined;
+  const releaseDateRaw = "2026";
 
+  releaseDate = new Date(releaseDateRaw);
+  console.log(releaseDate);
   return (
     <div className="h-full">
       {/* 데스크톱 레이아웃 */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-4 h-full">
         {/* 캘린더 섹션 -  */}
         <div className="lg:col-span-8">
-          <div className="">
-            <GameCalendar
-              year={selectedDate.year}
-              month={selectedDate.month}
-              selectedDay={selectedDate.day}
-              gamesByDate={gamesByDate}
-              onMonthChange={actions.selectMonth}
-              onYearChange={actions.selectYear}
-              onDateChange={actions.selectDate}
-              onDaySelect={actions.selectDay}
-            />
-          </div>
+          <GameCalendar
+            year={selectedDate.year}
+            month={selectedDate.month}
+            selectedDay={selectedDate.day}
+            gamesByDate={gamesByDate}
+            onMonthChange={actions.selectMonth}
+            onYearChange={actions.selectYear}
+            onDateChange={actions.selectDate}
+            onDaySelect={actions.selectDay}
+          />
         </div>
 
         {/* 게임 리스트 섹션 -  */}

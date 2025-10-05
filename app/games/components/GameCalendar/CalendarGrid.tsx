@@ -37,23 +37,15 @@ export function CalendarGrid({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}>
       {/* 요일 헤더 */}
-      <motion.div
-        className="grid grid-cols-7 text-center font-semibold text-sm"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}>
+      <div className="grid grid-cols-7 text-center font-semibold text-sm">
         {weekDays.map((weekDay, index) => (
-          <motion.div
+          <div
             key={index}
-            className={`py-2 text-muted-foreground ${weekDay.className}`}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.03, duration: 0.2 }}
-            whileHover={{ scale: 1.1, y: -2 }}>
+            className={`py-2 text-muted-foreground ${weekDay.className}`}>
             {weekDay.name}
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* 날짜 그리드 */}
       <AnimatePresence mode="wait">
@@ -68,7 +60,7 @@ export function CalendarGrid({
           {Array.from({ length: firstDay }).map((_, index) => (
             <motion.div
               key={`empty-${index}`}
-              className="h-32 rounded-xl bg-muted/30"
+              className="rounded-xl bg-muted/30"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.007, duration: 0.17 }}

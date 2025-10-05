@@ -72,30 +72,18 @@ export function CalendarHeader({
   };
 
   return (
-    <motion.div
-      className="mb-4"
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}>
-
+    <div className="mb-4">
       {/* 데스크톱 레이아웃 */}
       <div className="hidden lg:flex lg:items-center lg:gap-4">
         {/* 월 네비게이션 - 이전 달 */}
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={handlePreviousMonth}>
-            <motion.div
-              whileHover={{ x: -2 }}
-              transition={{ duration: 0.2 }}>
-              <ChevronLeft />
-            </motion.div>
-          </Button>
-        </motion.div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={handlePreviousMonth}>
+          <ChevronLeft />
+        </Button>
 
         <div className="min-w-[80px] relative">
           <AnimatePresence mode="wait">
@@ -107,7 +95,6 @@ export function CalendarHeader({
               transition={{ duration: 0.5, type: "spring" }}>
               <Button
                 variant="ghost"
-                className="font-bold text-lg text-foreground tracking-tight h-auto p-2 hover:bg-accent/50"
                 onClick={handleOpenDatePicker}>
                 {year}년
               </Button>
@@ -118,161 +105,75 @@ export function CalendarHeader({
         {/* 월 선택 버튼들 */}
         <div className="flex-1 grid grid-cols-12 gap-4">
           {months.map((month, index) => (
-            <motion.div
+            <Button
+              className="transition "
               key={month}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}>
-              <Button
-                variant={month === selectedMonth ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onMonthChange(month)}
-                className={cn(
-                  "font-semibold h-8 text-xs w-full relative overflow-hidden",
-                  month === selectedMonth
-                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25"
-                    : ""
-                )}>
-                <motion.span
-                  animate={
-                    month === selectedMonth
-                      ? {
-                          scale: [1, 1.1, 1],
-                        }
-                      : {}
-                  }
-                  transition={{ duration: 0.3 }}>
-                  {month}월
-                </motion.span>
-                {month === selectedMonth && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent"
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-              </Button>
-            </motion.div>
+              variant={month === selectedMonth ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onMonthChange(month)}>
+              <span>{month}월</span>
+            </Button>
           ))}
         </div>
 
         {/* 월 네비게이션 - 다음 달 */}
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={handleNextMonth}>
-            <motion.div
-              whileHover={{ x: 2 }}
-              transition={{ duration: 0.2 }}>
-              <ChevronRight />
-            </motion.div>
-          </Button>
-        </motion.div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={handleNextMonth}>
+          <ChevronRight />
+        </Button>
       </div>
 
       {/* 모바일 레이아웃 */}
       <div className="lg:hidden space-y-4">
         {/* 년도 및 월 네비게이션 */}
         <div className="flex items-center justify-center gap-4">
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-10"
-              onClick={handlePreviousMonth}>
-              <motion.div
-                whileHover={{ x: -2 }}
-                transition={{ duration: 0.2 }}>
-                <ChevronLeft />
-              </motion.div>
-            </Button>
-          </motion.div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handlePreviousMonth}>
+            <ChevronLeft />
+          </Button>
 
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={year}
-                initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.8 }}
-                transition={{ duration: 0.5, type: "spring" }}>
-                <Button
-                  variant="ghost"
-                  className="font-bold text-xl text-foreground tracking-tight h-auto p-3 hover:bg-accent/50"
-                  onClick={handleOpenDatePicker}>
-                  {year}년
-                </Button>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={year}
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.5, type: "spring" }}>
+              <Button
+                variant="ghost"
+                onClick={handleOpenDatePicker}>
+                {year}년
+              </Button>
+            </motion.div>
+          </AnimatePresence>
 
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-10"
-              onClick={handleNextMonth}>
-              <motion.div
-                whileHover={{ x: 2 }}
-                transition={{ duration: 0.2 }}>
-                <ChevronRight />
-              </motion.div>
-            </Button>
-          </motion.div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleNextMonth}>
+            <ChevronRight />
+          </Button>
         </div>
 
         {/* 월 선택 버튼들 - 모바일 최적화 */}
         <div className="grid grid-cols-6 gap-3">
           {months.map((month, index) => (
-            <motion.div
+            <Button
+              className="transition "
               key={month}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.03, duration: 0.3 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}>
-              <Button
-                variant={month === selectedMonth ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onMonthChange(month)}
-                className={cn(
-                  "font-semibold h-10 text-sm w-full relative overflow-hidden",
-                  month === selectedMonth
-                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25"
-                    : ""
-                )}>
-                <motion.span
-                  animate={
-                    month === selectedMonth
-                      ? {
-                          scale: [1, 1.1, 1],
-                        }
-                      : {}
-                  }
-                  transition={{ duration: 0.3 }}>
-                  {month}월
-                </motion.span>
-                {month === selectedMonth && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent"
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-              </Button>
-            </motion.div>
+              variant={month === selectedMonth ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onMonthChange(month)}>
+              <span>{month}월</span>
+            </Button>
           ))}
         </div>
       </div>
@@ -357,6 +258,6 @@ export function CalendarHeader({
           </>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

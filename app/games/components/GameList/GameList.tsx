@@ -92,16 +92,11 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
 
   return (
     <div className={`${className}`}>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}>
-        <GameListHeader
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          className="mb-6"
-        />
-      </motion.div>
+      <GameListHeader
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        className="mb-6"
+      />
 
       <AnimatePresence mode="wait">
         {isLoading ? (
@@ -137,13 +132,9 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
             </motion.p>
           </motion.div>
         ) : (
-          <motion.div
+          <div
             key={`games-${selectedDay}-${games.length}`}
-            className="space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}>
+            className="space-y-4">
             {sortedGames.map((game, index) => (
               <motion.div
                 key={game.id}
@@ -152,7 +143,7 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
                 exit={{ opacity: 0, y: -10 }}
                 transition={{
                   delay: index * 0.02,
-                  duration: 0.15,
+                  duration: 0.3,
                   ease: "easeOut",
                 }}
                 layout>
@@ -162,7 +153,7 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
                 />
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

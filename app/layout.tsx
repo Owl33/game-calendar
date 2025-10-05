@@ -4,7 +4,6 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query";
 import { Header } from "@/components/layout/Header";
 import "../styles/globals.css";
-import "../styles/animations.css";
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
   display: "swap",
