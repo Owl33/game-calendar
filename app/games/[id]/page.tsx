@@ -130,6 +130,7 @@ export default function GameDetailPage() {
 
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const selectedMedia = mediaList[selectedMediaIndex];
+  console.log(selectedMedia);
   const backgroundImage = game?.screenshots?.[0];
 
   // 프리로드
@@ -206,7 +207,7 @@ export default function GameDetailPage() {
       case "Overwhelmingly Negative":
         return <span style={{ color: "##DF7544" }}>압도적으로 부정적</span>;
       default:
-        return <span>{reviewScoreDesc}</span>;
+        return <span>{"유저 리뷰 없음"}</span>;
     }
   };
 
@@ -234,19 +235,89 @@ export default function GameDetailPage() {
     <div className="relative">
       {/* 배경 히어로 */}
       {backgroundImage && (
-        <div className="fixed inset-x-0 top-0 h-[64vh] max-[580px]:h-[52vh] -z-10">
-          <Image
-            key={`bg-${backgroundImage}`}
-            fill
-            src={backgroundImage}
-            alt={`${game.name} background`}
-            className="object-cover object-center"
-            sizes="100vw"
-            placeholder="empty"
-            loading="eager"
-            priority={true}
+        <div
+          className="fixed inset-x-0 top-0 h-[64vh] max-[580px]:h-[52vh] -z-10"
+          style={
+            {
+              // 한 번에 튜닝할 수 있게 변수화
+              "--fadePx": "150px", // 이미지 하단 페이드 길이(px)
+              "--blurHeight": "10px", // 블러 스트립 높이(px)
+              "--blurOverlap": "64px", // 블러가 아래로 겹쳐 내려가는 양(px)
+              "--blurFeatherTop": "32px", // 블러 시작 지점의 프리-페더(px)
+              "--topShade": 0.65, // 상단 음영 강도(0~1)
+            } as React.CSSProperties
+          }>
+          {/* 1) 이미지 래퍼: 하단을 투명으로 깎기(색 섞지 않음) */}
+          <div
+            className="absolute inset-0"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black 0, black calc(100% - var(--fadePx)), transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, black 0, black calc(100% - var(--fadePx)), transparent 100%)",
+            }}>
+            <Image
+              key={`bg-${backgroundImage}`}
+              fill
+              src={backgroundImage}
+              alt={`${game.name} background`}
+              className="object-cover opacity-40 scale-[1.06] will-change-transform"
+              sizes="100vw"
+              priority
+            />
+
+            {/* 1-1) 상단 음영 — 하단 25%는 아예 ‘마스크로’ 잘라, 아래쪽과 절대 겹치지 않게 */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `linear-gradient(to bottom,
+              rgba(0,0,0,var(--topShade)) 0%,
+              rgba(0,0,0,0.4) 40%,
+              rgba(0,0,0,0.15) 60%,
+              rgba(0,0,0,0.06) 70%,
+              transparent 80%)`,
+                WebkitMaskImage: "linear-gradient(to bottom, black 0, black 75%, transparent 100%)",
+                maskImage: "linear-gradient(to bottom, black 0, black 75%, transparent 100%)",
+              }}
+            />
+          </div>
+
+          {/* 2) 블러 스트립: 실제 뒤 배경을 흐림(backdrop) + 상단 12px 프리-페더로 ‘툭’ 제거 */}
+          <div
+            className="pointer-events-none absolute inset-x-0 [isolation:isolate]"
+            style={{
+              bottom: "calc(var(--blurOverlap) * -1)",
+              height: "var(--blurHeight)",
+              backdropFilter: "blur(22px) saturate(108%)",
+              WebkitBackdropFilter: "blur(22px) saturate(108%)",
+              // 상단은 완전 투명 → 12px까지 아주 살짝 → 아래로 갈수록 서서히
+              WebkitMaskImage: `linear-gradient(to bottom,
+            rgba(0,0,0,0) 0,
+            rgba(0,0,0,0.06) var(--blurFeatherTop),
+            rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
+            rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
+            rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
+            black 100%)`,
+              maskImage: `linear-gradient(to bottom,
+            rgba(0,0,0,0) 0,
+            rgba(0,0,0,0.06) var(--blurFeatherTop),
+            rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
+            rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
+            rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
+            black 100%)`,
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
+
+          {/* 3) 바닥 세이프가드: 블러가 완전 투명으로 끝난 '아래'에서만 노출 */}
+          <div
+            className="pointer-events-none absolute inset-x-0"
+            style={{
+              // 블러 스트립보다 더 아래에서 시작(겹침 방지)
+              bottom: "calc((var(--blurOverlap) + 24px) * -1)",
+              height: "calc(var(--blurHeight) + 72px)",
+              background: "var(--background)",
+            }}
+          />
         </div>
       )}
 
@@ -269,8 +340,9 @@ export default function GameDetailPage() {
           exit={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, type: "spring" }}>
           {/* 타이틀 + 핵심 통계 카드 */}
+
           <div className="mt-4 mb-6 grid grid-cols-12 gap-4 max-[580px]:gap-3">
-            <div className="col-span-12">
+            <div className="bg-card/40  p-4 py-6 rounded-2xl col-span-12">
               <div className="text-white flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-4">
@@ -290,7 +362,7 @@ export default function GameDetailPage() {
 
                   <div className="mt-2 flex items-center gap-3 text-muted-foreground">
                     <Badge
-                      variant="outline"
+                      variant="secondary"
                       className="ml-2 text-sm">
                       {game.releaseDate
                         ? new Date(game.releaseDate).toLocaleDateString("ko-KR")
@@ -512,7 +584,7 @@ export default function GameDetailPage() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.7, type: "spring" }}
-              className="xl:sticky xl:top-6 ">
+              className="bg-card/40 rounded-2xl xl:sticky xl:top-6 ">
               <div>
                 {/* 인기도 + 가격 */}
 
@@ -557,11 +629,12 @@ export default function GameDetailPage() {
                           </h3>
                           <div className="space-y-1">
                             {game.developers.map((dev: any) => (
-                              <p
+                              <Badge
+                                variant="secondary"
                                 key={dev.id}
-                                className="text-sm text-muted-foreground">
+                                className="text-sm ">
                                 {dev.name}
-                              </p>
+                              </Badge>
                             ))}
                           </div>
                         </div>
@@ -574,11 +647,12 @@ export default function GameDetailPage() {
                           </h3>
                           <div className="space-y-1">
                             {game.publishers.map((pub: any) => (
-                              <p
+                              <Badge
                                 key={pub.id}
-                                className="text-sm text-muted-foreground">
+                                variant="secondary"
+                                className="text-sm">
                                 {pub.name}
-                              </p>
+                              </Badge>
                             ))}
                           </div>
                         </div>
@@ -596,7 +670,11 @@ export default function GameDetailPage() {
                         {game.genres?.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {game.genres.map((genre: string) => (
-                              <Badge key={genre}>{genre}</Badge>
+                              <Badge
+                                variant="secondary"
+                                key={genre}>
+                                {genre}
+                              </Badge>
                             ))}
                           </div>
                         ) : (
@@ -610,14 +688,14 @@ export default function GameDetailPage() {
                             {game.tags.slice(0, 12).map((tag: string) => (
                               <Badge
                                 key={tag}
-                                variant="outline"
+                                variant="secondary"
                                 className="text-xs">
                                 {tag}
                               </Badge>
                             ))}
                             {game.tags.length > 12 && (
                               <Badge
-                                variant="outline"
+                                variant="secondary"
                                 className="text-xs">
                                 +{game.tags.length - 12}개 더
                               </Badge>
@@ -634,21 +712,14 @@ export default function GameDetailPage() {
                             {game.supportLanguages.map((lang: string) => (
                               <Badge
                                 key={lang}
-                                variant={lang == "한국어" ? "secondary" : "outline"}
+                                variant="secondary"
                                 className={cn(
                                   "text-xs",
-                                  lang == "한국어" && "bg-blue-600 text-white"
+                                  lang == "한국어" && "bg-primary text-primary-foreground"
                                 )}>
                                 {lang}
                               </Badge>
                             ))}
-                            {game.tags.length > 12 && (
-                              <Badge
-                                variant="outline"
-                                className="text-xs">
-                                +{game.tags.length - 12}개 더
-                              </Badge>
-                            )}
                           </div>
                         ) : (
                           <p className="text-sm text-muted-foreground">언어 정보 없음</p>
@@ -707,7 +778,7 @@ function StatCard({
   valueClass?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur px-4 py-3 shadow-md">
+    <div className="rounded-2xl  bg-card/40  px-4 py-3 shadow-md">
       <div className="flex text-white items-center gap-2 text-muted-foreground text-xs">
         <span className=" inline-flex p-1.5 rounded-md bg-white/10">{icon}</span>
         {title}

@@ -184,7 +184,7 @@ export function CalendarHeader({
           <Modal
             isOpen={showDatePicker}
             onClose={handleCancel}
-            contentClassName="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border p-6 min-w-[400px]">
+            contentClassName="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 rounded-2xl p-6 min-w-[400px] bg-card elevated-card">
             <div className="space-y-6">
               <div className="text-center">
                 <h3 className="text-lg font-semibold mb-2">날짜 선택</h3>

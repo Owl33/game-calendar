@@ -30,23 +30,27 @@ export function GameCard({ game, className, onClick, priority = false }: GameCar
   const daysUntilRelease = getDaysUntilRelease(gameData.releaseDate);
   const isUpcoming = daysUntilRelease > 0;
   const isToday = daysUntilRelease === 0;
-
-function findLogo(store: string) {
-  switch (store) {
-    case "steam":
-      return Steam;
-    case "psn":
-      return Psn;
-    case "playstation":
-      return Psn;
-    case "xbox":
-      return Xbox;
-    case "nintendo":
-      return Nintendo;
-    default:
-      return Steam;
+  function formatNumber(n?: number | null) {
+    if (n === null || n === undefined) return "데이터 없음";
+    return new Intl.NumberFormat("ko-KR").format(n);
   }
-}
+  function findLogo(store: string) {
+    switch (store) {
+      case "steam":
+        return Steam;
+      case "psn":
+        return Psn;
+      case "playstation":
+        return Psn;
+      case "xbox":
+        return Xbox;
+      case "nintendo":
+        return Nintendo;
+      default:
+        return Steam;
+    }
+  }
+
   return (
     <Link
       href={`/games/${gameData.gameId}`}
@@ -60,19 +64,13 @@ function findLogo(store: string) {
       }}>
       <InteractiveCard
         className={cn(
-          "cursor-pointer group overflow-hidden relative rounded-xl",
-          "shadow-[0_2px_6px_rgba(0,0,0,0.15)]",
+          "cursor-pointer group overflow-hidden relative rounded-xl bg-card elevated-card",
           className
         )}
-        hoverScale={1.05}
-        hoverY={-6}
-        hoverRotateX={5}
-        hoverRotateY={7}
-        hoverShadow={[
-          "0 2px 6px rgba(0,0,0,0.15)",
-          "0 5px 10px rgba(0,0,0,0.15)",
-          "0 7px 10px rgba(0,0,0,0.2)",
-        ]}
+        hoverScale={1.03}
+        hoverY={-4}
+        hoverRotateX={3}
+        hoverRotateY={5}
         preserve3d>
         <div className="flex flex-col gap-4 relative z-10">
           {/* 게임 이미지 */}
@@ -98,7 +96,7 @@ function findLogo(store: string) {
               <div className="flex items-center gap-2 mb-4">
                 <h3 className="font-bold text-2xl text-foreground line-clamp-1">{gameData.name}</h3>
                 {isAAAgame(gameData) && (
-                  <Badge className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-400 text-sm text-white font-bold border-0">
+                  <Badge className="px-2 py-1 gradient-aaa-badge text-white text-sm font-bold border-0 shadow-lg">
                     인기작
                   </Badge>
                 )}
@@ -111,8 +109,8 @@ function findLogo(store: string) {
                   <span
                     className={cn(
                       "font-medium text-foreground",
-                      isToday && "text-green-600 font-bold",
-                      isUpcoming && "text-blue-600"
+                      isToday && "text-success font-bold",
+                      isUpcoming && "text-info"
                     )}>
                     {new Date(gameData.releaseDate).toLocaleDateString("ko-KR")}
                   </span>
@@ -120,12 +118,12 @@ function findLogo(store: string) {
 
                 {/* 출시 상태 배지 */}
                 {isToday && (
-                  <Badge className="px-2 py-1 bg-gradient-to-r from-blue-400 to-blue-500 text-white text-xs">
+                  <Badge className="px-2 py-1 gradient-today-badge text-white text-xs shadow-lg">
                     오늘 출시!
                   </Badge>
                 )}
                 {isUpcoming && daysUntilRelease <= 7 && (
-                  <Badge className="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs">
+                  <Badge className="px-2 py-1 gradient-upcoming-badge text-white text-xs shadow-lg">
                     <Clock className="w-3 h-3 mr-1" />
                     {daysUntilRelease}일 후
                   </Badge>
@@ -140,13 +138,14 @@ function findLogo(store: string) {
                 <div className="flex flex-wrap gap-2">
                   {gameData.genres.slice(0, 5).map((genre: string, index: number) => (
                     <Badge
+                      variant="secondary"
                       key={genre}
                       className={cn("text-xs px-3 py-1 font-semibold", "border")}>
                       {genre}
                     </Badge>
                   ))}
                   {gameData.genres.length > 5 && (
-                    <Badge className="text-xs px-3 py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0">
+                    <Badge className="text-xs px-3 py-1 bg-muted text-muted-foreground border-0">
                       +{gameData.genres.length - 5}
                     </Badge>
                   )}
@@ -154,15 +153,13 @@ function findLogo(store: string) {
               )}
 
               {/* 개발사와 가격 */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className="flex items-center gap-2">
-                  {gameData.currentPrice ? (
-                    <span className="text-lg font-bold text-green-600">
-                      {gameData.currentPrice}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">가격미정</span>
-                  )}
+                  <p className="text-xl font-bold">
+                    {gameData?.currentPrice
+                      ? `₩ ${formatNumber(gameData.currentPrice)}`
+                      : "가격 정보 없음"}
+                  </p>
                 </div>
                 {/* 플랫폼 */}
                 {gameData.platforms && gameData.platforms.length > 0 && (

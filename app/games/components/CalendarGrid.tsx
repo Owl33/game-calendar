@@ -29,13 +29,13 @@ export function CalendarGrid({
   const lastDay = new Date(year, month, 0).getDate();
 
   const weekDays = [
-    { name: "일", className: "text-red-500" },
+    { name: "일", className: "text-destructive" },
     { name: "월", className: "" },
     { name: "화", className: "" },
     { name: "수", className: "" },
     { name: "목", className: "" },
     { name: "금", className: "" },
-    { name: "토", className: "text-blue-500" },
+    { name: "토", className: "text-info" },
   ];
 
   return (
@@ -64,7 +64,7 @@ export function CalendarGrid({
           {Array.from({ length: firstDay }).map((_, index) => (
             <div
               key={`empty-${index}`}
-              className="rounded-xl bg-muted/30"
+              className="rounded-xl bg-muted/70"
             />
           ))}
 

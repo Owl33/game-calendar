@@ -21,9 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange={false}>
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange={false}
+            forcedTheme="dark">
             <Header />
             <main className="lg:h-[calc(100vh-64px)] sm:p-0 lg:p-8">{children}</main>
           </ThemeProvider>

@@ -39,15 +39,15 @@ export function CalendarDay({
       animate={{ opacity: 1, y: -4, scale: 1 }}
       exit={{ opacity: 0, y: -10, scale: 0.9 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
-      className="absolute min-w-36 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50">
-      <Sheet className="border  p-3">
+      className="absolute min-w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50">
+      <Sheet className="p-3">
         <p className="font-semibold text-sm mb-1">이 날의 게임 ({games.length}개)</p>
         {games.slice(0, 5).map((game) => (
           <div
             key={game.gameId}
             className="flex items-center gap-1 py-0.5">
             <div
-              className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-yellow-400" : "bg-blue-300")}
+              className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")}
             />
             <span className="text-sm font-medium truncate">{game.name}</span>
           </div>
@@ -66,30 +66,16 @@ export function CalendarDay({
       onMouseLeave={() => setIsHovered(false)}>
       <InteractiveCard
         className={cn(
-          "h-32 p-3 relative overflow-hidden bg-card",
-          "rounded-2xl",
-          "shadow-[1px_1px_3px_rgba(0,0,0,0.15)]",
-          !hasGames && ["bg-gray-50 opacity-35"],
-          hasGames && "cursor-pointer",
-          isSelected && ["ring-2 ring-primary ring-offset-2", "border-2 border-primary/50"]
+          "h-32 p-3 relative overflow-hidden rounded-2xl",
+          hasGames ? "bg-card calendar-card cursor-pointer" : "bg-card/30 opacity-60",
+          isSelected && ["ring-2 ring-primary ring-offset-2 ring-offset-background"]
         )}
         initialY={0}
         initialScale={1}
         duration={0.15}
-        hoverScale={hasGames ? 1.05 : 1}
-        hoverY={hasGames ? -6 : 0}
-        hoverShadow={
-          hasGames
-            ? [
-                "1px 1px 3px rgba(0,0,0,0.15)",
-                "0 5px 15px rgba(0,0,0,0.15)",
-                "0 15px 35px rgba(0,0,0,0.2)",
-              ]
-            : ["1px 1px 3px rgba(0,0,0,0.15)", "1px 1px 3px rgba(0,0,0,0.15)"]
-        }
+        hoverScale={hasGames ? 1.03 : 1}
+        hoverY={hasGames ? -3 : 0}
         isActive={isSelected}
-        activeShadow="0 15px 35px rgba(0,0,0,0.2)"
-        inactiveShadow="1px 1px 3px rgba(0,0,0,0.15)"
         onClick={hasGames ? onClick : undefined}>
         <div>
           {/* 헤더: 날짜와 게임 인디케이터 */}
@@ -110,7 +96,7 @@ export function CalendarDay({
 
             {/* 인기도 높은 게임 스타 표시 */}
             {hasGames && games.some((game) => isAAAgame(game)) && (
-              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <Star className="w-4 h-4 text-highlight fill-highlight" />
             )}
           </div>
 
@@ -124,7 +110,7 @@ export function CalendarDay({
                   <div
                     className={cn(
                       "min-w-[3px] h-3",
-                      isAAAgame(game) ? "bg-yellow-400" : "bg-blue-300"
+                      isAAAgame(game) ? "bg-highlight" : "bg-info"
                     )}
                   />
                   <span className="text-sm font-medium truncate">{game.name}</span>

@@ -126,7 +126,7 @@ export function InteractiveCard({
 
   return (
     <motion.div
-      className={cn(className)}
+      className={cn(className, )}
       initial={{ opacity: 0, y: initialY, scale: initialScale }}
       animate={getAnimateProps()}
       exit={{ opacity: 0, y: -initialY, scale: initialScale }}
