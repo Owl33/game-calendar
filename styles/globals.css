@@ -45,7 +45,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(100% 0.00011 271.152);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -112,7 +112,6 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -120,4 +119,24 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* steam desc 클래스 */
+.bb_tag {
+  margin-top: 18px;
+  font-size: 18px;
+  color: #2f89bc;
+  text-transform: none;
+}
+.bb_paragraph {
+  min-height: 0.15em;
+  line-height: 1.5em;
+  margin: 0.5em 0;
+}
+.bb_ul {
+  list-style: inherit;
+}
+
+.bb_img {
+  width: 100%;
 }

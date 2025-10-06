@@ -1,6 +1,14 @@
+/**
+ * CalendarGrid - 캘린더 그리드
+ */
+
+"use client";
+
+import { GamesByDate } from "../types/game.types";
+import { AnimatePresence, motion } from "motion/react";
+import { FadeSlide } from "@/components/motion/FadeSlide";
 import { CalendarDay } from "./CalendarDay";
-import { GamesByDate } from "../../types/game.types";
-import { motion, AnimatePresence } from "motion/react";
+import { InteractiveCard } from "@/components/motion/InteractiveCard";
 
 interface CalendarGridProps {
   year: number;
@@ -31,11 +39,7 @@ export function CalendarGrid({
   ];
 
   return (
-    <motion.div
-      className="space-y-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}>
+    <div className="space-y-4">
       {/* 요일 헤더 */}
       <div className="grid grid-cols-7 text-center font-semibold text-sm">
         {weekDays.map((weekDay, index) => (
@@ -58,38 +62,25 @@ export function CalendarGrid({
           transition={{ duration: 0.3, ease: "easeInOut" }}>
           {/* 빈 칸 (월 시작 전) */}
           {Array.from({ length: firstDay }).map((_, index) => (
-            <motion.div
+            <div
               key={`empty-${index}`}
               className="rounded-xl bg-muted/30"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.007, duration: 0.17 }}
             />
           ))}
 
           {/* 실제 날짜들 */}
           {Array.from({ length: lastDay }, (_, index) => index + 1).map((day) => (
-            <motion.div
-              key={day}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{
-                delay: (firstDay + day - 1) * 0.005,
-                duration: 0.17,
-                ease: "easeOut",
-              }}
-              layout>
+          
               <CalendarDay
+                key={day}
                 day={day}
                 games={gamesByDate[day] || []}
                 isSelected={selectedDay === day}
                 onClick={() => onDaySelect(selectedDay === day ? null : day)}
               />
-            </motion.div>
           ))}
         </motion.div>
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

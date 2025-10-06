@@ -1,3 +1,9 @@
+/**
+ * GameListHeader - 게임 목록 헤더 (정렬 기능)
+ */
+
+"use client";
+
 import {
   Select,
   SelectContent,
@@ -5,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Calendar, Plus } from "lucide-react";
 
 interface GameListHeaderProps {
@@ -14,7 +19,11 @@ interface GameListHeaderProps {
   className?: string;
 }
 
-export function GameListHeader({ sortBy, onSortChange, className }: GameListHeaderProps) {
+export function GameListHeader({
+  sortBy,
+  onSortChange,
+  className
+}: GameListHeaderProps) {
   const sortOptions = [
     { value: "added", label: "추가순", icon: Plus },
     { value: "date", label: "출시일순", icon: Calendar },

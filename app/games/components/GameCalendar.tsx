@@ -1,7 +1,12 @@
-import { Card } from "@/components/ui/card";
+/**
+ * GameCalendar - 게임 출시 캘린더
+ */
+
+"use client";
+
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
-import { GamesByDate } from "../../types/game.types";
+import { GamesByDate } from "../types/game.types";
 
 interface GameCalendarProps {
   year: number;
@@ -36,13 +41,16 @@ export function GameCalendar({
         onDateChange={onDateChange}
       />
 
-      <CalendarGrid
-        year={year}
-        month={month}
-        gamesByDate={gamesByDate}
-        selectedDay={selectedDay}
-        onDaySelect={onDaySelect}
-      />
+      {/* 모바일에서는 CalendarGrid 숨김 */}
+      <div className="hidden lg:block">
+        <CalendarGrid
+          year={year}
+          month={month}
+          gamesByDate={gamesByDate}
+          selectedDay={selectedDay}
+          onDaySelect={onDaySelect}
+        />
+      </div>
     </div>
   );
 }
