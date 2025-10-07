@@ -62,13 +62,13 @@
 
   /* 세련된 다크 테마 - 강한 대비로 명확한 구분 */
   --background: oklch(0% 0 0 / 0.386); /* 매우 어두운 배경 */
-  --foreground: oklch(0.98 0.003 240); /* 밝은 흰색 */
+  --foreground: oklch(95.213% 0.00011 271.152 / 0.906); /* 밝은 흰색 */
 
   /* 카드 및 서피스 - 배경과 명확한 대비 */
   --card: oklch(17.321% 0.01092 268.066); /* 배경보다 훨씬 밝은 카드 (266% 차이) */
-  --card-foreground: oklch(0.96 0.004 240);
+  --foreground: oklch(95.213% 0.00011 271.152 / 0.906); /* 밝은 흰색 */
   --popover: oklch(0.24 0.008 240);
-  --popover-foreground: oklch(0.96 0.004 240);
+  --foreground: oklch(95.213% 0.00011 271.152 / 0.906); /* 밝은 흰색 */
 
   /* 프라이머리 - 깊은 로얄 블루 */
   --primary: oklch(0.606 0.25 292.717);
@@ -123,7 +123,7 @@
   --info-foreground: oklch(0.99 0.002 260);
 
   /* 배지 색상 - 세련된 그라데이션용 */
-  --highlight: oklch(0.7 0.14 60); /* 세련된 골드 */
+  --highlight: oklch(89.032% 0.18419 99.919); /* 세련된 골드 */
   --highlight-foreground: oklch(0.08 0.006 60);
 
   --upcoming: oklch(0.62 0.16 290); /* 깊은 퍼플 */

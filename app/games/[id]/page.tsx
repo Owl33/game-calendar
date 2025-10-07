@@ -242,7 +242,6 @@ export default function GameDetailPage() {
               // 한 번에 튜닝할 수 있게 변수화
               "--fadePx": "150px", // 이미지 하단 페이드 길이(px)
               "--blurHeight": "10px", // 블러 스트립 높이(px)
-              "--blurOverlap": "64px", // 블러가 아래로 겹쳐 내려가는 양(px)
               "--blurFeatherTop": "32px", // 블러 시작 지점의 프리-페더(px)
               "--topShade": 0.65, // 상단 음영 강도(0~1)
             } as React.CSSProperties
@@ -343,7 +342,7 @@ export default function GameDetailPage() {
 
           <div className="mt-4 mb-6 grid grid-cols-12 gap-4 max-[580px]:gap-3">
             <div className="bg-card/40  p-4 py-6 rounded-2xl col-span-12">
-              <div className="text-white flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div className=" flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-4">
                     <h1 className="text-4xl sm:text-4xl font-extrabold tracking-tight">
@@ -505,7 +504,7 @@ export default function GameDetailPage() {
                           <AspectRatio ratio={16 / 9}>
                             {media.type === "video" ? (
                               <div className="w-full h-full bg-black/80 flex items-center justify-center">
-                                <Play className="w-6 h-6 text-white" />
+                                <Play className="w-6 h-6" />
                               </div>
                             ) : (
                               <Image
@@ -544,7 +543,7 @@ export default function GameDetailPage() {
                             <AspectRatio ratio={16 / 9}>
                               {media.type === "video" ? (
                                 <div className="w-full h-full bg-black/80 flex items-center justify-center">
-                                  <Play className="w-6 h-6 text-white" />
+                                  <Play className="w-6 h-6 " />
                                 </div>
                               ) : (
                                 <Image
@@ -779,7 +778,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-2xl  bg-card/40  px-4 py-3 shadow-md">
-      <div className="flex text-white items-center gap-2 text-muted-foreground text-xs">
+      <div className="flex  items-center gap-2 text-muted-foreground text-xs">
         <span className=" inline-flex p-1.5 rounded-md bg-white/10">{icon}</span>
         {title}
       </div>

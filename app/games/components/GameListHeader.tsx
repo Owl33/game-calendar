@@ -14,18 +14,14 @@ import {
 import { ArrowUpDown, Calendar, Plus } from "lucide-react";
 
 interface GameListHeaderProps {
-  sortBy: "name" | "date" | "added";
-  onSortChange: (sort: "name" | "date" | "added") => void;
+  sortBy: "name" | "date" | "popularityScore";
+  onSortChange: (sort: "name" | "date" | "popularityScore") => void;
   className?: string;
 }
 
-export function GameListHeader({
-  sortBy,
-  onSortChange,
-  className
-}: GameListHeaderProps) {
+export function GameListHeader({ sortBy, onSortChange, className }: GameListHeaderProps) {
   const sortOptions = [
-    { value: "added", label: "추가순", icon: Plus },
+    { value: "popularityScore", label: "인기순", icon: Plus },
     { value: "date", label: "출시일순", icon: Calendar },
     { value: "name", label: "이름순", icon: ArrowUpDown },
   ];

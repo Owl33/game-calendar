@@ -22,11 +22,11 @@ interface GameListProps {
 }
 
 export function GameList({ games, isLoading, className, onGameClick, selectedDay }: GameListProps) {
-  const [sortBy, setSortBy] = useState<"name" | "date" | "added">("added");
+  const [sortBy, setSortBy] = useState<"name" | "date" | "popularityScore">("popularityScore");
 
   const sortedGames = [...games].sort((a, b) => {
     switch (sortBy) {
-      case "added":
+      case "popularityScore":
         return 0;
       case "name":
         return a.name.localeCompare(b.name);

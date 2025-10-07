@@ -153,13 +153,14 @@ export function GameCard({ game, className, onClick, priority = false }: GameCar
               )}
 
               {/* 개발사와 가격 */}
-              <div className="flex items-center justify-between pt-2 border-t border-border">
+              <div className="flex items-center justify-between pt-2 ">
                 <div className="flex items-center gap-2">
-                  <p className="text-xl font-bold">
+                  <p className="text-lg font-bold">
                     {gameData?.currentPrice
                       ? `₩ ${formatNumber(gameData.currentPrice)}`
                       : "가격 정보 없음"}
                   </p>
+                  <p>{gameData.popularityScore}</p>
                 </div>
                 {/* 플랫폼 */}
                 {gameData.platforms && gameData.platforms.length > 0 && (
