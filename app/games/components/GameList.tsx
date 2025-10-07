@@ -4,9 +4,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { FadeSlide } from "@/components/motion/FadeSlide";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { GameListHeader } from "./GameListHeader";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
@@ -23,11 +22,49 @@ interface GameListProps {
 
 export function GameList({ games, isLoading, className, onGameClick, selectedDay }: GameListProps) {
   const [sortBy, setSortBy] = useState<"name" | "date" | "popularityScore">("popularityScore");
+  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
+  useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem("game-list-view-mode");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const now = new Date().getTime();
+        if (now <= parsed.expiry) {
+          setViewMode(parsed.value);
+        } else {
+          localStorage.removeItem("game-list-view-mode");
+        }
+      } catch (error) {
+        console.warn("Failed to parse view mode from localStorage");
+      }
+    }
+  }, []);
+
+  // viewMode 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (!mounted) return;
+
+    const expiryMonths = 6;
+    const now = new Date().getTime();
+    const expiryTime = now + expiryMonths * 30 * 24 * 60 * 60 * 1000;
+
+    localStorage.setItem(
+      "game-list-view-mode",
+      JSON.stringify({
+        value: viewMode,
+        expiry: expiryTime,
+      })
+    );
+  }, [viewMode, mounted]);
 
   const sortedGames = [...games].sort((a, b) => {
     switch (sortBy) {
       case "popularityScore":
-        return 0;
+        return b.popularityScore - a.popularityScore; // 높은 점수 우선
       case "name":
         return a.name.localeCompare(b.name);
       case "date":
@@ -42,6 +79,8 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
       <GameListHeader
         sortBy={sortBy}
         onSortChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         className="mb-6"
       />
 
@@ -51,18 +90,34 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
         ) : games.length === 0 ? (
           <EmptyState />
         ) : (
-          <div
-            key={`games-${selectedDay}-${games.length}`}
-            className="space-y-4">
+          <motion.div
+            key={`games-${selectedDay}-${games.length}-${viewMode}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className={viewMode === "card" ? "space-y-4" : "space-y-2"}>
             {sortedGames.map((game, index) => (
-              <GameCard
+              <motion.div
                 key={game.gameId}
-                game={game}
-                onClick={() => onGameClick?.(game)}
-                priority={index < 4} // 첫 4개 우선 로딩
-              />
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{
+                  layout: { duration: 0.3, ease: "easeInOut" },
+                  opacity: { duration: 0.2 },
+                  y: { duration: 0.2 },
+                }}>
+                <GameCard
+                  game={game}
+                  onClick={() => onGameClick?.(game)}
+                  priority={index < 4}
+                  viewMode={viewMode}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

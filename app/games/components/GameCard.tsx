@@ -4,27 +4,28 @@ import { Game } from "@/app/games/types/game.types";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Calendar, Monitor, Gamepad2, Smartphone, Clock } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
-import { FadeSlide } from "@/components/motion/FadeSlide";
-import {
-  isAAAgame,
-  getDaysUntilRelease,
-  normalizePlatforms,
-  getPlatformIconType,
-} from "@/utils/game";
+import { isAAAgame, getDaysUntilRelease } from "@/utils/game";
 
 interface GameCardProps {
   game: Game;
   className?: string;
   onClick?: () => void;
-  priority?: boolean; // 이미지 로딩 우선순위
+  priority?: boolean;
+  viewMode?: "card" | "list";
 }
 import Steam from "@/public/icon/steam.png";
 import Xbox from "@/public/icon/xbox.png";
 import Nintendo from "@/public/icon/nintendo.png";
 import Psn from "@/public/icon/psn.png";
-export function GameCard({ game, className, onClick, priority = false }: GameCardProps) {
+export function GameCard({
+  game,
+  className,
+  onClick,
+  priority = false,
+  viewMode = "card",
+}: GameCardProps) {
   const gameData = game as any;
 
   const daysUntilRelease = getDaysUntilRelease(gameData.releaseDate);
@@ -51,6 +52,133 @@ export function GameCard({ game, className, onClick, priority = false }: GameCar
     }
   }
 
+  // 리스트 뷰 렌더링
+  if (viewMode === "list") {
+    return (
+      <Link
+        href={`/games/${gameData.gameId}`}
+        prefetch={true}
+        className="block"
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}>
+        <InteractiveCard
+          className={cn(
+            "cursor-pointer group overflow-hidden relative rounded-lg bg-card elevated-card",
+            className
+          )}
+          hoverScale={1.01}
+          hoverY={-2}>
+          <div className="flex items-center gap-3 p-3 relative z-10">
+            {/* 좌측 이미지 (작게) */}
+            <div className="relative w-32 h-26 flex-shrink-0 overflow-hidden rounded-md bg-black/95">
+              <Image
+                fill
+                src={gameData.headerImage}
+                alt={gameData.name}
+                priority={priority}
+                className="object-cover"
+                loading={priority ? undefined : "lazy"}
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
+              />
+            </div>
+
+            {/* 우측 정보 */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between gap-1">
+              {/* 게임명과 인기작 뱃지 */}
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base text-foreground line-clamp-1">
+                  {gameData.name}
+                </h3>
+                {isAAAgame(gameData) && (
+                  <Badge className="px-1.5 py-0.5 gradient-aaa-badge text-white text-xs font-bold border-0 shadow-lg flex-shrink-0">
+                    인기작
+                  </Badge>
+                )}
+              </div>
+
+              {/* 출시일 */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                  <span
+                    className={cn(
+                      "text-xs font-medium text-foreground",
+                      isToday && "text-success font-bold",
+                      isUpcoming && "text-info"
+                    )}>
+                    {new Date(gameData.releaseDate).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+                {isToday && (
+                  <Badge className="px-1.5 py-0.5 gradient-today-badge text-white text-xs shadow-lg">
+                    오늘 출시!
+                  </Badge>
+                )}
+                {isUpcoming && daysUntilRelease <= 7 && (
+                  <Badge className="px-1.5 py-0.5 gradient-upcoming-badge text-white text-xs shadow-lg flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {daysUntilRelease}일 후
+                  </Badge>
+                )}
+              </div>
+
+              {/* 장르 (간략하게) */}
+              {gameData.genres && gameData.genres.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {gameData.genres.slice(0, 3).map((genre: string) => (
+                    <Badge
+                      variant="secondary"
+                      key={genre}
+                      className="text-xs px-2 py-0.5 font-semibold border">
+                      {genre}
+                    </Badge>
+                  ))}
+                  {gameData.genres.length > 3 && (
+                    <Badge className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0">
+                      +{gameData.genres.length - 3}
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-2 ">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold">
+                    {gameData?.currentPrice
+                      ? `₩ ${formatNumber(gameData.currentPrice)}`
+                      : "가격 정보 없음"}
+                  </p>
+                  <p>{gameData.popularityScore}</p>
+                </div>
+                {/* 플랫폼 */}
+                {gameData.platforms && gameData.platforms.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {gameData.platforms.map((platform: string, index: number) => {
+                      return (
+                        <Image
+                          key={platform}
+                          src={findLogo(platform)}
+                          alt={platform}
+                          width={14}
+                          height={14}></Image>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </InteractiveCard>
+      </Link>
+    );
+  }
+
+  // 카드 뷰 렌더링 (기존 디자인)
   return (
     <Link
       href={`/games/${gameData.gameId}`}
@@ -81,7 +209,6 @@ export function GameCard({ game, className, onClick, priority = false }: GameCar
                 src={gameData.headerImage}
                 alt={gameData.name}
                 priority={priority}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-fit"
                 loading={priority ? undefined : "lazy"}
                 placeholder="blur"

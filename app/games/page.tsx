@@ -2,7 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { LayoutGrid, Columns2 } from "lucide-react";
 import { GameCalendar } from "./components/GameCalendar";
+import { CalendarHeader } from "./components/CalendarHeader";
 import { GameList } from "./components/GameList";
 import { Game, GamesByDate, CalendarApiResponse } from "./types/game.types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -27,6 +31,46 @@ export default function Calendar() {
   const [selectedYear, setSelectedYear] = useState(initialYear);
   const [selectedMonth, setSelectedMonth] = useState(initialMonth);
   const [selectedDay, setSelectedDay] = useState<number | null>(initialDay);
+
+  // 레이아웃 모드 (PC에서 캘린더 표시/숨김)
+  const [layoutMode, setLayoutMode] = useState<"split" | "list-only">("split");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
+  useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem("games-layout-mode");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const now = new Date().getTime();
+        if (now <= parsed.expiry) {
+          setLayoutMode(parsed.value);
+        } else {
+          localStorage.removeItem("games-layout-mode");
+        }
+      } catch (error) {
+        console.warn("Failed to parse layout mode from localStorage");
+      }
+    }
+  }, []);
+
+  // layoutMode 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (!mounted) return;
+
+    const expiryMonths = 6;
+    const now = new Date().getTime();
+    const expiryTime = now + expiryMonths * 30 * 24 * 60 * 60 * 1000;
+
+    localStorage.setItem(
+      "games-layout-mode",
+      JSON.stringify({
+        value: layoutMode,
+        expiry: expiryTime,
+      })
+    );
+  }, [layoutMode, mounted]);
 
   // 2) 상태 → URL 동기화 유틸
   const syncUrl = (y = selectedYear, m = selectedMonth, d = selectedDay) => {
@@ -123,32 +167,99 @@ export default function Calendar() {
 
   return (
     <div className="container mx-auto h-full">
-      {/* 데스크톱 레이아웃 */}
-      <div className="hidden lg:grid lg:grid-cols-12 gap-4 h-full">
-        {/* 캘린더 섹션 */}
-        <div className="lg:col-span-8">
-          <GameCalendar
+      {/* 레이아웃 토글 버튼 (데스크톱 전용) */}
+      <div className="hidden lg:flex justify-end mb-4 px-4">
+        <div className="flex items-center gap-2 rounded-lg border bg-background p-1">
+          <Button
+            variant={layoutMode === "split" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setLayoutMode("split")}
+            className="h-8 px-3 gap-2">
+            <Columns2 className="h-4 w-4" />
+            <span className="text-sm">분할 보기</span>
+          </Button>
+          <Button
+            variant={layoutMode === "list-only" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setLayoutMode("list-only")}
+            className="h-8 px-3 gap-2">
+            <LayoutGrid className="h-4 w-4" />
+            <span className="text-sm">리스트만</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* 데스크톱 분할 레이아웃 */}
+      <AnimatePresence mode="wait">
+        {layoutMode === "split" && (
+          <motion.div
+            key="split"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="hidden lg:grid lg:grid-cols-12 gap-4 h-full">
+            {/* 캘린더 섹션 */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="col-span-8">
+              <GameCalendar
+                year={selectedYear}
+                month={selectedMonth}
+                selectedDay={selectedDay}
+                gamesByDate={gamesByDate}
+                onMonthChange={handleMonthChange}
+                onYearChange={handleYearChange}
+                onDateChange={handleDateChange}
+                onDaySelect={handleDaySelect}
+              />
+            </motion.div>
+
+            {/* 게임 리스트 섹션 */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="px-4 pb-4 col-span-4 h-full overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
+              <GameList
+                games={filteredGames}
+                isLoading={isLoading}
+                onGameClick={handleGameClick}
+                selectedDay={selectedDay}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 데스크톱 리스트만 모드 */}
+      {layoutMode === "list-only" && (
+        <motion.div
+          key="list-only"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="hidden lg:block max-w-4xl mx-auto px-4 pb-4 space-y-6">
+          {/* 날짜 선택 헤더만 */}
+          <CalendarHeader
             year={selectedYear}
-            month={selectedMonth}
-            selectedDay={selectedDay}
-            gamesByDate={gamesByDate}
+            selectedMonth={selectedMonth}
             onMonthChange={handleMonthChange}
             onYearChange={handleYearChange}
             onDateChange={handleDateChange}
-            onDaySelect={handleDaySelect}
           />
-        </div>
 
-        {/* 게임 리스트 섹션 */}
-        <div className="px-4 pb-4 lg:col-span-4 h-full overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
+          {/* 게임 리스트 */}
           <GameList
             games={filteredGames}
             isLoading={isLoading}
             onGameClick={handleGameClick}
             selectedDay={selectedDay}
           />
-        </div>
-      </div>
+        </motion.div>
+      )}
 
       {/* 모바일 레이아웃 */}
       <div className="lg:hidden space-y-6">

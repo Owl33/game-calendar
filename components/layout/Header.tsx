@@ -34,13 +34,26 @@ export function Header({ className }: HeaderProps) {
     <header className={cn("border-b border-border/40 h-14", className)}>
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* 로고 */}
-        <div className="flex items-center gap-2">
-          <h1 className="font-bold text-xl gradient-header-title">Game Calendar</h1>
-        </div>
+        <Link href="/home" className="flex items-center gap-2">
+          <h1 className="font-bold text-xl gradient-header-title cursor-pointer hover:opacity-80 transition-opacity">
+            Game Calendar
+          </h1>
+        </Link>
 
-        {/* 우측 영역: 검색 */}
-        <div className="flex items-center gap-2">
-          <Link href="/games">캘린더</Link>
+        {/* 우측 영역: 네비게이션 & 검색 */}
+        <div className="flex items-center gap-4">
+          <nav className="flex items-center gap-4">
+            <Link
+              href="/home"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              홈
+            </Link>
+            <Link
+              href="/games"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              캘린더
+            </Link>
+          </nav>
           {/* 데스크톱용 검색 버튼 */}
           <Button
             variant="ghost"
