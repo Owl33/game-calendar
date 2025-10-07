@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Modal } from "@/components/motion/Modal";
+import { cn } from "@/lib/utils";
 
 interface CalendarHeaderProps {
   year: number;
@@ -16,6 +17,7 @@ interface CalendarHeaderProps {
   onMonthChange: (month: number) => void;
   onYearChange?: (year: number) => void;
   onDateChange?: (year: number, month: number) => void;
+  className?: string;
 }
 
 // 년도 버튼 컴포넌트 - year가 변경될 때만 리렌더링
@@ -46,6 +48,7 @@ export function CalendarHeader({
   onMonthChange,
   onYearChange,
   onDateChange,
+  className,
 }: CalendarHeaderProps) {
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -101,7 +104,7 @@ export function CalendarHeader({
   };
 
   return (
-    <div className="mb-4">
+    <div className={cn("mb-4", className)}>
       {/* 데스크톱 레이아웃 */}
       <div className="hidden lg:flex lg:items-center lg:gap-4">
         <Button

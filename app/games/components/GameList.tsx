@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { cn } from "@/lib/utils";
 import { GameListHeader } from "./GameListHeader";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
@@ -18,9 +19,10 @@ interface GameListProps {
   className?: string;
   onGameClick?: (game: Game) => void;
   selectedDay?: number | null;
+  layoutMode?: "split" | "list-only";
 }
 
-export function GameList({ games, isLoading, className, onGameClick, selectedDay }: GameListProps) {
+export function GameList({ games, isLoading, className, onGameClick, layoutMode }: GameListProps) {
   const [sortBy, setSortBy] = useState<"name" | "date" | "popularityScore">("popularityScore");
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [mounted, setMounted] = useState(false);
@@ -81,7 +83,7 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
         onSortChange={setSortBy}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        className="mb-6"
+        className="mb-4"
       />
 
       <AnimatePresence mode="wait">
@@ -91,15 +93,21 @@ export function GameList({ games, isLoading, className, onGameClick, selectedDay
           <EmptyState />
         ) : (
           <motion.div
-            key={`games-${selectedDay}-${games.length}-${viewMode}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className={viewMode === "card" ? "space-y-4" : "space-y-2"}>
+            className={cn(
+              "grid lg:px-4",
+              viewMode === "card"
+                ? layoutMode === "list-only"
+                  ? "grid-cols-1 lg:grid-cols-2 gap-4"
+                  : "grid-cols-1 gap-4"
+                : "grid-cols-1 gap-2"
+            )}>
             {sortedGames.map((game, index) => (
               <motion.div
-                key={game.gameId}
+                key={index}
                 layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

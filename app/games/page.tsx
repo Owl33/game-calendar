@@ -166,7 +166,7 @@ export default function Calendar() {
   };
 
   return (
-    <div className="container mx-auto h-full">
+    <div className="container mx-auto h-full flex flex-col">
       {/* 레이아웃 토글 버튼 (데스크톱 전용) */}
       <div className="hidden lg:flex justify-end mb-4 px-4">
         <div className="flex items-center gap-2 rounded-lg border bg-background p-1">
@@ -198,7 +198,7 @@ export default function Calendar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="hidden lg:grid lg:grid-cols-12 gap-4 h-full">
+            className="hidden lg:grid lg:grid-cols-12 gap-4 flex-1 overflow-hidden">
             {/* 캘린더 섹션 */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -222,61 +222,63 @@ export default function Calendar() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
-              className="px-4 pb-4 col-span-4 h-full overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
+              className="col-span-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
               <GameList
                 games={filteredGames}
                 isLoading={isLoading}
                 onGameClick={handleGameClick}
                 selectedDay={selectedDay}
+                layoutMode="split"
               />
             </motion.div>
           </motion.div>
         )}
+
+        {/* 데스크톱 리스트만 모드 */}
+        {layoutMode === "list-only" && (
+          <motion.div
+            key="list-only"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="hidden flex-1 overflow-hidden lg:block max-w-4xl mx-auto px-4 pb-4 space-y-6">
+            {/* 날짜 선택 헤더만 */}
+            <CalendarHeader
+              year={selectedYear}
+              selectedMonth={selectedMonth}
+              onMonthChange={handleMonthChange}
+              onYearChange={handleYearChange}
+              onDateChange={handleDateChange}
+            />
+
+            {/* 게임 리스트 */}
+            <div className="h-full col-span-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
+              <GameList
+                games={filteredGames}
+                isLoading={isLoading}
+                onGameClick={handleGameClick}
+                selectedDay={selectedDay}
+                layoutMode="list-only"
+              />
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
-
-      {/* 데스크톱 리스트만 모드 */}
-      {layoutMode === "list-only" && (
-        <motion.div
-          key="list-only"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="hidden lg:block max-w-4xl mx-auto px-4 pb-4 space-y-6">
-          {/* 날짜 선택 헤더만 */}
-          <CalendarHeader
-            year={selectedYear}
-            selectedMonth={selectedMonth}
-            onMonthChange={handleMonthChange}
-            onYearChange={handleYearChange}
-            onDateChange={handleDateChange}
-          />
-
-          {/* 게임 리스트 */}
-          <GameList
-            games={filteredGames}
-            isLoading={isLoading}
-            onGameClick={handleGameClick}
-            selectedDay={selectedDay}
-          />
-        </motion.div>
-      )}
 
       {/* 모바일 레이아웃 */}
       <div className="lg:hidden space-y-6">
-        <div>
-          <GameCalendar
-            year={selectedYear}
-            month={selectedMonth}
-            selectedDay={selectedDay}
-            gamesByDate={gamesByDate}
-            onMonthChange={handleMonthChange}
-            onYearChange={handleYearChange}
-            onDateChange={handleDateChange}
-            onDaySelect={handleDaySelect}
-          />
-        </div>
+        <GameCalendar
+          year={selectedYear}
+          month={selectedMonth}
+          selectedDay={selectedDay}
+          gamesByDate={gamesByDate}
+          onMonthChange={handleMonthChange}
+          onYearChange={handleYearChange}
+          onDateChange={handleDateChange}
+          onDaySelect={handleDaySelect}
+        />
 
-        <div className="px-4 pb-4">
+        <div className="p-4">
           <GameList
             games={filteredGames}
             isLoading={isLoading}
