@@ -44,7 +44,7 @@ export function Header({ className }: HeaderProps) {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* 로고 */}
         <Link
-          href="/home"
+          href="/"
           className="flex items-center gap-2">
           <h1 className="font-bold text-xl gradient-header-title cursor-pointer hover:opacity-80 transition-opacity">
             Game Calendar
@@ -55,7 +55,7 @@ export function Header({ className }: HeaderProps) {
         <div className="flex items-center gap-4">
           <nav className="flex items-center gap-4">
             <Link
-              href="/home"
+              href="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               홈
             </Link>
@@ -94,7 +94,6 @@ export function Header({ className }: HeaderProps) {
             className="h-9 w-9 p-0 rounded-full hover:bg-muted transition-all duration-200 hover:scale-105 sm:hidden"
             onClick={() => setOpen(true)}>
             <Search className="h-4 w-4" />
-            <span className="sr-only">검색</span>
           </Button>
         </div>
       </div>
