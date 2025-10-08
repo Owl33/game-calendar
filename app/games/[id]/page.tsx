@@ -14,16 +14,7 @@ import Steam from "@/public/icon/steam.png";
 import Xbox from "@/public/icon/xbox.png";
 import Psn from "@/public/icon/psn.png";
 import Nintendo from "@/public/icon/nintendo.png";
-import {
-  ArrowLeft,
-  Play,
-  Globe,
-  Building2,
-  Users,
-  Trophy,
-  ThumbsUp,
-  UserPlus,
-} from "lucide-react";
+import { ArrowLeft, Play, Globe, Building2, Users, Trophy, ThumbsUp, UserPlus } from "lucide-react";
 import { GameDetailApiResponse } from "@/types/game.types";
 import { GameDetailSkeleton } from "../components/GameDetailSkeleton";
 import Image from "next/image";
@@ -208,7 +199,7 @@ export default function GameDetailPage() {
       </div>
     );
   };
-
+  console.log(game);
   return (
     <div className="relative">
       {/* 배경 히어로 */}
@@ -612,7 +603,7 @@ export default function GameDetailPage() {
                                 variant="secondary"
                                 key={idx}
                                 className="text-sm ">
-                                {dev}
+                                {dev.name}
                               </Badge>
                             ))}
                           </div>
@@ -630,7 +621,7 @@ export default function GameDetailPage() {
                                 key={idx}
                                 variant="secondary"
                                 className="text-sm">
-                                {pub}
+                                {pub.name}
                               </Badge>
                             ))}
                           </div>
