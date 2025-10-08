@@ -20,7 +20,10 @@ import { GameDetailSkeleton } from "../components/GameDetailSkeleton";
 import Image from "next/image";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
+interface devpubType {
+  id: number;
+  name: string;
+}
 // ---------- 유틸 ----------
 function getYouTubeEmbedUrl(url: string | undefined) {
   if (!url) return undefined;
@@ -598,14 +601,16 @@ export default function GameDetailPage() {
                             개발사
                           </h3>
                           <div className="space-y-1">
-                            {game.developers.map((dev: string, idx: number) => (
-                              <Badge
-                                variant="secondary"
-                                key={idx}
-                                className="text-sm ">
-                                {dev.name}
-                              </Badge>
-                            ))}
+                            {game.developers.map(
+                              (dev: { id: number; name: string }, idx: number) => (
+                                <Badge
+                                  variant="secondary"
+                                  key={idx}
+                                  className="text-sm ">
+                                  {dev.name}
+                                </Badge>
+                              )
+                            )}
                           </div>
                         </div>
                       )}
@@ -616,14 +621,16 @@ export default function GameDetailPage() {
                             배급사
                           </h3>
                           <div className="space-y-1">
-                            {game.publishers.map((pub: string, idx: number) => (
-                              <Badge
-                                key={idx}
-                                variant="secondary"
-                                className="text-sm">
-                                {pub.name}
-                              </Badge>
-                            ))}
+                            {game.publishers.map(
+                              (pub: { id: number; name: string }, idx: number) => (
+                                <Badge
+                                  key={idx}
+                                  variant="secondary"
+                                  className="text-sm">
+                                  {pub.name}
+                                </Badge>
+                              )
+                            )}
                           </div>
                         </div>
                       )}

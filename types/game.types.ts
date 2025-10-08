@@ -78,8 +78,14 @@ export interface GameDetail {
   totalReviews: number | null;
   reviewScoreDesc: string | null;
   headerImage: string | null;
-  developers: string[];
-  publishers: string[];
+  developers: {
+    id: number;
+    name: string;
+  }[];
+  publishers: {
+    id: number;
+    name: string;
+  }[];
   currentPrice: number | null;
   releases: GameReleases[];
   dlcs: {
