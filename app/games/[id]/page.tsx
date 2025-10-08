@@ -30,7 +30,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { FadeSlide } from "@/components/motion/FadeSlide";
-import { GameDetailApiResponse } from "../types/game.types";
+import { GameDetailApiResponse } from "@/types/game.types";
 import { GameDetailSkeleton } from "../components/GameDetailSkeleton";
 import Image from "next/image";
 
@@ -40,7 +40,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 function getYouTubeEmbedUrl(url: string | undefined) {
   if (!url) return undefined;
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  return m?.[1] ? `https://www.youtube.com/embed/${m[1]}` : undefined;
+  return m?.[1] ? `https://www.youtube-nocookie.com/embed/${m[1]}` : undefined;
 }
 
 function findLogo(store: string) {
@@ -118,7 +118,6 @@ export default function GameDetailPage() {
   });
 
   const game = apiResponse?.data;
-  console.log(game);
   // 미디어
   const mediaList = useMemo(
     () => [
@@ -130,7 +129,6 @@ export default function GameDetailPage() {
 
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const selectedMedia = mediaList[selectedMediaIndex];
-  console.log(selectedMedia);
   const backgroundImage = game?.screenshots?.[0];
 
   // 프리로드
@@ -155,7 +153,6 @@ export default function GameDetailPage() {
       .then(() => !cancelled && setIsImagesReady(true))
       .finally(() => window.clearTimeout(globalTimeout));
     // setReleaseDate(dayjs.tz(game.releaseDate).tz("Asia/Seoul"));
-    console.log(releaseDate);
     return () => {
       cancelled = true;
       window.clearTimeout(globalTimeout);
@@ -220,17 +217,6 @@ export default function GameDetailPage() {
     );
   };
 
-  const calcDday = () => {
-    console.log("typeof releaseDate:", typeof game.releaseDate); // 'string' ? 'object'(Date) ?
-    const d = new Date(game.releaseDate as any);
-    console.log("new Date(...).toISOString():", d.toISOString()); // 실제 절대시각
-    console.log("dayjs raw parse:", dayjs(game.releaseDate as any).format());
-    console.log(
-      'new Date(game.releaseDate).toLocaleDateString("ko-KR")',
-      new Date(game.releaseDate).toLocaleDateString("ko-KR")
-    );
-  };
-  calcDday();
   return (
     <div className="relative">
       {/* 배경 히어로 */}
@@ -461,7 +447,9 @@ export default function GameDetailPage() {
                           <iframe
                             src={getYouTubeEmbedUrl(selectedMedia.url)}
                             className="w-full h-full"
-                            frameBorder="0"
+                            loading="lazy"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
                             title={`${game.name} Trailer`}
                           />

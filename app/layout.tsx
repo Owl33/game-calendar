@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="ko"
       suppressHydrationWarning
       className={`${pretendard.variable}`}>
-      <body className={`${pretendard.className} flex flex-col min-h-screen`}>
+      <body className={`${pretendard.className} flex flex-col min-h-screen w-full`}>
         <QueryProvider>
           <ThemeProvider
             attribute="class"

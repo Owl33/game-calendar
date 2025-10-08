@@ -4,7 +4,7 @@
 
 "use client";
 
-import { GamesByDate } from "../types/game.types";
+import { GamesByDate } from "@/types/game.types";
 import { AnimatePresence, motion } from "motion/react";
 import { FadeSlide } from "@/components/motion/FadeSlide";
 import { CalendarDay } from "./CalendarDay";

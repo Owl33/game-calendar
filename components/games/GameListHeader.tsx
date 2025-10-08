@@ -20,9 +20,16 @@ interface GameListHeaderProps {
   viewMode: "card" | "list";
   onViewModeChange: (mode: "card" | "list") => void;
   className?: string;
+  sorted?: boolean;
 }
 
-export function GameListHeader({ sortBy, onSortChange, viewMode, onViewModeChange, className }: GameListHeaderProps) {
+export function GameListHeader({
+  sortBy,
+  onSortChange,
+  viewMode,
+  onViewModeChange,
+  className,
+}: GameListHeaderProps) {
   const sortOptions = [
     { value: "popularityScore", label: "인기순", icon: Plus },
     { value: "date", label: "출시일순", icon: Calendar },

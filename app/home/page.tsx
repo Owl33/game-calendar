@@ -7,8 +7,8 @@ import { HeroBanner } from "./components/HeroBanner";
 import { QuickNavigationCards } from "./components/QuickNavigationCards";
 import { StatsSection } from "./components/StatsSection";
 import { GameSlider } from "./components/GameSlider";
-import { GameCard } from "@/app/games/components/GameCard";
-import { Game } from "@/app/games/types/game.types";
+import { GameCard } from "@/components/games/GameCard";
+import { Game } from "@/types/game.types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -92,8 +92,13 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.4 }}>
             <GameSlider title="🔥 곧 출시될 게임">
               {data.upcoming.map((game, index) => (
-                <div key={game.gameId} className="min-w-[320px] snap-start">
-                  <GameCard game={game} priority={index < 3} />
+                <div
+                  key={game.gameId}
+                  className="min-w-[320px] snap-start">
+                  <GameCard
+                    game={game}
+                    priority={index < 3}
+                  />
                 </div>
               ))}
             </GameSlider>
@@ -108,8 +113,13 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.6 }}>
             <GameSlider title="⭐ 인기 게임">
               {data.popular.map((game, index) => (
-                <div key={game.gameId} className="min-w-[320px] snap-start">
-                  <GameCard game={game} priority={index < 3} />
+                <div
+                  key={game.gameId}
+                  className="min-w-[320px] snap-start">
+                  <GameCard
+                    game={game}
+                    priority={index < 3}
+                  />
                 </div>
               ))}
             </GameSlider>

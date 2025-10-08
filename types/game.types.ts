@@ -4,6 +4,8 @@ export interface StoreLink {
 }
 
 export interface Game {
+  currentPrice: any;
+  releaseDateRaw: any;
   releaseIds: number[];
   gameId: number;
   name: string;

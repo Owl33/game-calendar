@@ -227,3 +227,15 @@
 .bb_img {
   width: 100%;
 }
+
+:root {
+  body[data-scroll-locked][data-scroll-locked] {
+    overflow: auto !important;
+  }
+}
+.content-visibility-auto {
+  content-visibility: auto;
+}
+.contain-intrinsic-size-260_360 {
+  contain-intrinsic-size: 260px 360px;
+} /* 카드 대략 크기 */

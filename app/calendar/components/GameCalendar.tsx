@@ -6,7 +6,7 @@
 
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
-import { GamesByDate } from "../types/game.types";
+import { GamesByDate } from "@/types/game.types";
 
 interface GameCalendarProps {
   year: number;

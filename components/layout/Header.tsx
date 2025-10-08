@@ -1,46 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Command, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Search, Command } from "lucide-react";
+import { cn } from "@/lib/utils";
+import SearchModal from "@/components/search/search-modal";
 
 interface HeaderProps {
   className?: string;
 }
 
 export function Header({ className }: HeaderProps) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false);
 
-  // 키보드 단축키 (Cmd/Ctrl + K)
+  // Cmd/Ctrl+K 단축키로 열기
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setSearchOpen(true);
+        setOpen(true);
       }
     };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  // 모달 열릴 때 배경 스크롤 잠금
+  useEffect(() => {
+    if (open) {
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <header className={cn("border-b border-border/40 h-14", className)}>
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* 로고 */}
-        <Link href="/home" className="flex items-center gap-2">
+        <Link
+          href="/home"
+          className="flex items-center gap-2">
           <h1 className="font-bold text-xl gradient-header-title cursor-pointer hover:opacity-80 transition-opacity">
             Game Calendar
           </h1>
         </Link>
 
-        {/* 우측 영역: 네비게이션 & 검색 */}
+        {/* 네비 + 검색 버튼 */}
         <div className="flex items-center gap-4">
           <nav className="flex items-center gap-4">
             <Link
@@ -49,16 +60,22 @@ export function Header({ className }: HeaderProps) {
               홈
             </Link>
             <Link
-              href="/games"
+              href="/calendar"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               캘린더
             </Link>
+            <Link
+              href="/games"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              전체게임
+            </Link>
           </nav>
-          {/* 데스크톱용 검색 버튼 */}
+
+          {/* 데스크톱 검색 버튼 */}
           <Button
             variant="ghost"
-            className="relative justify-start rounded-md border border-border/40 bg-background/50 px-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground min-w-[200px] hidden sm:flex"
-            onClick={() => setSearchOpen(true)}>
+            className="relative justify-start rounded-md border border-border/40 bg-background/50 px-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground min-w-[220px] hidden sm:flex"
+            onClick={() => setOpen(true)}>
             <Search className="mr-2 h-4 w-4" />
             <span>게임 검색...</span>
             <div className="ml-auto flex items-center gap-1">
@@ -70,67 +87,23 @@ export function Header({ className }: HeaderProps) {
             </div>
           </Button>
 
-          {/* 모바일용 검색 버튼 */}
+          {/* 모바일 검색 아이콘 */}
           <Button
             variant="ghost"
             size="sm"
             className="h-9 w-9 p-0 rounded-full hover:bg-muted transition-all duration-200 hover:scale-105 sm:hidden"
-            onClick={() => setSearchOpen(true)}>
+            onClick={() => setOpen(true)}>
             <Search className="h-4 w-4" />
             <span className="sr-only">검색</span>
           </Button>
-
-          {/* 검색 모달 - motion.dev + glassmorphism */}
-          {searchOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSearchOpen(false)}
-              />
-
-              {/* Modal */}
-              <motion.div
-                className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl mx-4 h-[600px] sm:h-[500px] rounded-2xl overflow-hidden flex flex-col bg-card elevated-card"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ duration: 0.2 }}>
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-border flex-shrink-0">
-                  <h2 className="text-lg font-semibold text-foreground">게임 검색</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-full"
-                    onClick={() => setSearchOpen(false)}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Search Input */}
-                <div className="p-6 pb-4 flex-shrink-0">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="게임명을 입력하세요..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-12"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-
-                {/* Search Results */}
-              </motion.div>
-            </>
-          )}
         </div>
       </div>
+
+      {/* 검색 모달 (재사용 컴포넌트) */}
+      <SearchModal
+        open={open}
+        onClose={() => setOpen(false)}
+      />
     </header>
   );
 }

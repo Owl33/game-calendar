@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { Sheet } from "@/components/ui/sheet";
-import { Game } from "../types/game.types";
+import { Game } from "@/types/game.types";
 import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
