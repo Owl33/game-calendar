@@ -4,8 +4,8 @@ export interface StoreLink {
 }
 
 export interface Game {
-  currentPrice: any;
-  releaseDateRaw: any;
+  currentPrice: number | null;
+  releaseDateRaw: string | null;
   releaseIds: number[];
   gameId: number;
   name: string;
@@ -52,7 +52,7 @@ export interface CalendarApiResponse {
 }
 
 export interface GameDetail {
-  platforms: any;
+  platforms: string[];
   id: string;
   name: string;
   slug: string;

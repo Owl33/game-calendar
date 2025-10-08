@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, Star, CalendarDays, Loader2 } from "lucide-react";
+import { Search, X, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Transition } from "motion/react"; // ← 타입만 가져오기
+import type { Transition } from "motion/react";
 
 /* ====== Types ====== */
 export type SearchItem = {
@@ -109,12 +110,15 @@ function ResultItem({
             active ? "border-primary/40" : "border-border/50"
           )}>
           {item.headerImage ? (
-            <img
-              src={item.headerImage}
-              alt=""
-              className="h-24 w-28 sm:h-20 sm:w-32 object-cover"
-              loading="lazy"
-            />
+            <div className="relative h-24 w-28 sm:h-20 sm:w-32">
+              <Image
+                src={item.headerImage}
+                alt={item.name}
+                fill
+                className="object-cover"
+                sizes="128px"
+              />
+            </div>
           ) : (
             <div className="h-24 w-28 sm:h-20 sm:w-32 bg-muted" />
           )}

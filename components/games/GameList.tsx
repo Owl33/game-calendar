@@ -4,17 +4,27 @@
 
 "use client";
 
-import { useState, useEffect, useRef, ReactElement } from "react";
-import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { GameListHeader } from "./GameListHeader";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
 import { GameCard } from "./GameCard";
-import { Game } from "@/types/game.types";
 
 interface GameListProps {
-  games: any[];
+  games: {
+    gameId: number;
+    name: string;
+    releaseDate: Date | string;
+    popularityScore: number;
+    headerImage: string | null;
+    genres: string[];
+    platforms: string[];
+    currentPrice: number | null;
+    releaseDateRaw: string | null;
+    comingSoon: boolean;
+    releaseStatus: string | null;
+  }[];
   isLoading: boolean;
   sorted?: boolean;
   className?: string;

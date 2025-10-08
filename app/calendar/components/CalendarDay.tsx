@@ -11,8 +11,7 @@ import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
-import { FadeSlide } from "@/components/motion/FadeSlide";
-import { isAAAgame, getGenreColor } from "@/utils/game";
+import { isAAAgame } from "@/utils/game";
 
 interface CalendarDayProps {
   day: number;
@@ -103,7 +102,7 @@ export function CalendarDay({
           {/* 게임 정보 */}
           {hasGames ? (
             <div className="space-y-0">
-              {displayGames.map((game, index) => (
+              {displayGames.map((game) => (
                 <div
                   key={game.gameId}
                   className="flex items-center gap-1 py-0.5">

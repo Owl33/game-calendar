@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { Crown, Flame, Star, TrendingUp, Gamepad2 } from "lucide-react";
+import { Crown, Star, TrendingUp, Gamepad2, LucideIcon } from "lucide-react";
 
 type Tier = "S" | "A" | "B" | "C";
 
-function scoreToTier(score: number): { tier: Tier; color: string; Icon: any; label: string } {
+function scoreToTier(score: number): { tier: Tier; color: string; Icon: LucideIcon; label: string } {
   if (score >= 80) return { tier: "S", color: "yellow", Icon: Crown, label: "핫한 대작" };
   if (score >= 69) return { tier: "A", color: "blue", Icon: Star, label: "인기 급상승" };
   if (score >= 50) return { tier: "B", color: "violet", Icon: TrendingUp, label: "주목작" };
@@ -13,15 +13,13 @@ function scoreToTier(score: number): { tier: Tier; color: string; Icon: any; lab
 export function PopScoreBadge({
   score,
   className,
-  placement = "top-right", // "top-left" | "top-right" | "bottom-left" | "bottom-right"
-  showTier = true,
+  placement = "top-right",
 }: {
   score: number;
   className?: string;
   placement?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  showTier?: boolean;
 }) {
-  const { tier, color, Icon, label } = scoreToTier(score);
+  const { color, Icon, label } = scoreToTier(score);
 
   const pos = {
     "top-right": "top-3 right-3",

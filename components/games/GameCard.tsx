@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Game } from "@/types/game.types";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,7 +16,19 @@ import { PopScoreBadge } from "./PopScoreBadge";
 type ViewMode = "card" | "list";
 
 interface GameCardProps {
-  game: Game;
+  game: {
+    gameId: number;
+    name: string;
+    releaseDate: Date | string;
+    popularityScore: number;
+    headerImage: string | null;
+    genres: string[];
+    platforms: string[];
+    currentPrice: number | null;
+    releaseDateRaw: string | null;
+    comingSoon: boolean;
+    releaseStatus: string | null;
+  };
   className?: string;
   onClick?: () => void;
   priority?: boolean;
@@ -89,7 +100,7 @@ export function GameCard({
   viewMode = "card",
 }: GameCardProps) {
   const v = variants[viewMode];
-  const daysUntilRelease = getDaysUntilRelease(game.releaseDate as any);
+  const daysUntilRelease = getDaysUntilRelease(game.releaseDate);
   const isUpcoming = daysUntilRelease > 0;
   const isToday = daysUntilRelease === 0;
 
@@ -117,7 +128,7 @@ export function GameCard({
           <AspectRatio ratio={16 / 9}>
             <Image
               fill
-              src={(game as any).headerImage}
+              src={game.headerImage || ""}
               alt={game.name}
               priority={priority}
               className="object-cover"
@@ -130,7 +141,7 @@ export function GameCard({
         ) : (
           <Image
             fill
-            src={(game as any).headerImage}
+            src={game.headerImage || ""}
             alt={game.name}
             className="object-cover"
             priority={priority}
@@ -146,7 +157,7 @@ export function GameCard({
         {/* 타이틀 & 인기작 */}
         <div className="flex items-center gap-2 mb-2">
           <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
-          {isAAAgame(game as any) && (
+          {isAAAgame(game) && (
             <Badge
               className={cn(
                 "px-2 py-1 text-white font-bold border-0 shadow-lg",
@@ -186,9 +197,9 @@ export function GameCard({
         </div>
 
         {/* 장르 */}
-        {(game as any).genres?.length > 0 && (
+        {game.genres?.length > 0 && (
           <div className={cn("flex flex-wrap gap-2", viewMode === "card" ? "mt-2" : "")}>
-            {(game as any).genres.slice(0, viewMode === "card" ? 3 : 4).map((g: string) => (
+            {game.genres.slice(0, viewMode === "card" ? 3 : 4).map((g: string) => (
               <Badge
                 key={g}
                 variant="secondary"
@@ -196,14 +207,14 @@ export function GameCard({
                 {g}
               </Badge>
             ))}
-            {(game as any).genres.length > (viewMode === "card" ? 3 : 4) && (
+            {game.genres.length > (viewMode === "card" ? 3 : 4) && (
               <Badge className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0">
-                +{(game as any).genres.length - (viewMode === "card" ? 3 : 4)}
+                +{game.genres.length - (viewMode === "card" ? 3 : 4)}
               </Badge>
             )}
           </div>
         )}
-        {(game as any).genres?.length == 0 && (
+        {game.genres?.length === 0 && (
           <Badge
             variant="secondary"
             className="text-xs px-2 py-0.5 font-semibold border">
@@ -218,9 +229,9 @@ export function GameCard({
               {priceText}
             </p>
           </div>
-          {(game as any).platforms?.length > 0 && (
+          {game.platforms?.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {(game as any).platforms.map((p: string) => (
+              {game.platforms.map((p: string) => (
                 <Image
                   key={p}
                   src={findLogo(p)}
@@ -238,7 +249,7 @@ export function GameCard({
 
   return (
     <Link
-      href={`/games/${(game as any).gameId}`}
+      href={`/games/${game.gameId}`}
       prefetch
       className="block"
       onClick={(e) => {

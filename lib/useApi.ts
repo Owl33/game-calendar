@@ -1,7 +1,7 @@
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   status: number;
   success: boolean;
-  data?: any;
+  data?: T;
   error?: {
     errorCode: string;
     errorMessage: string;
@@ -11,7 +11,7 @@ interface ApiResponse<T = any> {
 // Response 변환 함수
 async function convertResponse<T>(response: Response): Promise<ApiResponse<T>> {
   try {
-    let data = await response.json();
+    const data = await response.json();
 
     // 일반 API 응답
     return {
@@ -53,8 +53,8 @@ class ApiClient {
     method: "GET" | "POST" | "PUT" | "DELETE",
     url: string,
     options?: {
-      params?: Record<string, any>;
-      body?: Record<string, any>;
+      params?: Record<string, string | number | boolean>;
+      body?: Record<string, unknown>;
       headers?: Record<string, string>;
     }
   ): Promise<ApiResponse<T>> {
@@ -64,7 +64,9 @@ class ApiClient {
     };
 
     if (options?.params && method === "GET") {
-      const queryString = new URLSearchParams(options.params).toString();
+      const queryString = new URLSearchParams(
+        Object.fromEntries(Object.entries(options.params).map(([k, v]) => [k, String(v)]))
+      ).toString();
       url += url.includes("?") ? "&" + queryString : "?" + queryString;
     }
 
@@ -79,7 +81,10 @@ class ApiClient {
   // GET
   public get<T>(
     url: string,
-    options?: { params?: Record<string, any>; headers?: Record<string, string> }
+    options?: {
+      params?: Record<string, string | number | boolean>;
+      headers?: Record<string, string>;
+    }
   ) {
     return this.request<T>("GET", url, options);
   }
@@ -87,7 +92,7 @@ class ApiClient {
   // POST
   public post<T>(
     url: string,
-    options?: { body?: Record<string, any>; headers?: Record<string, string> }
+    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
   ) {
     return this.request<T>("POST", url, options);
   }
@@ -95,7 +100,7 @@ class ApiClient {
   // PUT
   public put<T>(
     url: string,
-    options?: { body?: Record<string, any>; headers?: Record<string, string> }
+    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
   ) {
     return this.request<T>("PUT", url, options);
   }
@@ -103,7 +108,7 @@ class ApiClient {
   // DELETE
   public delete<T>(
     url: string,
-    options?: { body?: Record<string, any>; headers?: Record<string, string> }
+    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
   ) {
     return this.request<T>("DELETE", url, options);
   }

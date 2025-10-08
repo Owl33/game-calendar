@@ -10,15 +10,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
-import { Game } from "@/app/games/types/game.types";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Game } from "@/types/game.types";
 
 interface HeroBannerProps {
   game: Game;
 }
 
 export function HeroBanner({ game }: HeroBannerProps) {
-  const gameData = game as any;
+  const gameData = game;
 
   return (
     <section className="relative h-[70vh] min-h-[500px] mb-12 overflow-hidden rounded-3xl">
@@ -26,7 +25,7 @@ export function HeroBanner({ game }: HeroBannerProps) {
       <div className="absolute inset-0">
         <Image
           fill
-          src={gameData.headerImage}
+          src={gameData.headerImage || ""}
           alt={gameData.name}
           className="object-cover"
           sizes="100vw"

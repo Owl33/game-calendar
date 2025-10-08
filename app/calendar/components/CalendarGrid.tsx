@@ -6,9 +6,7 @@
 
 import { GamesByDate } from "@/types/game.types";
 import { AnimatePresence, motion } from "motion/react";
-import { FadeSlide } from "@/components/motion/FadeSlide";
 import { CalendarDay } from "./CalendarDay";
-import { InteractiveCard } from "@/components/motion/InteractiveCard";
 
 interface CalendarGridProps {
   year: number;

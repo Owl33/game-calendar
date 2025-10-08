@@ -5,7 +5,6 @@
 "use client";
 
 import { useRef } from "react";
-import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

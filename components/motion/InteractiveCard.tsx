@@ -85,7 +85,7 @@ export function InteractiveCard({
 
   // 호버 애니메이션
   const getHoverProps = () => {
-    const baseHover: any = {
+    const baseHover: Record<string, number | string | string[]> = {
       scale: hoverScale,
       y: hoverY,
     };

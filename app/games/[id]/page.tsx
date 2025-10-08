@@ -6,10 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import DOMPurify from "isomorphic-dompurify";
-import dayjs from "dayjs";
-
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -20,7 +16,6 @@ import Psn from "@/public/icon/psn.png";
 import Nintendo from "@/public/icon/nintendo.png";
 import {
   ArrowLeft,
-  Calendar,
   Play,
   Globe,
   Building2,
@@ -29,7 +24,6 @@ import {
   ThumbsUp,
   UserPlus,
 } from "lucide-react";
-import { FadeSlide } from "@/components/motion/FadeSlide";
 import { GameDetailApiResponse } from "@/types/game.types";
 import { GameDetailSkeleton } from "../components/GameDetailSkeleton";
 import Image from "next/image";
@@ -99,7 +93,6 @@ export default function GameDetailPage() {
   const gameId = params.id as string;
 
   const [isImagesReady, setIsImagesReady] = useState(false);
-  const [releaseDate, setReleaseDate] = useState(dayjs());
   // API
   const {
     data: apiResponse,
@@ -176,11 +169,10 @@ export default function GameDetailPage() {
   }
   if (!isImagesReady) return <GameDetailSkeleton />;
 
-  // 통계 데이터(없으면 “데이터 없음”)
+  // 통계 데이터(없으면 "데이터 없음")
   const totalReviews = game.totalReviews ?? null;
   const reviewScoreDesc = game.reviewScoreDesc ?? null;
-  const followers =
-    (game as any).followers ?? (game as any).followersCache ?? (game as any).steamFollowers ?? null;
+  const followers = game.followersCache ?? null;
   const metacritic = game.metacriticScore ?? null;
 
   const translateReviewDesc = () => {
@@ -615,12 +607,12 @@ export default function GameDetailPage() {
                             개발사
                           </h3>
                           <div className="space-y-1">
-                            {game.developers.map((dev: any) => (
+                            {game.developers.map((dev: string, idx: number) => (
                               <Badge
                                 variant="secondary"
-                                key={dev.id}
+                                key={idx}
                                 className="text-sm ">
-                                {dev.name}
+                                {dev}
                               </Badge>
                             ))}
                           </div>
@@ -633,12 +625,12 @@ export default function GameDetailPage() {
                             배급사
                           </h3>
                           <div className="space-y-1">
-                            {game.publishers.map((pub: any) => (
+                            {game.publishers.map((pub: string, idx: number) => (
                               <Badge
-                                key={pub.id}
+                                key={idx}
                                 variant="secondary"
                                 className="text-sm">
-                                {pub.name}
+                                {pub}
                               </Badge>
                             ))}
                           </div>
