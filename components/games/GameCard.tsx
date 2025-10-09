@@ -198,7 +198,7 @@ export function GameCard({
 
         {/* 장르 */}
         {game.genres?.length > 0 && (
-          <div className={cn("flex flex-wrap gap-2", viewMode === "card" ? "mt-2" : "")}>
+          <div className={cn("flex overflow-hidden gap-2", viewMode === "card" ? "mt-2" : "")}>
             {game.genres.slice(0, viewMode === "card" ? 3 : 4).map((g: string) => (
               <Badge
                 key={g}

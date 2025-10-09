@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { motion } from "motion/react";
@@ -12,7 +12,6 @@ import { FiltersPanel } from "./components/FiltersPanel";
 import { allGamesKey } from "@/utils/searchParams";
 import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
-import ScrollRestorer from "./components/ScrollRestorer";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {
@@ -26,6 +25,7 @@ function canonicalize(f: FiltersState): FiltersState {
     platforms: sort(f.platforms),
   };
 }
+
 function stableSerialize(obj: unknown) {
   if (obj == null) return "null";
   const keys: string[] = [];
@@ -33,7 +33,6 @@ function stableSerialize(obj: unknown) {
   keys.sort();
   return JSON.stringify(obj, keys);
 }
-
 function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -47,80 +46,38 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // 네비게이션 타입 확인
-  const navType = useMemo(() => {
-    try {
-      const nav = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-      return nav?.[0]?.type ?? "navigate";
-    } catch {
-      return "navigate";
-    }
-  }, []);
-  const isReload = navType === "reload"; // 새로고침 판단
-
   // URL 기반 초기 필터(서버와 동일 정렬)
   const initial = useMemo(() => canonicalize(initialFilters), [initialFilters]);
 
-  // 쿼리키(2-튜플, 안정 문자열만)
+  useEffect(() => {
+    const handler = () => {
+      try {
+        // /games 경로에만 적용되도록 path=/games
+        document.cookie = "__games_reset=1; Max-Age=10; Path=/games; SameSite=Lax";
+      } catch {}
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+
+  // ⬇️ 새 문서가 뜬 뒤(하이드레이션 직후)에는 쿠키를 바로 지워서 다음 내비게이션에 영향 없게
+  useEffect(() => {
+    try {
+      document.cookie = "__games_reset=; Max-Age=0; Path=/games; SameSite=Lax";
+    } catch {}
+  }, []);
+
+  // 쿼리키(안정 문자열)
   const keyStamp = useMemo(() => stableSerialize(initial), [initial]);
   const queryKey = useMemo(() => allGamesKey(initial, keyStamp), [initial, keyStamp]);
 
-  // UI 제어용 로컬 상태(키는 initial로 고정)
+  // 로컬 필터 상태(키는 initial로 고정)
   const [filters, setFilters] = useState<FiltersState>(initial);
   const debounced = useDebouncedValue(filters, 250);
 
-  // 스토리지 키
-  const storageKey =
-    typeof window !== "undefined"
-      ? `${location.pathname}?${location.search}`
-      : `/games?${keyStamp}`;
-
-  // 무한 스크롤 게이트
-  const allowRef = useRef(false);
-
-  // 새로고침 시: 스크롤/페이지 복원 X, Top으로 이동, IO 자동 허용 X(사용자 스크롤 전까지 막음)
-  useEffect(() => {
-    if (!isReload) return;
-    try {
-      sessionStorage.removeItem(`pages:${storageKey}`);
-      sessionStorage.removeItem(`scroll:${storageKey}`);
-    } catch {}
-    allowRef.current = false;
-    queueMicrotask(() => window.scrollTo({ top: 0, behavior: "auto" }));
-  }, [isReload, storageKey]);
-
-  // 뒤로가기/일반 진입 시: 게이트를 사용자가 스크롤하면 열고, 자동으로 열리는 타임아웃(600ms)은 reload가 아닐 때만
-  useEffect(() => {
-    let y0 = 0;
-    const onScroll = () => {
-      if (Math.abs(window.scrollY - y0) > 24) {
-        allowRef.current = true;
-        window.removeEventListener("scroll", onScroll);
-      }
-    };
-    y0 = window.scrollY;
-    allowRef.current = false;
-
-    let t: ReturnType<typeof setTimeout> | undefined;
-    if (!isReload) {
-      t = setTimeout(() => {
-        allowRef.current = true;
-        window.removeEventListener("scroll", onScroll);
-      }, 600);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      if (t) clearTimeout(t);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [queryKey, isReload]);
-
-  // React Query: 서버 프리패치 결과를 initialData로 즉시 사용
+  // 서버 프리패치 결과
   type Page = Awaited<ReturnType<typeof fetchAllGamesPage>>;
   const cached = queryClient.getQueryData<InfiniteData<Page, number>>(queryKey);
-  const seedRef = useRef<InfiniteData<Page, number> | undefined>(cached);
-  if (!seedRef.current && cached) seedRef.current = cached;
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery<
     Page,
@@ -137,8 +94,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
       const p = (last as any)?.pagination;
       return p?.hasNextPage ? (p.currentPage ?? 1) + 1 : undefined;
     },
-    initialData: cached,
-    placeholderData: (prev) => prev,
+    initialData: cached, // 서버에서 온 dehydrated 캐시 그대로 사용
+    placeholderData: (prev) => prev, // 캐시 즉시 사용
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -147,14 +104,12 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   });
 
   // 평탄화
-  const effective = data ?? seedRef.current;
   const flat = useMemo(
-    () => effective?.pages?.flatMap((p: any) => (Array.isArray(p?.data) ? p.data : [])) ?? [],
-    [effective]
+    () => data?.pages?.flatMap((p: any) => (Array.isArray(p?.data) ? p.data : [])) ?? [],
+    [data]
   );
-  const ready = flat.length > 0;
 
-  // URL 동기화(필터 바꿀 때만; 새로고침 시 URL은 그대로 둠)
+  // 필터 변경 시: URL 동기화 후 맨 위로 이동 (뒤로가기는 브라우저가 복원하므로 건드리지 않음)
   const routerRef = useRef(router);
   useEffect(() => {
     const params = new URLSearchParams();
@@ -173,32 +128,14 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
 
     const next = params.toString();
     const current = typeof window !== "undefined" ? location.search.slice(1) : "";
-    if (next === current) return; // 동일하면 replace 생략
+    if (next === current) return;
+
     routerRef.current.replace(`/games?${next}`, { scroll: false });
+    // URL 반영 직후 Top
+    queueMicrotask(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, [debounced]);
 
-  // (선택) 떠날 때 현재 페이지 수 저장 — 뒤로가기를 위한 정보. 새로고침 초기화엔 영향 없음.
-  useEffect(() => {
-    const key = `pages:${storageKey}`;
-    const pages = effective?.pages?.length ?? 0;
-    const save = () => {
-      try {
-        sessionStorage.setItem(key, String(pages));
-      } catch {}
-    };
-    window.addEventListener("pagehide", save);
-    window.addEventListener("beforeunload", save);
-    return () => {
-      save();
-      window.removeEventListener("pagehide", save);
-      window.removeEventListener("beforeunload", save);
-    };
-  }, [storageKey, effective]);
-
-  // 새로고침일 때는 catch-up(선행 로딩) 자체를 수행하지 않음
-  // 뒤로가기 전용으로 쓰고 싶다면, 아래 이펙트를 추가하되 isReload일 때는 return; 지금 요구에선 제거/미수행이 맞음.
-
-  // 무한스크롤
+  // 무한 스크롤(필요 시에만 다음 페이지)
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = loadMoreRef.current;
@@ -207,16 +144,9 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     const ob = new IntersectionObserver(
       (entries) => {
         const hit = entries[0]?.isIntersecting;
-        // 새로고침이면: 사용자가 실제로 스크롤하기 전까지 allowRef가 열리지 않음 → 자동 로딩 방지
-        if (!allowRef.current) return;
-        if (hit && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (hit && hasNextPage && !isFetchingNextPage) fetchNextPage();
       },
-      {
-        rootMargin: "200px 0px",
-        threshold: 0.01,
-      }
+      { rootMargin: "200px 0px", threshold: 0.01 }
     );
 
     ob.observe(el);
@@ -225,13 +155,6 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
 
   return (
     <div className="container mx-auto px-3 sm:px-4 md:px-6">
-      {/* 새로고침일 때는 복원/저장 비활성화 → 항상 Top */}
-      <ScrollRestorer
-        storageKey={storageKey}
-        ready={ready}
-        disabled={isReload}
-      />
-
       <div className="grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-3">
           <details className="lg:hidden rounded-xl border border-border/50 bg-card/60 overflow-hidden">
