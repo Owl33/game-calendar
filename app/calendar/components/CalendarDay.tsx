@@ -45,9 +45,7 @@ export function CalendarDay({
           <div
             key={game.gameId}
             className="flex items-center gap-1 py-0.5">
-            <div
-              className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")}
-            />
+            <div className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")} />
             <span className="text-sm font-medium truncate">{game.name}</span>
           </div>
         ))}
@@ -66,7 +64,7 @@ export function CalendarDay({
       <InteractiveCard
         className={cn(
           "h-32 p-3 relative overflow-hidden rounded-2xl",
-          hasGames ? "bg-card calendar-card cursor-pointer" : "bg-card/30 opacity-60",
+          hasGames ? "bg-card calendar-card cursor-pointer" : "bg-card/60 opacity-60",
           isSelected && ["ring-2 ring-primary ring-offset-2 ring-offset-background"]
         )}
         initialY={0}
@@ -107,10 +105,7 @@ export function CalendarDay({
                   key={game.gameId}
                   className="flex items-center gap-1 py-0.5">
                   <div
-                    className={cn(
-                      "min-w-[3px] h-3",
-                      isAAAgame(game) ? "bg-highlight" : "bg-info"
-                    )}
+                    className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")}
                   />
                   <span className="text-sm font-medium truncate">{game.name}</span>
                 </div>

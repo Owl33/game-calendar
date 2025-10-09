@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             disableTransitionOnChange={false}
             forcedTheme="dark">
             <Header />
-            <main className="lg:h-[calc(100vh-64px)] sm:p-0 lg:p-8">{children}</main>
+            <main className=" lg:p-8 p-4">{children}</main>
           </ThemeProvider>
         </QueryProvider>
       </body>

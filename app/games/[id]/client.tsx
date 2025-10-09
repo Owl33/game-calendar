@@ -78,7 +78,7 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
 
   return (
     <div className="relative">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6">
+      <div className="container  mx-auto ">
         {/* 상단 바 */}
         <div className="flex items-center justify-between py-4">
           <Button
@@ -124,16 +124,29 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
         {/* 본문 */}
         <div className="grid grid-cols-12 gap-x-8 gap-y-10 max-[580px]:gap-x-4">
           <div className="col-span-12 xl:col-span-7">
-            <GameMediaGallery
-              gameName={game.name}
-              backgroundImage={backgroundImage}
-              mediaList={mediaList}
-              headerImage={game.headerImage}
-            />
-            <GameDescription html={game.description} />
+            <motion.div
+              initial={{ opacity: 1, x: -200, scale: 1 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.7, type: "spring" }}>
+              <GameMediaGallery
+                gameName={game.name}
+                backgroundImage={backgroundImage}
+                mediaList={mediaList}
+                headerImage={game.headerImage}
+              />
+              <GameDescription html={game.description} />
+            </motion.div>
           </div>
           <div className="col-span-12 xl:col-span-5">
-            <GameInfoPanel game={game} />
+            <motion.div
+              initial={{ opacity: 1, x: 200, scale: 1 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 0.7, type: "spring" }}
+              className="bg-card/40 rounded-2xl xl:sticky xl:top-6 ">
+              <GameInfoPanel game={game} />
+            </motion.div>
           </div>
         </div>
       </div>

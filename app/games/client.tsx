@@ -161,7 +161,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, queryKey]);
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 md:px-6">
+    <div className="container mx-auto ">
       <div className="grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-3">
           <details className="lg:hidden rounded-xl border border-border/50 bg-card/60 overflow-hidden">
@@ -189,10 +189,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
         </aside>
 
         <main className="col-span-12 lg:col-span-9 min-h-[60vh]">
-          <div className="flex items-center flex-wrap justify-between mb-3">
-            <div className="text-sm flex items-center gap-4">
-              <p className="text-lg font-bold">전체 게임</p>
-            </div>
+          <div className="flex items-center flex-wrap justify-between mb-4 lg:mb-3">
+            <div className="text-sm flex items-center gap-4"></div>
 
             <div className="flex items-center gap-2">
               <Select

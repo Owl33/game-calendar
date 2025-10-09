@@ -87,7 +87,7 @@ export async function fetchCalendarMonth(
   signal?: AbortSignal
 ): Promise<CalendarApiResponse> {
   const end = String(lastDayOfMonth(yearMonth)).padStart(2, "0");
-  const url = `${API_BASE}/api/games/all?startDate=${yearMonth}-01&endDate=${yearMonth}-${end}&pageSize=200`;
+  const url = `${API_BASE}/api/games/all?popularityScore=40&startDate=${yearMonth}-01&endDate=${yearMonth}-${end}&pageSize=200&page=1`;
   const res = await fetch(url, { signal, cache: "no-store" });
   const inner = await unwrap<AllGamesApiResponse>(res);
   const games: Game[] = Array.isArray((inner as any)?.data) ? ((inner as any).data as Game[]) : [];

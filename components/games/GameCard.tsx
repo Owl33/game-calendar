@@ -19,7 +19,7 @@ interface GameCardProps {
   game: {
     gameId: number;
     name: string;
-    ogName?: string;
+    ogName?: string | null;
     releaseDate: Date | string;
     popularityScore: number;
     headerImage: string | null;
@@ -111,7 +111,7 @@ export function GameCard({
     if (game.releaseDateRaw) return String(game.releaseDateRaw);
     return "TBA";
   };
-
+  console.log(game.ogName);
   const priceText = game?.currentPrice
     ? `₩ ${new Intl.NumberFormat("ko-KR").format(game.currentPrice)}`
     : "가격 정보 없음";
@@ -127,19 +127,28 @@ export function GameCard({
       <div className={cn(v.mediaWrap, viewMode === "list" && v.thumbSize)}>
         {v.mediaInner === "ratio" ? (
           <AspectRatio ratio={16 / 9}>
-            <img
+            <Image
+              fill
               src={game.headerImage || ""}
               alt={game.name}
-              className="object-cover h-full"
+              priority={priority}
+              className="object-cover"
+              sizes="90"
               loading={priority ? undefined : "lazy"}
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
             />
           </AspectRatio>
         ) : (
-          <img
+          <Image
+            fill
             src={game.headerImage || ""}
             alt={game.name}
-            className="object-cover h-full"
+            className="object-cover"
+            priority={priority}
             loading={priority ? undefined : "lazy"}
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
           />
         )}
       </div>
@@ -147,20 +156,22 @@ export function GameCard({
       {/* 본문 */}
       <div className={v.body}>
         {/* 타이틀 & 인기작 */}
-        <div className="flex items-center gap-2 mb-4">
-          <div>
+        <div>
+          <div className="flex items-center gap-2 ">
             <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
-            <p className="text-xs text-muted-foreground mt-1">{game.ogName}</p>
+            {isAAAgame(game) && (
+              <Badge
+                className={cn(
+                  "px-2 py-1  ml-1 text-white font-bold border-0 shadow-lg",
+                  viewMode === "card" ? "gradient-aaa-badge text-sm" : "gradient-aaa-badge text-xs"
+                )}>
+                인기작
+              </Badge>
+            )}
           </div>
-          {isAAAgame(game) && (
-            <Badge
-              className={cn(
-                "px-2 py-1 text-white font-bold border-0 shadow-lg",
-                viewMode === "card" ? "gradient-aaa-badge text-sm" : "gradient-aaa-badge text-xs"
-              )}>
-              인기작
-            </Badge>
-          )}
+          <p className="text-xs text-muted-foreground ">
+            {game.ogName && !!game.ogName ? game.ogName : game.name}
+          </p>
         </div>
 
         {/* 출시일/상태 */}
@@ -217,8 +228,8 @@ export function GameCard({
           </Badge>
         )}
 
-        {/* 가격/인기도/플랫폼 */}
-        <div className={cn("flex items-center justify-between pt-2")}>
+        {/* 가격/플랫폼 */}
+        <div className={cn("flex items-center justify-between")}>
           <div className="flex items-center gap-2">
             <p className={cn(viewMode === "card" ? "text-lg font-bold" : "text-sm font-bold")}>
               {priceText}

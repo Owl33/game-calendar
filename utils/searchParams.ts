@@ -71,7 +71,7 @@ export function parseFiltersFromSearchParams(
   const publishers = csv(get("publishers", ""));
   const platforms = csv(get("platforms", "")); // string[]
   const sortBy = (get("sortBy", "releaseDate") as FiltersState["sortBy"]) ?? "releaseDate";
-  const sortOrder = (get("sortOrder", "ASC") as FiltersState["sortOrder"]) ?? "ASC";
+  const sortOrder = (get("sortOrder", "DESC") as FiltersState["sortOrder"]) ?? "DESC";
 
   const pageSizeRaw = Number(get("pageSize", "24"));
   const pageSize = Math.min(50, Math.max(10, Number.isFinite(pageSizeRaw) ? pageSizeRaw : 24));

@@ -16,7 +16,7 @@ export function GameDetailSkeleton() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 md:px-6">
+      <div className="container mx-auto ">
         {/* 상단 바 - 뒤로가기 버튼 */}
         <div className="flex items-center justify-between py-4">
           <SkeletonPulse className="h-9 w-24 rounded-md" delay={0.1} />
