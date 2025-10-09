@@ -164,9 +164,9 @@ function GameInfoPanel({ game }: { game: any }) {
                 <div
                   key={dlc.name}
                   className="rounded-xl p-3">
-                  <div className="flex gap-4 items-center justify-between">
+                  <div className="flex flex-wrap lg:flex-nowrap gap-4 items-center justify-between">
                     <h3 className="font-medium text-sm truncate ">{dlc.name}</h3>
-                    <div className="w-20 text-end">
+                    <div className="w-20 lg:text-end">
                       <p className="text-xs text-muted-foreground">
                         {new Date(dlc.releaseDate).toLocaleDateString("ko-KR")}
                       </p>
@@ -176,7 +176,7 @@ function GameInfoPanel({ game }: { game: any }) {
               ))}
               {game.dlcs.length > 7 && (
                 <div className="rounded-xl p-3">
-                  <div className="flex gap-4 items-center justify-between">
+                  <div className="">
                     <h3 className="font-medium text-sm truncate ">
                       + {game.dlcs.length - 7}개 DLC
                     </h3>

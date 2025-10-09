@@ -36,7 +36,7 @@ function GameMediaGallery({
       {/* 히어로 배경 (옵션) */}
       {backgroundImage && (
         <div
-          className="absolute inset-x-0 lg:-mx-8 lg:-mt-8 top-0 h-[84vh] max-[580px]:h-[52vh] -z-10"
+          className="absolute inset-x-0 lg:-mx-8 lg:-mt-8 top-0 h-[94vh] lg:h-[84vh] max-[580px]:h-[52vh] -z-10"
           style={
             {
               // 한 번에 튜닝할 수 있게 변수화

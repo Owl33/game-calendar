@@ -315,7 +315,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         className={cn(
           "fixed z-[101] overflow-hidden flex flex-col",
           isMobile
-            ? "inset-x-0 bottom-0 h-[80vh] rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
+            ? "inset-x-0 bottom-0 h-[96vh] rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
             : "top-1/2 left-1/2 w-full max-w-2xl mx-4 h-[620px] sm:h-[540px] rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl border border-border/60 -translate-x-1/2 -translate-y-1/2"
         )}
         initial={modalInitial}
