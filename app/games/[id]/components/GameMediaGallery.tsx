@@ -36,13 +36,13 @@ function GameMediaGallery({
       {/* 히어로 배경 (옵션) */}
       {backgroundImage && (
         <div
-          className="absolute inset-x-0 lg:-mx-8 lg:-mt-8 top-0 h-[94vh] lg:h-[84vh] max-[580px]:h-[52vh] -z-10"
+          className="absolute inset-x-0 -m-4 h-[86vh] lg:-mx-8 lg:-mt-8 top-0  lg:h-[76vh]  -z-10"
           style={
             {
               // 한 번에 튜닝할 수 있게 변수화
-              "--fadePx": "150px", // 이미지 하단 페이드 길이(px)
+              "--fadePx": "50px", // 이미지 하단 페이드 길이(px)
               "--blurHeight": "10px", // 블러 스트립 높이(px)
-              "--blurFeatherTop": "32px", // 블러 시작 지점의 프리-페더(px)
+              "--blurFeatherTop": "1px", // 블러 시작 지점의 프리-페더(px)
               "--topShade": 0.65, // 상단 음영 강도(0~1)
             } as React.CSSProperties
           }>
@@ -108,7 +108,7 @@ function GameMediaGallery({
           />
 
           {/* 3) 바닥 세이프가드: 블러가 완전 투명으로 끝난 '아래'에서만 노출 */}
-          <div
+          {/* <div
             className="pointer-events-none absolute inset-x-0"
             style={{
               // 블러 스트립보다 더 아래에서 시작(겹침 방지)
@@ -116,7 +116,7 @@ function GameMediaGallery({
               height: "calc(var(--blurHeight) + 72px)",
               background: "var(--background)",
             }}
-          />
+          /> */}
         </div>
       )}
 

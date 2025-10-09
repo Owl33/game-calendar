@@ -10,19 +10,11 @@ function GameHero({ game }: { game: any }) {
     <div className="bg-card/40 p-4 py-6 rounded-2xl col-span-12">
       <div className="flex flex-col  sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <div className="flex gap-4 items-end">
+          <div className="flex flex-wrap gap-4 items-end">
             <div>
               <p>{game.ogName}</p>
               <h1 className="text-4xl sm:text-4xl font-extrabold tracking-tight">{game.name}</h1>
             </div>
-            {game.website && (
-              <Button
-                variant="ghost"
-                className="gap-2 mt-1"
-                onClick={() => window.open(game.website!, "_blank")}>
-                <Globe className="w-4 h-4" /> 공식 웹사이트
-              </Button>
-            )}
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-3 ">
@@ -36,6 +28,14 @@ function GameHero({ game }: { game: any }) {
                 variant="outline"
                 className="text-sm">
                 출시예정
+              </Badge>
+            )}
+            {game.website && (
+              <Badge
+                variant="outline"
+                className="text-sm cursor-pointer"
+                onClick={() => window.open(game.website!, "_blank")}>
+                <Globe /> 공식 웹사이트
               </Badge>
             )}
             <p className="text-sm text-muted-foreground">
