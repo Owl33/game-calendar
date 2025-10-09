@@ -19,6 +19,7 @@ interface GameCardProps {
   game: {
     gameId: number;
     name: string;
+    ogName?: string;
     releaseDate: Date | string;
     popularityScore: number;
     headerImage: string | null;
@@ -126,28 +127,19 @@ export function GameCard({
       <div className={cn(v.mediaWrap, viewMode === "list" && v.thumbSize)}>
         {v.mediaInner === "ratio" ? (
           <AspectRatio ratio={16 / 9}>
-            <Image
-              fill
+            <img
               src={game.headerImage || ""}
               alt={game.name}
-              priority={priority}
-              className="object-cover"
-              sizes="90"
+              className="object-cover h-full"
               loading={priority ? undefined : "lazy"}
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
             />
           </AspectRatio>
         ) : (
-          <Image
-            fill
+          <img
             src={game.headerImage || ""}
             alt={game.name}
-            className="object-cover"
-            priority={priority}
+            className="object-cover h-full"
             loading={priority ? undefined : "lazy"}
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
           />
         )}
       </div>
@@ -155,8 +147,11 @@ export function GameCard({
       {/* 본문 */}
       <div className={v.body}>
         {/* 타이틀 & 인기작 */}
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <div>
+            <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{game.ogName}</p>
+          </div>
           {isAAAgame(game) && (
             <Badge
               className={cn(

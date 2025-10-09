@@ -12,6 +12,13 @@ import { FiltersPanel } from "./components/FiltersPanel";
 import { allGamesKey } from "@/utils/searchParams";
 import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {
@@ -182,6 +189,61 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
         </aside>
 
         <main className="col-span-12 lg:col-span-9 min-h-[60vh]">
+          <div className="flex items-center flex-wrap justify-between mb-3">
+            <div className="text-sm flex items-center gap-4">
+              <p className="text-lg font-bold">전체 게임</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Select
+                value={filters.sortBy}
+                onValueChange={(v: FiltersState["sortBy"]) =>
+                  setFilters((f) => ({ ...f, sortBy: v }))
+                }>
+                <SelectTrigger className="w-[140px] h-9">
+                  <SelectValue placeholder="정렬 기준" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="releaseDate">출시일</SelectItem>
+                  <SelectItem value="popularity">인기도</SelectItem>
+                  <SelectItem value="name">이름</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.sortOrder}
+                onValueChange={(v: FiltersState["sortOrder"]) =>
+                  setFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
+                }>
+                <SelectTrigger className="w-[110px] h-9">
+                  <SelectValue placeholder="정렬" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="DESC">내림차순</SelectItem>
+                  <SelectItem value="ASC">오름차순</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={String(filters.pageSize)}
+                onValueChange={(v) =>
+                  setFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
+                }>
+                <SelectTrigger className="w-[100px] h-9">
+                  <SelectValue placeholder="페이지" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  {[10, 12, 18, 20, 24, 30, 40, 50].map((n) => (
+                    <SelectItem
+                      key={n}
+                      value={String(n)}>
+                      {n}개
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -190,7 +252,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}
               games={flat}
               isHeader={false}
-              isLoading={isLoading && !cached}
+              isLoading={isLoading}
             />
           </motion.div>
           <div
