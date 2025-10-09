@@ -1,0 +1,104 @@
+// lib/queries/game.ts
+import type {
+  AllGamesApiResponse,
+  GameDetailApiResponse,
+  CalendarApiResponse,
+  FiltersState,
+  Game,
+} from "@/types/game.types";
+
+export const gameKeys = {
+  all: (filters: FiltersState, stamp: string) => ["allGames", filters, stamp] as const,
+  detail: (gameId: string | number) => ["game", String(gameId)] as const,
+  calendar: (yearMonth: string) => ["games", "calendar", yearMonth] as const,
+};
+
+const API_BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+
+
+/** 배열→CSV(빈배열이면 undefined) */
+const arrCsv = (v?: string[]) => (Array.isArray(v) && v.length ? v.join(",") : undefined);
+
+/** ✅ 필터 → 쿼리 문자열 */
+function buildListParams(page: number, f: FiltersState) {
+  const p = new URLSearchParams();
+  p.set("page", String(page));
+  p.set("pageSize", String(f.pageSize ?? 24));
+
+  if (f.startDate) p.set("startDate", f.startDate);
+  if (f.endDate) p.set("endDate", f.endDate);
+  if (f.onlyUpcoming) p.set("onlyUpcoming", "true");
+
+  const genres = arrCsv(f.genres);
+  const tags = arrCsv(f.tags);
+  const developers = arrCsv(f.developers);
+  const publishers = arrCsv(f.publishers);
+  const platforms = arrCsv(f.platforms);
+  if (genres) p.set("genres", genres);
+  if (tags) p.set("tags", tags);
+  if (developers) p.set("developers", developers);
+  if (publishers) p.set("publishers", publishers);
+  if (platforms) p.set("platforms", platforms);
+
+  // ✅ 0도 포함되도록 typeof 체크
+  if (typeof f.popularityScore === "number") {
+    p.set("popularityScore", String(f.popularityScore));
+  }
+  if (f.sortBy) p.set("sortBy", String(f.sortBy));
+  if (f.sortOrder) p.set("sortOrder", String(f.sortOrder));
+
+  return p.toString();
+}
+
+/** envelope({ data }) 방어 */
+async function unwrap<T>(res: Response): Promise<T> {
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const json = await res.json();
+  return (json?.data ?? json) as T;
+}
+
+/** ✅ 무한스크롤 1페이지 fetcher(컨텍스트 시그니처 유지) */
+export async function fetchAllGamesPage({
+  pageParam,
+  queryKey,
+  signal,
+}: {
+  pageParam?: number;
+  queryKey: ReturnType<typeof gameKeys.all>;
+  signal?: AbortSignal;
+}): Promise<AllGamesApiResponse> {
+  const [, filters] = queryKey; // ["allGames", filters, stamp]
+  const qs = buildListParams(pageParam ?? 1, filters);
+  const res = await fetch(`${API_BASE}/api/games/all?${qs}`, {
+    signal,             // ✅ AbortSignal 전달
+    cache: "no-store",
+  });
+  return unwrap<AllGamesApiResponse>(res);
+}
+
+export async function fetchGameDetail(gameId: string | number, signal?: AbortSignal) {
+  const res = await fetch(`${API_BASE}/api/games/${gameId}`, { signal, cache: "no-store" });
+  return unwrap<GameDetailApiResponse>(res);
+}
+
+/** ✅ 월 말일 계산 */
+function lastDayOfMonth(yearMonth: string) {
+  const y = Number(yearMonth.slice(0, 4));
+  const m = Number(yearMonth.slice(5, 7)); // 1~12
+  return new Date(y, m, 0).getDate();
+}
+
+/** ✅ 캘린더용 프리패치/클라 공용 */
+export async function fetchCalendarMonth(yearMonth: string, signal?: AbortSignal): Promise<CalendarApiResponse> {
+  const end = String(lastDayOfMonth(yearMonth)).padStart(2, "0");
+  const url = `${API_BASE}/api/games/all?startDate=${yearMonth}-01&endDate=${yearMonth}-${end}&pageSize=200`;
+  const res = await fetch(url, { signal, cache: "no-store" });
+  const inner = await unwrap<AllGamesApiResponse>(res);
+  const games: Game[] = Array.isArray((inner as any)?.data) ? ((inner as any).data as Game[]) : [];
+  return {
+    month: yearMonth,
+    range: { start: `${yearMonth}-01`, end: `${yearMonth}-${end}` },
+    count: { total: games.length, games: games.length, days: 0 },
+    data: games,
+  } as CalendarApiResponse;
+}

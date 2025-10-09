@@ -1,117 +1,142 @@
-interface ApiResponse<T = unknown> {
+// lib/api.ts
+export interface ApiResponse<T = unknown> {
   status: number;
   success: boolean;
   data?: T;
   error?: {
-    errorCode: string;
-    errorMessage: string;
+    errorCode?: string;
+    errorMessage?: string;
   };
 }
 
-// Response 변환 함수
-async function convertResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  try {
-    const data = await response.json();
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
-    // 일반 API 응답
+export type RequestOptions = {
+  params?: Record<string, unknown>;
+  body?: unknown;
+  headers?: Record<string, string>;
+  signal?: AbortSignal; // ✅ React Query 취소 신호
+  cache?: RequestCache; // next fetch 옵션
+  next?: { revalidate?: number } & Record<string, any>;
+};
+
+function toQueryString(params?: Record<string, unknown>) {
+  if (!params) return "";
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null) continue;
+    if (Array.isArray(v)) {
+      if (!v.length) continue;
+      usp.set(k, v.map(String).join(",")); // CSV 직렬화
+      continue;
+    }
+    if (typeof v === "boolean") {
+      usp.set(k, v ? "true" : "false");
+      continue;
+    }
+    usp.set(k, String(v));
+  }
+  const qs = usp.toString();
+  return qs ? `?${qs}` : "";
+}
+
+async function decodeResponse<T>(res: Response): Promise<ApiResponse<T>> {
+  try {
+    const data = await res.json();
     return {
-      status: response.status,
-      success: response.ok,
-      data: response.ok ? (data as T) : undefined,
-      error: response.ok
+      status: res.status,
+      success: res.ok,
+      data: res.ok ? (data as T) : undefined,
+      error: res.ok
         ? undefined
         : {
-            errorCode: data?.errorCode,
-            errorMessage: data?.errorMessage,
+            errorCode: (data && (data.errorCode ?? data.code)) || undefined,
+            errorMessage: (data && (data.errorMessage ?? data.message)) || "요청 실패",
           },
     };
   } catch {
     return {
       status: 500,
       success: false,
-      error: { errorCode: "ERROR", errorMessage: "실패" },
+      error: { errorCode: "PARSE_ERROR", errorMessage: "응답 파싱 실패" },
     };
   }
 }
 
-class ApiClient {
-  private static instance: ApiClient;
-  private headers: Record<string, string>;
+/** 성공이면 data만 반환, 실패면 throw → useQuery에서 쓰기 좋음 */
+export function unwrap<T>(resp: ApiResponse<T>): T {
+  if (resp.success && resp.data !== undefined) return resp.data;
+  const err = new Error(resp.error?.errorMessage ?? `HTTP ${resp.status}`) as Error & {
+    status?: number;
+    code?: string;
+  };
+  err.status = resp.status;
+  err.code = resp.error?.errorCode;
+  throw err;
+}
 
-  private constructor() {
-    this.headers = { "Content-Type": "application/json" };
+export class ApiClient {
+  private static instance: ApiClient;
+  private baseUrl: string;
+  private headers: Record<string, string> = { "Content-Type": "application/json" };
+
+  private constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl ?? process.env.NEXT_PUBLIC_BASE_URL ?? "";
   }
 
-  public static getInstance() {
+  static getInstance(baseUrl?: string) {
     if (!ApiClient.instance) {
-      ApiClient.instance = new ApiClient();
+      ApiClient.instance = new ApiClient(baseUrl);
     }
     return ApiClient.instance;
   }
 
-  private async request<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+  setHeader(key: string, val: string) {
+    this.headers[key] = val;
+  }
+  removeHeader(key: string) {
+    delete this.headers[key];
+  }
+  setBaseUrl(url: string) {
+    this.baseUrl = url;
+  }
+
+  async request<T>(
+    method: HttpMethod,
     url: string,
-    options?: {
-      params?: Record<string, string | number | boolean>;
-      body?: Record<string, unknown>;
-      headers?: Record<string, string>;
-    }
+    options?: RequestOptions
   ): Promise<ApiResponse<T>> {
-    const fetchOptions: RequestInit = {
+    const qs = method === "GET" ? toQueryString(options?.params) : "";
+    const fullUrl = `${this.baseUrl}${url}${qs}`;
+
+    const init: RequestInit & { next?: RequestOptions["next"] } = {
       method,
       headers: { ...this.headers, ...options?.headers },
+      signal: options?.signal, // ✅ 취소 가능
+      cache: options?.cache ?? "no-store", // 최신성 우선 (필요 시 조정)
+      next: options?.next,
     };
 
-    if (options?.params && method === "GET") {
-      const queryString = new URLSearchParams(
-        Object.fromEntries(Object.entries(options.params).map(([k, v]) => [k, String(v)]))
-      ).toString();
-      url += url.includes("?") ? "&" + queryString : "?" + queryString;
+    if (method !== "GET" && options?.body !== undefined) {
+      init.body = typeof options.body === "string" ? options.body : JSON.stringify(options.body);
     }
 
-    if (options?.body && method !== "GET") {
-      fetchOptions.body = JSON.stringify(options.body);
-    }
-
-    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + url, fetchOptions);
-    return convertResponse<T>(res);
+    const res = await fetch(fullUrl, init);
+    return decodeResponse<T>(res);
   }
 
-  // GET
-  public get<T>(
-    url: string,
-    options?: {
-      params?: Record<string, string | number | boolean>;
-      headers?: Record<string, string>;
-    }
-  ) {
+  get<T>(url: string, options?: RequestOptions) {
     return this.request<T>("GET", url, options);
   }
-
-  // POST
-  public post<T>(
-    url: string,
-    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
-  ) {
+  post<T>(url: string, options?: RequestOptions) {
     return this.request<T>("POST", url, options);
   }
-
-  // PUT
-  public put<T>(
-    url: string,
-    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
-  ) {
+  put<T>(url: string, options?: RequestOptions) {
     return this.request<T>("PUT", url, options);
   }
-
-  // DELETE
-  public delete<T>(
-    url: string,
-    options?: { body?: Record<string, unknown>; headers?: Record<string, string> }
-  ) {
+  delete<T>(url: string, options?: RequestOptions) {
     return this.request<T>("DELETE", url, options);
   }
 }
 
-export const useApi = ApiClient.getInstance();
+export const api = ApiClient.getInstance();
