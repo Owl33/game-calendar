@@ -47,7 +47,6 @@ export function GameList({ games, isLoading, className, sortBy, viewMode }: Game
       // 즉시
       el.scrollTo({ top: 0, behavior: "auto" });
     });
-    console.log(viewMode);
   }, [games, sortBy, viewMode]); // ← viewMode 제거
 
   return (

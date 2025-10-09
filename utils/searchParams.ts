@@ -42,8 +42,9 @@ export function toCsv(arr?: string[] | null): string | undefined {
   if (!arr || arr.length === 0) return undefined;
   return arr.join(",");
 }
-export const allGamesKey = (f: FiltersState, stamp: string) =>
-  ["allGames", f, stamp] as const;
+export const allGamesKey = (filters: FiltersState, stableKey: string) =>
+  ["allGames", stableKey] as const;
+export type AllGamesKey = ReturnType<typeof allGamesKey>;
 
 /* URL → FiltersState 파서 */
 export function parseFiltersFromSearchParams(
@@ -53,7 +54,13 @@ export function parseFiltersFromSearchParams(
     const v = searchParams && typeof searchParams[k] !== "undefined" ? searchParams[k] : def;
     return Array.isArray(v) ? v[0] ?? def : (v as string);
   };
-  const csv = (v: string | null) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : []);
+  const csv = (v: string | null) =>
+    v
+      ? v
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
 
   const startDate = get("startDate", "");
   const endDate = get("endDate", "");

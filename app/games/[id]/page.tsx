@@ -5,19 +5,20 @@ import GameDetailClient from "./client";
 
 export const revalidate = 0; // 최신성 우선 (필요 시 조정)
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const qc = new QueryClient();
+  const { id } = await params; // ✅ 필수
 
   await qc.prefetchQuery({
-    queryKey: gameKeys.detail(params.id),
-    queryFn: ({ signal }) => fetchGameDetail(params.id, signal),
+    queryKey: gameKeys.detail(id),
+    queryFn: ({ signal }) => fetchGameDetail(id, signal),
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <GameDetailClient gameId={params.id} />
+      <GameDetailClient gameId={id} />
     </HydrationBoundary>
   );
 }
