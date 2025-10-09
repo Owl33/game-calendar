@@ -5,6 +5,7 @@ import type {
   CalendarApiResponse,
   FiltersState,
   Game,
+  HighlightsResponse,
 } from "@/types/game.types";
 
 export const gameKeys = {
@@ -12,6 +13,7 @@ export const gameKeys = {
   all: (filters: FiltersState, stamp: string) => ["allGames", filters, stamp] as const,
   detail: (gameId: string | number) => ["game", String(gameId)] as const,
   calendar: (yearMonth: string) => ["games", "calendar", yearMonth] as const,
+  highlights: () => ["highlights"] as const,
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "";
@@ -64,13 +66,12 @@ export async function fetchAllGamesPage({
   const filters = meta?.filters as FiltersState;
   if (!filters) throw new Error("filters meta missing");
   const qs = buildListParams(pageParam ?? 1, filters);
-  const res = await fetch(`${API_BASE}/api/games/all?${qs}`, { signal, cache: "no-store" });
+  const res = await fetch(`${API_BASE}/api/games/all?${qs}`, { signal });
   return unwrap<AllGamesApiResponse>(res);
 }
 
-
 export async function fetchGameDetail(gameId: string | number, signal?: AbortSignal) {
-  const res = await fetch(`${API_BASE}/api/games/${gameId}`, { signal, cache: "no-store" });
+  const res = await fetch(`${API_BASE}/api/games/${gameId}`, { signal });
   return unwrap<GameDetailApiResponse>(res);
 }
 
@@ -88,7 +89,7 @@ export async function fetchCalendarMonth(
 ): Promise<CalendarApiResponse> {
   const end = String(lastDayOfMonth(yearMonth)).padStart(2, "0");
   const url = `${API_BASE}/api/games/all?popularityScore=40&startDate=${yearMonth}-01&endDate=${yearMonth}-${end}&pageSize=200&page=1`;
-  const res = await fetch(url, { signal, cache: "no-store" });
+  const res = await fetch(url, { signal });
   const inner = await unwrap<AllGamesApiResponse>(res);
   const games: Game[] = Array.isArray((inner as any)?.data) ? ((inner as any).data as Game[]) : [];
   return {
@@ -97,4 +98,9 @@ export async function fetchCalendarMonth(
     count: { total: games.length, games: games.length, days: 0 },
     data: games,
   } as CalendarApiResponse;
+}
+
+export async function fetchHighlight(signal?: AbortSignal) {
+  const res = await fetch(`${API_BASE}/api/games/highlights`, { signal });
+  return unwrap<HighlightsResponse>(res);
 }

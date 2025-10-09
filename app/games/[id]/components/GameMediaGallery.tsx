@@ -22,13 +22,19 @@ function GameMediaGallery({
   mediaList: Media[];
 }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const selected = mediaList[selectedIdx];
-
-  // 안전 src
+  const dedupedMedia = useMemo(() => {
+    const map = new Map<string, Media>();
+    for (const m of mediaList) {
+      map.set(`${m.type}:${m.url}`, m);
+    }
+    return Array.from(map.values());
+  }, [mediaList]);
+  const safeIdx = selectedIdx < dedupedMedia.length ? selectedIdx : 0;
+  const selected = dedupedMedia[safeIdx];
   const mainImageSrc = useMemo(() => {
     if (selected?.type === "image" && selected.url) return selected.url;
     if (headerImage && headerImage.trim().length > 0) return headerImage;
-    return undefined; // Image 미렌더
+    return undefined;
   }, [selected, headerImage]);
 
   return (
@@ -36,7 +42,7 @@ function GameMediaGallery({
       {/* 히어로 배경 (옵션) */}
       {backgroundImage && (
         <div
-          className="absolute inset-x-0 -m-4 h-[86vh] lg:-mx-8 lg:-mt-8 top-0  lg:h-[76vh]  -z-10"
+          className="absolute inset-x-0 -m-4 h-[76vh] lg:-mx-8 lg:-mt-8 top-0  lg:h-[64vh]  -z-10"
           style={
             {
               // 한 번에 튜닝할 수 있게 변수화
@@ -61,7 +67,7 @@ function GameMediaGallery({
               src={backgroundImage}
               alt={` background`}
               className="object-cover opacity-40 scale-[1.06] will-change-transform"
-              sizes="100vw"
+              sizes="100%"
               priority
             />
 
@@ -139,8 +145,9 @@ function GameMediaGallery({
                     className="w-full h-full"
                     loading="lazy"
                     referrerPolicy="strict-origin-when-cross-origin"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
+                    key={`${selected.url}-${gameName}-${Math.random()}`}
                     title={`${gameName} Trailer`}
                   />
                 </motion.div>
@@ -174,12 +181,12 @@ function GameMediaGallery({
 
           {/* 썸네일 (데스크톱) */}
           <div className="mt-3 hidden sm:grid grid-cols-6 gap-2">
-            {mediaList.map((m, i) => (
+            {dedupedMedia.map((m, i) => (
               <button
-                key={`${m.type}-${m.url}`}
+                key={`${m.type}-${m.url}-d-${i}`} // 2) index 포함해 유니크 보장
                 className={cn(
                   "rounded-xl overflow-hidden border-2 transition-all hover:scale-[1.02]",
-                  selectedIdx === i
+                  safeIdx === i
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-transparent hover:border-white/10"
                 )}
@@ -212,14 +219,12 @@ function GameMediaGallery({
                   display: none;
                 }
               `}</style>
-              {mediaList.map((m, i) => (
+              {dedupedMedia.map((m, i) => (
                 <button
-                  key={`${m.type}-${m.url}-m`}
+                  key={`${m.type}-${m.url}-m-${i}`} // 2) index 포함
                   className={cn(
                     "min-w-[46%] snap-start rounded-xl overflow-hidden border-2 transition-all",
-                    selectedIdx === i
-                      ? "border-primary ring-2 ring-primary/20"
-                      : "border-transparent"
+                    safeIdx === i ? "border-primary ring-2 ring-primary/20" : "border-transparent"
                   )}
                   onClick={() => setSelectedIdx(i)}>
                   <AspectRatio ratio={16 / 9}>

@@ -23,6 +23,7 @@ interface GameListProps {
     currentPrice: number | null;
     releaseDateRaw: string | null;
     comingSoon: boolean;
+    isFree: boolean;
     releaseStatus: string | null;
   }[];
   isLoading: boolean;

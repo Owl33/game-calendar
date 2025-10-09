@@ -28,6 +28,7 @@ interface GameCardProps {
     currentPrice: number | null;
     releaseDateRaw: string | null;
     comingSoon: boolean;
+    isFree: boolean;
     releaseStatus: string | null;
   };
   className?: string;
@@ -112,9 +113,12 @@ export function GameCard({
     return "TBA";
   };
   console.log(game.ogName);
-  const priceText = game?.currentPrice
-    ? `₩ ${new Intl.NumberFormat("ko-KR").format(game.currentPrice)}`
-    : "가격 정보 없음";
+  const priceText =
+    game.isFree == true
+      ? "무료"
+      : game?.currentPrice
+      ? `₩ ${new Intl.NumberFormat("ko-KR").format(game.currentPrice)}`
+      : "가격 정보 없음";
 
   const CardInner = (
     <div className={cn(v.outer, "relative z-10")}>

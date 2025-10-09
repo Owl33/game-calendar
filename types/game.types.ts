@@ -15,17 +15,28 @@ export interface Game {
   gameId: number;
   name: string;
   slug: string;
-  platforms: string[];           // 🔁 string[] → PlatformKey[]
+  platforms: string[]; // 🔁 string[] → PlatformKey[]
   stores: string[];
   storeLinks: StoreLink[];
-  releaseDate: Date;                  // API가 문자열이면 실제 사용 시 new Date()로 변환
+  releaseDate: Date; // API가 문자열이면 실제 사용 시 new Date()로 변환
   comingSoon: boolean;
   releaseStatus: string;
   popularityScore: number;
+  isFree: boolean;
   headerImage: string | null;
   genres: string[];
 }
-
+export interface HighlightsResponse {
+  featured: Game;
+  upcoming: Game[];
+  popular: Game[];
+  stats?: {
+    thisMonthGames: number;
+    upcomingGames: number;
+    totalGames: number;
+    popularGames: number;
+  };
+}
 export interface GamesByDate {
   [day: number]: Game[];
 }
@@ -52,7 +63,7 @@ export interface CalendarApiResponse {
 }
 
 export interface GameDetail {
-  platforms: string[];           // 🔁 string[] → PlatformKey[]
+  platforms: string[]; // 🔁 string[] → PlatformKey[]
   id: string;
   name: string;
   slug: string;
@@ -107,7 +118,7 @@ export interface AllGamesApiResponse {
     hasPreviousPage: boolean;
   };
   count: { total: number; filtered: number };
-  data: Game[];                        // 리스트는 Game[]
+  data: Game[]; // 리스트는 Game[]
 }
 export type FiltersState = {
   startDate: string;

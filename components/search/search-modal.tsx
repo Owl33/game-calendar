@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -47,15 +47,11 @@ function useMediaQuery(query: string) {
     const onChange = () => setMatches(m.matches);
     onChange();
 
-    // subscribe
     if ("addEventListener" in m) {
       m.addEventListener("change", onChange as EventListener);
     } else {
-      // legacy Safari/Chromium
       (m as any).addListener?.(onChange);
     }
-
-    // cleanup
     return () => {
       if ("removeEventListener" in m) {
         m.removeEventListener("change", onChange as EventListener);
@@ -90,6 +86,94 @@ function highlight(text: string, q: string) {
       {after}
     </>
   );
+}
+
+/* ====== Mobile UX helpers ====== */
+
+/** 바디 스크롤 잠금 (모달 열렸을 때 배경 스크롤 방지) */
+function useBodyScrollLock(locked: boolean) {
+  useLayoutEffect(() => {
+    const el = document.documentElement;
+    const prevOverflow = el.style.overflow;
+    const prevPaddingRight = el.style.paddingRight;
+    const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
+    if (locked) {
+      el.style.overflow = "hidden";
+      if (hasScrollbar) {
+        const scrollBarW = window.innerWidth - document.documentElement.clientWidth;
+        el.style.paddingRight = `${scrollBarW}px`;
+      }
+    } else {
+      el.style.overflow = prevOverflow || "";
+      el.style.paddingRight = prevPaddingRight || "";
+    }
+    return () => {
+      el.style.overflow = prevOverflow || "";
+      el.style.paddingRight = prevPaddingRight || "";
+    };
+  }, [locked]);
+}
+
+/**
+ * VisualViewport로 실제 뷰포트 높이와 키보드 높이 추정
+ * CSS 변수로 --vvh, --kb 설정 (루트에 주입)
+ */
+function useVisualViewportVars(enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const root = document.documentElement;
+    const vv = window.visualViewport;
+
+    const apply = () => {
+      const innerH = window.innerHeight; // 레이아웃 뷰포트 높이
+      const vvh = vv?.height ?? innerH;
+      const offsetTop = vv?.offsetTop ?? 0;
+      const kb = Math.max(0, innerH - vvh - offsetTop); // 키보드(추정)
+      root.style.setProperty("--vvh", `${vvh}px`);
+      root.style.setProperty("--kb", `${kb}px`);
+      // 안전 여백(iOS 홈 인디케이터)도 고려
+      root.style.setProperty("--safe-bottom", `max(env(safe-area-inset-bottom), 0px)`);
+    };
+
+    apply();
+
+    if (vv) {
+      vv.addEventListener("resize", apply);
+      vv.addEventListener("scroll", apply);
+    }
+    const onWinResize = () => apply();
+    window.addEventListener("resize", onWinResize);
+
+    return () => {
+      root.style.removeProperty("--vvh");
+      root.style.removeProperty("--kb");
+      root.style.removeProperty("--safe-bottom");
+      if (vv) {
+        vv.removeEventListener("resize", apply);
+        vv.removeEventListener("scroll", apply);
+      }
+      window.removeEventListener("resize", onWinResize);
+    };
+  }, [enabled]);
+}
+
+/** 포커스 시 입력창이 가려지면 자동 인뷰 */
+function useKeepInputVisible<T extends HTMLElement>(
+  ref: React.RefObject<T>,
+  deps: ReadonlyArray<unknown>
+) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onFocus = () => {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ block: "nearest", inline: "nearest" });
+      });
+    };
+    el.addEventListener("focus", onFocus);
+    return () => el.removeEventListener("focus", onFocus);
+  }, deps);
 }
 
 /* ====== Result Item ====== */
@@ -206,6 +290,11 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useMediaQuery("(max-width: 639px)");
+  useKeepInputVisible(inputRef as React.RefObject<HTMLInputElement>, [open, isMobile]);
+
+  // 모바일 UX 핵심: 뷰포트/키보드 변수 주입 + 바디 스크롤 잠금
+  useVisualViewportVars(open && isMobile);
+  useBodyScrollLock(open);
 
   const handleClose = useCallback(() => {
     setQuery("");
@@ -218,7 +307,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   useEffect(() => {
     if (open) {
       requestAnimationFrame(() => {
-        if (inputRef.current) inputRef.current.focus();
+        inputRef.current?.focus({ preventScroll: true });
       });
     } else {
       setActiveIdx(-1);
@@ -226,19 +315,31 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
     }
   }, [open, initialQuery]);
 
-  // Escape로 닫기
+  // Escape로 닫기 + iOS overscroll 제어
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    const stopTouchMove = (e: TouchEvent) => {
+      // 모달 영역 안에서만 스크롤 허용
+      const target = e.target as HTMLElement | null;
+      const scroller = target?.closest?.("[data-modal-scroller='true']") as HTMLElement | null;
+      if (!scroller) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
     document.addEventListener("keydown", onKey);
+    // iOS에서 배경 스크롤 방지 (모달 외부 touchmove 막기)
+    document.addEventListener("touchmove", stopTouchMove, { passive: false });
     return () => {
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("touchmove", stopTouchMove as any);
     };
   }, [open, onClose]);
 
-  // React Query v5: 평탄화 + 취소
+  // React Query v5
   const { data: results = [], isFetching } = useQuery<SearchItem[]>({
     queryKey: ["searchGames", debouncedQ],
     enabled,
@@ -308,14 +409,15 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         onClick={handleClose}
+        style={{ touchAction: "none" }}
       />
 
       {/* Container */}
       <motion.div
         className={cn(
-          "fixed z-[101] overflow-hidden flex flex-col",
+          "fixed z-[101] overflow-hidden flex flex-col overscroll-contain",
           isMobile
-            ? "inset-x-0 bottom-0 h-[76vh] rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
+            ? "inset-x-0 bottom-0 rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
             : "top-1/2 left-1/2 w-full max-w-2xl mx-4 h-[620px] sm:h-[540px] rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl border border-border/60 -translate-x-1/2 -translate-y-1/2"
         )}
         initial={modalInitial}
@@ -329,7 +431,19 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         onDragEnd={(e, info) => {
           if (!isMobile) return;
           if (info.offset.y > 120 || info.velocity.y > 800) handleClose();
-        }}>
+        }}
+        /* 모바일에서 키보드 고려: 높이는 실제 뷰포트(--vvh) 기준, 하단 패딩은 kb + safe-area */
+        style={
+          isMobile
+            ? {
+                // 헤더/인풋/여백 등을 포함해 전체를 vvh로 캡
+                height: "min(calc(var(--vvh, 100vh)), 92vh)",
+                maxHeight: "calc(var(--vvh, 100vh))",
+                // 키보드가 올라오면 하단 공간을 확보(리스트가 가려지지 않도록)
+                paddingBottom: "calc(max(var(--kb, 0px), var(--safe-bottom, 0px)) * 1)",
+              }
+            : undefined
+        }>
         {/* Header */}
         <div
           className={cn(
@@ -365,6 +479,11 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
               onKeyDown={onKeyDownInput}
               className="pl-10 h-12 rounded-xl"
               autoFocus
+              // 모바일 입력 UX 강화
+              inputMode="search"
+              autoComplete="off"
+              enterKeyHint="search"
+              spellCheck={false}
             />
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
@@ -375,12 +494,15 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         {/* Results */}
         <div
           ref={listRef}
+          data-modal-scroller="true"
           className={cn(
             "relative flex-1 py-4 min-h-0 overflow-y-auto space-y-3",
             isMobile ? "px-4 pb-4" : "px-5 pb-5"
           )}
           role="listbox"
-          aria-label="검색 결과">
+          aria-label="검색 결과"
+          // iOS 바운스 방지 + 스크롤 성능
+          style={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
           {/* 상단 로딩바 */}
           {enabled && isFetching && (
             <motion.div
