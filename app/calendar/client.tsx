@@ -4,8 +4,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
-import { Button } from "@/components/ui/button";
-import { LayoutGrid, Columns2 } from "lucide-react";
 import { GameCalendar } from "./components/GameCalendar";
 import { CalendarHeader } from "./components/CalendarHeader";
 import { GameList } from "@/components/games/GameList";
@@ -30,7 +28,6 @@ export default function CalendarClient({
     viewMode,
     setViewMode,
     layoutMode,
-    setLayoutMode,
     sortBy,
     setSortBy,
     syncUrl,

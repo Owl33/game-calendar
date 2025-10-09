@@ -55,7 +55,6 @@ export default async function Page({
     });
   }
 
-  const dehydrated = dehydrate(qc);
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>

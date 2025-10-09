@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { gameKeys, fetchGameDetail } from "@/lib/queries/game";
 import { GameDetailSkeleton } from "@/app/games/components/GameDetailSkeleton"; // 기존 경로 유지
 import GameHero from "./components/GameHero";
@@ -71,10 +70,6 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
   }
   if (!isImagesReady) return <GameDetailSkeleton />;
 
-  // 통계 값
-  const totalReviews = game.totalReviews ?? null;
-  const followers = game.followersCache ?? null;
-  const metacritic = game.metacriticScore ?? null;
 
   return (
     <div className="relative">
