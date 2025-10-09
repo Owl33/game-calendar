@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Command } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchModal from "@/components/search/search-modal";
 
@@ -81,8 +81,7 @@ export function Header({ className }: HeaderProps) {
             <div className="ml-auto flex items-center gap-1">
               <Badge
                 variant="secondary"
-                className="px-1.5 py-0.5 text-xs">
-              </Badge>
+                className="px-1.5 py-0.5 text-xs"></Badge>
             </div>
           </Button>
 

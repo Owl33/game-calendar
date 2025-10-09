@@ -1,6 +1,3 @@
-// 💡 (권장) app/layout.tsx <Head> 안에 아래 한 줄 추가하세요.
-// <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content" />
-
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -10,7 +7,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, Star, Loader2, Play } from "lucide-react";
+import { Search, X, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Transition } from "motion/react";
 
@@ -30,28 +27,46 @@ export interface SearchModalProps {
   onClose: () => void;
   initialQuery?: string;
 }
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 /* ====== Utils ====== */
 function useDebounce<T>(value: T, delay = 250) {
   const [v, setV] = useState(value);
   useEffect(() => {
-    const id = setTimeout(() => setV(value), delay);
-    return () => clearTimeout(id);
+    const id = window.setTimeout(() => setV(value), delay);
+    return () => window.clearTimeout(id);
   }, [value, delay]);
   return v;
 }
+
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
   useEffect(() => {
     const m = window.matchMedia(query);
     const onChange = () => setMatches(m.matches);
     onChange();
-    m.addEventListener?.("change", onChange);
-    return () => m.removeEventListener?.("change", onChange);
+
+    // subscribe
+    if ("addEventListener" in m) {
+      m.addEventListener("change", onChange as EventListener);
+    } else {
+      // legacy Safari/Chromium
+      (m as any).addListener?.(onChange);
+    }
+
+    // cleanup
+    return () => {
+      if ("removeEventListener" in m) {
+        m.removeEventListener("change", onChange as EventListener);
+      } else {
+        (m as any).removeListener?.(onChange);
+      }
+    };
   }, [query]);
   return matches;
 }
+
 function formatDateISO(d?: string | null) {
   if (!d) return "출시일 정보 없음";
   try {
@@ -60,6 +75,7 @@ function formatDateISO(d?: string | null) {
     return "출시일 정보 없음";
   }
 }
+
 function highlight(text: string, q: string) {
   if (!q) return text;
   const idx = text.toLowerCase().indexOf(q.toLowerCase());
@@ -74,42 +90,6 @@ function highlight(text: string, q: string) {
       {after}
     </>
   );
-}
-
-/* ====== Virtual Keyboard Hook ====== */
-function useVirtualKeyboardHeight(enabled: boolean) {
-  const [kb, setKb] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    // Android Chrome: 키보드가 레이아웃을 밀지 않고 콘텐츠 위로 겹치도록
-    try {
-      (navigator as any).virtualKeyboard &&
-        ((navigator as any).virtualKeyboard.overlaysContent = true);
-    } catch {}
-
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const onResize = () => {
-      // overlap = 키보드가 겹쳐서 가린 높이(px)
-      const overlap = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-      setKb(overlap);
-      document.documentElement.style.setProperty("--kb", `${overlap}px`);
-    };
-
-    onResize();
-    vv.addEventListener("resize", onResize);
-    vv.addEventListener("scroll", onResize);
-    return () => {
-      vv.removeEventListener("resize", onResize);
-      vv.removeEventListener("scroll", onResize);
-      document.documentElement.style.removeProperty("--kb");
-    };
-  }, [enabled]);
-
-  return kb;
 }
 
 /* ====== Result Item ====== */
@@ -156,7 +136,7 @@ function ResultItem({
                 fill
                 className="object-cover"
                 sizes="128px"
-                // NOTE: 비용 방지용 전역 unoptimized를 쓰는 경우, 여기선 그대로 둡니다.
+                unoptimized
               />
             </div>
           ) : (
@@ -227,20 +207,19 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useMediaQuery("(max-width: 639px)");
 
-  // ✅ 가상 키보드 높이 추적 (모바일 + 열림 상태에서만)
-  const kb = useVirtualKeyboardHeight(open && isMobile);
-
   const handleClose = useCallback(() => {
-    setQuery(""); // 입력 초기화
-    setActiveIdx(-1); // 포커스 초기화
-    queryClient.removeQueries({ queryKey: ["searchGames"], exact: false }); // 캐시 제거
+    setQuery("");
+    setActiveIdx(-1);
+    queryClient.removeQueries({ queryKey: ["searchGames"], exact: false });
     onClose();
   }, [onClose, queryClient]);
 
   // 오픈 시 포커스
   useEffect(() => {
     if (open) {
-      requestAnimationFrame(() => inputRef.current?.focus());
+      requestAnimationFrame(() => {
+        if (inputRef.current) inputRef.current.focus();
+      });
     } else {
       setActiveIdx(-1);
       setQuery(initialQuery);
@@ -254,21 +233,12 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
-  // (선택 권장) 모달 열릴 때 body 스크롤 잠금
-  useEffect(() => {
-    if (!open) return;
-    const { style } = document.body;
-    const prevOverflow = style.overflow;
-    style.overflow = "hidden";
-    return () => {
-      style.overflow = prevOverflow;
-    };
-  }, [open]);
-
-  // React Query v5
+  // React Query v5: 평탄화 + 취소
   const { data: results = [], isFetching } = useQuery<SearchItem[]>({
     queryKey: ["searchGames", debouncedQ],
     enabled,
@@ -294,18 +264,20 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         e.preventDefault();
         setActiveIdx((prev) => {
           const next = prev + 1 >= results.length ? 0 : prev + 1;
-          const item =
-            listRef.current?.querySelectorAll<HTMLButtonElement>("[data-item='true']")[next];
-          item?.scrollIntoView({ block: "nearest" });
+          const nodeList =
+            listRef.current?.querySelectorAll<HTMLButtonElement>("[data-item='true']");
+          const item = nodeList ? nodeList[next] : undefined;
+          if (item) item.scrollIntoView({ block: "nearest" });
           return next;
         });
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setActiveIdx((prev) => {
           const next = prev - 1 < 0 ? results.length - 1 : prev - 1;
-          const item =
-            listRef.current?.querySelectorAll<HTMLButtonElement>("[data-item='true']")[next];
-          item?.scrollIntoView({ block: "nearest" });
+          const nodeList =
+            listRef.current?.querySelectorAll<HTMLButtonElement>("[data-item='true']");
+          const item = nodeList ? nodeList[next] : undefined;
+          if (item) item.scrollIntoView({ block: "nearest" });
           return next;
         });
       } else if (e.key === "Enter") {
@@ -317,15 +289,6 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
     },
     [results, activeIdx]
   );
-
-  // 입력 포커스 시 살짝 스크롤 보정 (iOS 가림 방지)
-  useEffect(() => {
-    if (!open || !isMobile) return;
-    const t = setTimeout(() => {
-      inputRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }, 50);
-    return () => clearTimeout(t);
-  }, [open, isMobile]);
 
   // 애니메이션 분기
   const modalInitial = isMobile
@@ -352,19 +315,9 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         className={cn(
           "fixed z-[101] overflow-hidden flex flex-col",
           isMobile
-            ? "inset-x-0 bottom-0 rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
+            ? "inset-x-0 bottom-0 h-[80vh] rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
             : "top-1/2 left-1/2 w-full max-w-2xl mx-4 h-[620px] sm:h-[540px] rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl border border-border/60 -translate-x-1/2 -translate-y-1/2"
         )}
-        style={
-          isMobile
-            ? {
-                // 기본 80dvh를 기준으로, 키보드 겹침(var(--kb))만큼 줄이기 + 여유 8px
-                height: "calc(min(80dvh, 100dvh) - var(--kb, 0px) - 8px)",
-                maxHeight: "calc(100dvh - var(--kb, 0px) - 8px)",
-                paddingBottom: "calc(env(safe-area-inset-bottom, 0px))",
-              }
-            : undefined
-        }
         initial={modalInitial}
         animate={modalAnimate}
         transition={isMobile ? MOBILE_TRANSITION : DESKTOP_TRANSITION}
@@ -375,9 +328,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         dragElastic={isMobile ? 0.25 : undefined}
         onDragEnd={(e, info) => {
           if (!isMobile) return;
-          // 키보드가 있을수록 과민 방지: 임계치 동적 보정
-          const threshold = Math.max(90, Math.min(160, 120 - kb * 0.1));
-          if (info.offset.y > threshold || info.velocity.y > 800) handleClose();
+          if (info.offset.y > 120 || info.velocity.y > 800) handleClose();
         }}>
         {/* Header */}
         <div
@@ -429,18 +380,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
             isMobile ? "px-4 pb-4" : "px-5 pb-5"
           )}
           role="listbox"
-          aria-label="검색 결과"
-          style={
-            isMobile
-              ? {
-                  // 키보드 높이만큼 스크롤 여유 + iOS 안전영역
-                  scrollPaddingBottom:
-                    "calc(var(--kb, 0px) + env(safe-area-inset-bottom, 0px) + 12px)",
-                  WebkitOverflowScrolling: "touch",
-                  overscrollBehavior: "contain",
-                }
-              : undefined
-          }>
+          aria-label="검색 결과">
           {/* 상단 로딩바 */}
           {enabled && isFetching && (
             <motion.div
@@ -456,7 +396,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 rounded-2xl  text-sm">
+              className="mt-2 rounded-2xl text-sm">
               <div className="flex items-center gap-2 text-foreground">
                 <Search className="h-4 w-4 opacity-80" />
                 <span className="font-medium">빠른 검색 팁</span>
