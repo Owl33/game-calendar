@@ -225,7 +225,7 @@
 }
 
 .bb_img {
-  width: 100%;
+  margin: auto;
 }
 
 :root {
