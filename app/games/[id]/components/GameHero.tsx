@@ -25,7 +25,7 @@ function GameHero({ game }: { game: any }) {
             )}
           </div>
 
-          <div className="mt-2 flex items-center gap-3 ">
+          <div className="mt-2 flex flex-wrap items-center gap-3 ">
             <p className="text-sm">
               {game.releaseDate
                 ? new Date(game.releaseDate).toLocaleDateString("ko-KR")
