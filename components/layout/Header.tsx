@@ -82,7 +82,6 @@ export function Header({ className }: HeaderProps) {
               <Badge
                 variant="secondary"
                 className="px-1.5 py-0.5 text-xs">
-                <Command className="h-3 w-3 mr-1" />K
               </Badge>
             </div>
           </Button>
