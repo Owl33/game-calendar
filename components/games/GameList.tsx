@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
 import { GameCard } from "./GameCard";
-
+import { GameCarouselList } from "./GameCarouselList";
+import { EmblaOptionsType } from "embla-carousel";
 interface GameListProps {
   games: {
     gameId: number;
@@ -23,6 +24,7 @@ interface GameListProps {
     currentPrice: number | null;
     releaseDateRaw: string | null;
     comingSoon: boolean;
+    gameType: string;
     isFree: boolean;
     releaseStatus: string | null;
   }[];
@@ -33,11 +35,25 @@ interface GameListProps {
   viewMode?: "card" | "list";
   sortBy?: string;
   layoutMode?: "split" | "list-only";
+  mode?: "vertical" | "horizontal";
 }
 
-export function GameList({ games, isLoading, className, sortBy, viewMode }: GameListProps) {
+export function GameList({
+  games,
+  isLoading,
+  className,
+  sortBy,
+  viewMode,
+  mode = "vertical",
+}: GameListProps) {
   const listRef = useRef<HTMLDivElement | null>(null);
   // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
+  const OPTIONS: EmblaOptionsType = {
+    loop: true,
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  };
 
   useEffect(() => {
     const el = listRef.current;
@@ -65,22 +81,24 @@ export function GameList({ games, isLoading, className, sortBy, viewMode }: Game
             // 컨테이너 레이아웃 애니메이션 (필요 시)
             layout
             transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
-            className={cn("grid gap-4", className)}>
-            {/* 아이템들 */}
-            {games.map((game, index) => (
-              <motion.div
-                key={game.gameId}
-                // 위치 변화만 부드럽게 (사이즈까지 애니 안 하려면 "position")
-                layout // 초기/퇴장/opacity/y 애니 제거 → 어색한 재진입/깜빡임 방지
-                initial={false}
-                transition={{ type: "spring", bounce: 0.2, duration: 0.32 }}>
-                <GameCard
-                  game={game}
-                  priority={index < 4}
-                  viewMode={viewMode}
-                />
-              </motion.div>
-            ))}
+            className={cn("", className)}>
+            {mode == "horizontal" ? (
+              <GameCarouselList
+                games={games}
+                options={OPTIONS}
+              />
+            ) : (
+              games.map((game, index) => {
+                return (
+                  <GameCard
+                    key={game.gameId}
+                    game={game}
+                    priority={index < 4}
+                    viewMode={viewMode}
+                  />
+                );
+              })
+            )}
           </motion.div>
         )}
       </AnimatePresence>

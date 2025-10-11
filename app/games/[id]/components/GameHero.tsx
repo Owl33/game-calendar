@@ -46,17 +46,18 @@ function GameHero({ game }: { game: any }) {
 
         <div className="flex items-center gap-2 flex-wrap">
           {Array.isArray(game.platforms) && game.platforms.length > 0 && (
-            <div className="flex flex-wrap gap-4">
-              {game.platforms.map((platform: string) => (
+            <div className="flex flex-wrap gap-6">
+              {game.releases.map((release: any) => (
                 <div
-                  className="flex items-center gap-2"
-                  key={platform}>
+                  className="flex items-center gap-3"
+                  key={release.store}>
                   <Image
-                    src={findLogo(platform)}
-                    alt={platform}
+                    src={findLogo(release.store)}
+                    alt={release.store}
                     width={18}
                     height={18}
                   />
+                  <span className="text-sm ">{release.releaseDate}</span>
                 </div>
               ))}
             </div>

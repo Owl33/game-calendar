@@ -9,12 +9,14 @@ import { Building2, Users } from "lucide-react";
 import { findLogo, formatNumber } from "@/utils/media";
 
 function GameInfoPanel({ game }: { game: any }) {
+  console.log(game);
   return (
     <div className="bg-card/40 px-0 p-3 rounded-2xl xl:sticky xl:top-6">
       <div>
         {/* 가격 + 상점 */}
         <section className="rounded-2xl p-5">
-          <p className="text-sm text-muted-foreground">출시 가격</p>
+          <h3 className="font-semibold mb-3">출시 가격</h3>
+
           <div className="flex items-center justify-between">
             <p className="text-xl font-bold">
               {game?.currentPrice ? `₩ ${formatNumber(game.currentPrice)}` : "가격 정보 없음"}

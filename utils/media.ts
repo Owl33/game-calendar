@@ -5,8 +5,13 @@ import Nintendo from "@/public/icon/nintendo.png";
 
 export function getYouTubeEmbedUrl(url?: string) {
   if (!url) return undefined;
-  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  return m?.[1] ? `https://www.youtube-nocookie.com/embed/${m[1]}` : undefined;
+  if (url.includes("youtube")) {
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    console.log(m);
+    return m?.[1] ? `https://www.youtube-nocookie.com/embed/${m[1]}` : undefined;
+  } else {
+    return url;
+  }
 }
 
 export function findLogo(store: string) {

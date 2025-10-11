@@ -29,7 +29,7 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
 
   // fetcher가 envelope 또는 data만 반환하는 경우를 모두 포용
   const game: any = (data as any)?.data ?? (data as any);
-
+  console.log(game.videoUrl);
   // 미디어 리스트
   const mediaList = useMemo(
     () => [
@@ -69,7 +69,6 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
     );
   }
   if (!isImagesReady) return <GameDetailSkeleton />;
-
 
   return (
     <div className="relative">

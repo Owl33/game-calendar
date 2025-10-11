@@ -23,6 +23,7 @@ export interface Game {
   releaseStatus: string;
   popularityScore: number;
   isFree: boolean;
+  gameType:string;
   headerImage: string | null;
   genres: string[];
 }

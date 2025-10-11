@@ -1,3 +1,4 @@
+import HighlightsPage from "./highlights/client";
 export default function RootPage() {
-  return <div>개발중</div>;
+  return <HighlightsPage></HighlightsPage>;
 }

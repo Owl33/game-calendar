@@ -27,24 +27,32 @@ function GameStatCard({
           ? "text-amber-600"
           : desc
           ? "text-red-500"
-          : "text-muted-foreground";
+          : "";
 
       const label =
-        desc === "Overwhelmingly Positive" ? "압도적으로 긍정적"
-        : desc === "Very Positive" ? "매우 긍정적"
-        : desc === "Mostly Positive" ? "대체로 긍정적"
-        : desc === "Positive" ? "긍정적"
-        : desc === "Mixed" ? "복합적"
-        : desc === "Negative" ? "부정적"
-        : desc === "Mostly Negative" ? "대체로 부정적"
-        : desc === "Very Negative" ? "매우 부정적"
-        : desc === "Overwhelmingly Negative" ? "압도적으로 부정적"
-        : "유저 리뷰 없음";
-
+        desc === "Overwhelmingly Positive"
+          ? "압도적으로 긍정적"
+          : desc === "Very Positive"
+          ? "매우 긍정적"
+          : desc === "Mostly Positive"
+          ? "대체로 긍정적"
+          : desc === "Positive"
+          ? "긍정적"
+          : desc === "Mixed"
+          ? "복합적"
+          : desc === "Negative"
+          ? "부정적"
+          : desc === "Mostly Negative"
+          ? "대체로 부정적"
+          : desc === "Very Negative"
+          ? "매우 부정적"
+          : desc === "Overwhelmingly Negative"
+          ? "압도적으로 부정적"
+          : "유저 리뷰 없음";
       return (
         <div className="flex items-baseline gap-2">
-          <span className={cn("font-semibold", colored)}>{label}</span>
-          <span className="text-xl font-medium">({formatNumber(total)})</span>
+          <span className={cn("font-semibold text-2xl", colored)}>{label}</span>
+          {total && <span className=" font-medium">({formatNumber(total)})</span>}
         </div>
       );
     }
@@ -56,8 +64,11 @@ function GameStatCard({
 
     // metacritic
     const m = game.metacriticScore ?? null;
-    const color = m === null ? "" : m >= 80 ? "text-green-600" : m >= 60 ? "text-yellow-600" : "text-red-600";
-    return <span className={cn("text-2xl font-extrabold", color)}>{m === null ? "데이터 없음" : m}</span>;
+    const color =
+      m === null ? "" : m >= 80 ? "text-green-600" : m >= 60 ? "text-yellow-600" : "text-red-600";
+    return (
+      <span className={cn("text-2xl font-extrabold", color)}>{m === null ? "데이터 없음" : m}</span>
+    );
   }, [game, kind]);
 
   return (

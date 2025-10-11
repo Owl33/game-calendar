@@ -7,6 +7,7 @@
 import { GamesByDate } from "@/types/game.types";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDay } from "./CalendarDay";
+import { Sheet } from "lucide-react";
 
 interface CalendarGridProps {
   year: number;
@@ -37,7 +38,7 @@ export function CalendarGrid({
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col ">
       {/* 요일 헤더 */}
       <div className="grid grid-cols-7 text-center font-semibold text-sm">
         {weekDays.map((weekDay, index) => (
@@ -50,35 +51,29 @@ export function CalendarGrid({
       </div>
 
       {/* 날짜 그리드 */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`${year}-${month}`}
-          className="grid grid-cols-7 gap-2"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}>
-          {/* 빈 칸 (월 시작 전) */}
-          {Array.from({ length: firstDay }).map((_, index) => (
-            <div
-              key={`empty-${index}`}
-              className="rounded-xl bg-muted/70"
-            />
-          ))}
+      <div
+        key={`${year}-${month}`}
+        className="px-2 grid grid-cols-7 gap-3
+ ">
+        {/* 빈 칸 (월 시작 전) */}
+        {Array.from({ length: firstDay }).map((_, index) => (
+          <div
+            key={`empty-${index}`}
+            className="h-full p-3 rounded-xl bg-muted/70"
+          />
+        ))}
 
-          {/* 실제 날짜들 */}
-          {Array.from({ length: lastDay }, (_, index) => index + 1).map((day) => (
-          
-              <CalendarDay
-                key={day}
-                day={day}
-                games={gamesByDate[day] || []}
-                isSelected={selectedDay === day}
-                onClick={() => onDaySelect(selectedDay === day ? null : day)}
-              />
-          ))}
-        </motion.div>
-      </AnimatePresence>
+        {/* 실제 날짜들 */}
+        {Array.from({ length: lastDay }, (_, index) => index + 1).map((day) => (
+          <CalendarDay
+            key={day}
+            day={day}
+            games={gamesByDate[day] || []}
+            isSelected={selectedDay === day}
+            onClick={() => onDaySelect(selectedDay === day ? null : day)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

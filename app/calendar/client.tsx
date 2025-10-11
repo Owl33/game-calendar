@@ -152,7 +152,7 @@ export default function CalendarClient({
 
             <GameList
               viewMode={viewMode}
-              className="p-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
+              className="p-4 grid gap-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
               games={sortedGames}
               isLoading={isLoading}
               layoutMode={layoutMode}

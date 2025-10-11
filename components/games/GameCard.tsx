@@ -121,7 +121,7 @@ export function GameCard({
       : "가격 정보 없음";
 
   const CardInner = (
-    <div className={cn(v.outer, "relative z-10")}>
+    <div className={cn(v.outer, "rounded-xl bg-card  relative z-10")}>
       {/* 썸네일 */}
       <PopScoreBadge
         score={game.popularityScore}
@@ -129,44 +129,31 @@ export function GameCard({
       />
 
       <div className={cn(v.mediaWrap, viewMode === "list" && v.thumbSize)}>
-        {v.mediaInner === "ratio" ? (
-          <AspectRatio ratio={16 / 9}>
-            <Image
-              fill
-              src={game.headerImage || ""}
-              alt={game.name}
-              priority={priority}
-              className="object-cover"
-              sizes="90"
-              loading={priority ? undefined : "lazy"}
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
-            />
-          </AspectRatio>
-        ) : (
+        <AspectRatio ratio={2.14 / 1}>
           <Image
             fill
             src={game.headerImage || ""}
             alt={game.name}
-            className="object-cover"
             priority={priority}
+            className="object-cover"
+            sizes="90"
             loading={priority ? undefined : "lazy"}
             placeholder="blur"
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
           />
-        )}
+        </AspectRatio>
       </div>
 
       {/* 본문 */}
       <div className={v.body}>
         {/* 타이틀 & 인기작 */}
-        <div>
-          <div className="flex items-center gap-2 ">
+        <div className=" ">
+          <div className="flex items-center gap-2">
             <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
             {isAAAgame(game) && (
               <Badge
                 className={cn(
-                  "px-2 py-1  ml-1 text-white font-bold border-0 shadow-lg",
+                  "px-2 py-0  ml-1 text-white font-bold border-0 shadow-lg",
                   viewMode === "card" ? "gradient-aaa-badge text-sm" : "gradient-aaa-badge text-xs"
                 )}>
                 인기작
@@ -235,7 +222,7 @@ export function GameCard({
         {/* 가격/플랫폼 */}
         <div className={cn("flex items-center justify-between")}>
           <div className="flex items-center gap-2">
-            <p className={cn(viewMode === "card" ? "text-lg font-bold" : "text-sm font-bold")}>
+            <p className={cn(viewMode === "card" ? "text-md font-bold" : "text-sm font-bold")}>
               {priceText}
             </p>
           </div>
@@ -258,28 +245,24 @@ export function GameCard({
   );
 
   return (
-    <Link
-      href={`/games/${game.gameId}`}
-      prefetch
-      className="block"
-      onClick={(e) => {
-        if (onClick) {
-          e.preventDefault();
-          onClick();
-        }
-      }}>
-      <InteractiveCard
-        className={cn(
-          "cursor-pointer group overflow-hidden relative rounded-xl bg-card elevated-card",
-          className
-        )}
-        hoverScale={viewMode === "card" ? 1.03 : 1.01}
-        hoverY={viewMode === "card" ? -4 : -2}
-        hoverRotateX={viewMode === "card" ? 3 : 0}
-        hoverRotateY={viewMode === "card" ? 5 : 0}
-        preserve3d={viewMode === "card"}>
+    <InteractiveCard
+      hoverScale={viewMode === "card" ? 1.03 : 1.01}
+      hoverY={viewMode === "card" ? -4 : -2}
+      hoverRotateX={viewMode === "card" ? 3 : 0}
+      hoverRotateY={viewMode === "card" ? 5 : 0}
+      preserve3d={viewMode === "card"}>
+      <Link
+        href={`/games/${game.gameId}`}
+        prefetch
+        className={cn("cursor-pointer group overflow-hidden relative")}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}>
         {CardInner}
-      </InteractiveCard>
-    </Link>
+      </Link>
+    </InteractiveCard>
   );
 }
