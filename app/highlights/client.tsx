@@ -3,48 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
-import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, ExternalLink, Plus, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { GameList } from "@/components/games/GameList";
-import { GameCard } from "@/components/games/GameCard";
 import { gameKeys, fetchHighlight } from "@/lib/queries/game";
 import { Game, HighlightsResponse } from "@/types/game.types";
 import React from "react";
-import { AspectRatio } from "@radix-ui/react-aspect-ratio";
 
 /** ===== Types (단일 파일 복붙용) ===== */
-
-/** ===== Helpers ===== */
-function toDate(d: Date | string | null | undefined): Date | null {
-  if (!d) return null;
-  const dd = typeof d === "string" ? new Date(d) : d;
-  return Number.isNaN(dd.getTime()) ? null : dd;
-}
-function formatDate(d: Date | string | null | undefined) {
-  const dt = toDate(d);
-  if (!dt) return "날짜 미정";
-  return new Intl.DateTimeFormat("ko", { year: "numeric", month: "short", day: "numeric" }).format(
-    dt
-  );
-}
-function formatPrice(v: number | null, free: boolean) {
-  if (free) return "무료";
-  if (v == null) return "-";
-  return new Intl.NumberFormat("ko-KR", {
-    style: "currency",
-    currency: "KRW",
-    maximumFractionDigits: 0,
-  }).format(v);
-}
-const platformLabel: Record<string, string> = {
-  pc: "PC",
-  playstation: "PS",
-  xbox: "Xbox",
-  nintendo: "Switch",
-};
 
 /** ===== Micro UI ===== */
 function SectionTitle({
@@ -76,18 +43,8 @@ export default function HighlightsPage() {
     gcTime: 30 * 60 * 1000,
   });
   // const featured = data?.featured;
-  const popular = data?.popular ?? [];
-  const upcoming = data?.upcoming ?? [];
-  const featured = data?.featured;
-
-  // 콜라주에 넣을 소스: featured + popular 6 + upcoming 4 (데이터 부족해도 자동 축소)
-  const collageItems: Game[] = useMemo(() => {
-    const pickPopular = popular.slice(0, 15);
-    const pickUpcoming = upcoming.slice(0, 4);
-    return [featured, ...pickPopular, ...pickUpcoming].filter(Boolean) as Game[];
-  }, [featured, popular, upcoming]);
-
-  // 타일 템플릿 (영감 이미지를 반응형 그리드로 재해석)
+  const popular = useMemo(() => data?.popular ?? [], [data?.popular]);
+  const upcoming = useMemo(() => data?.upcoming ?? [], [data?.upcoming]);
 
   if (error) {
     return (
