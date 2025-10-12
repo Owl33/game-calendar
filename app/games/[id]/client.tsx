@@ -12,9 +12,10 @@ import GameMediaGallery from "./components/GameMediaGallery";
 import GameInfoPanel from "./components/GameInfoPanel";
 import GameStatCard from "./components/GameStatCard";
 import GameDescription from "./components/GameDescription";
-
+import Image from "next/image";
 import { ThumbsUp, Trophy, UserPlus, ArrowLeft } from "lucide-react";
 import { useImagePreload } from "@/hooks/useImagePreload";
+import { cn } from "@/lib/utils";
 
 export default function GameDetailClient({ gameId }: { gameId: string }) {
   const router = useRouter();
@@ -29,7 +30,6 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
 
   // fetcher가 envelope 또는 data만 반환하는 경우를 모두 포용
   const game: any = (data as any)?.data ?? (data as any);
-  console.log(game.videoUrl);
   // 미디어 리스트
   const mediaList = useMemo(
     () => [
@@ -72,6 +72,89 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
 
   return (
     <div className="relative">
+      {backgroundImage && (
+        <div
+          className={cn(
+            // 절대배치 + 부모 기준 꽉 채우기
+            "absolute inset-0 top-0 -z-10 lg:-m-8 -m-4",
+            // 높이(원하는 값으로 조정)
+            "h-[76vh] lg:h-[64vh]",
+            // 가로 넘침 방지 + 페인트 경계 고정
+            "overflow-x-clip [contain:paint]"
+          )}
+          style={
+            {
+              // 페이드/블러 조정 변수
+              "--fadePx": "56px", // 하단 페이드 길이
+              "--blurHeight": "12px", // 블러 스트립 높이
+              "--blurFeatherTop": "2px", // 블러 시작 페더
+              "--topShade": 0.65, // 상단 음영 강도
+            } as React.CSSProperties
+          }>
+          {/* 1) 이미지 래퍼: 마스크 + 오버플로우 클립 */}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black 0, black calc(100% - var(--fadePx)), transparent 100%)",
+              maskImage:
+                "linear-gradient(to bottom, black 0, black calc(100% - var(--fadePx)), transparent 100%)",
+            }}>
+            <Image
+              key={`bg-${backgroundImage}`}
+              src={backgroundImage}
+              alt={`${backgroundImage} background`}
+              fill
+              // 스케일 제거(누수 방지). 필요하면 scale-[1.02] 정도만.
+              className="object-cover opacity-40 will-change-transform"
+              sizes="50vw"
+              priority
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
+            />
+
+            {/* 상단 음영 (하단 25%는 마스크로 잘려 아래와 겹치지 않음) */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `linear-gradient(to bottom,
+                  rgba(0,0,0,var(--topShade)) 0%,
+                  rgba(0,0,0,0.4) 40%,
+                  rgba(0,0,0,0.15) 60%,
+                  rgba(0,0,0,0.06) 70%,
+                  transparent 80%)`,
+                WebkitMaskImage: "linear-gradient(to bottom, black 0, black 75%, transparent 100%)",
+                maskImage: "linear-gradient(to bottom, black 0, black 75%, transparent 100%)",
+              }}
+            />
+          </div>
+
+          {/* 2) 블러 스트립: backdrop-filter는 종종 페인트 넘침 → 클립 유지 */}
+          <div
+            className="pointer-events-none absolute inset-x-0 [isolation:isolate] overflow-x-clip"
+            style={{
+              bottom: 0,
+              height: "var(--blurHeight)",
+              backdropFilter: "blur(22px) saturate(108%)",
+              WebkitBackdropFilter: "blur(22px) saturate(108%)",
+              WebkitMaskImage: `linear-gradient(to bottom,
+                rgba(0,0,0,0) 0,
+                rgba(0,0,0,0.08) var(--blurFeatherTop),
+                rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
+                rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
+                rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
+                black 100%)`,
+              maskImage: `linear-gradient(to bottom,
+                rgba(0,0,0,0) 0,
+                rgba(0,0,0,0.08) var(--blurFeatherTop),
+                rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
+                rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
+                rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
+                black 100%)`,
+            }}
+          />
+        </div>
+      )}
       <div className="container  mx-auto ">
         {/* 상단 바 */}
         <div className="flex items-center justify-between py-4">
