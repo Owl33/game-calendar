@@ -7,7 +7,7 @@
 import { useState, useCallback, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { Modal } from "@/components/motion/Modal";
 import { cn } from "@/lib/utils";
 
@@ -23,20 +23,13 @@ interface CalendarHeaderProps {
 // 년도 버튼 컴포넌트 - year가 변경될 때만 리렌더링
 const YearButton = memo(({ year, onOpenDatePicker }: { year: number; onOpenDatePicker: () => void }) => (
   <div className="min-w-[80px] relative lg:min-w-[80px]">
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={year}
-        initial={{ opacity: 0, y: 20, scale: 0.8 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.8 }}
-        transition={{ duration: 0.5, type: "spring" }}>
-        <Button
-          variant="ghost"
-          onClick={onOpenDatePicker}>
-          {year}년
-        </Button>
-      </motion.div>
-    </AnimatePresence>
+    <div className="animate-fadeIn">
+      <Button
+        variant="ghost"
+        onClick={onOpenDatePicker}>
+        {year}년
+      </Button>
+    </div>
   </div>
 ));
 

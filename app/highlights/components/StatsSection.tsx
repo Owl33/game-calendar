@@ -4,7 +4,6 @@
 
 "use client";
 
-import { motion } from "motion/react";
 import { Gamepad2, TrendingUp, Calendar, Users } from "lucide-react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
 import { cn } from "@/lib/utils";
@@ -60,22 +59,15 @@ export function StatsSection({ stats }: StatsSectionProps) {
 
   return (
     <section className="py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}>
+      <div className="animate-fadeIn">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {statItems.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <motion.div
+              <div
                 key={stat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.4,
-                  delay: 0.3 + index * 0.1,
-                }}>
+                className="game-card"
+                style={{ "--index": index } as React.CSSProperties}>
                 <InteractiveCard
                   className="p-6 text-center relative overflow-hidden"
                   hoverScale={1.05}
@@ -112,11 +104,11 @@ export function StatsSection({ stats }: StatsSectionProps) {
                     </div>
                   </div>
                 </InteractiveCard>
-              </motion.div>
+              </div>
             );
           })}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

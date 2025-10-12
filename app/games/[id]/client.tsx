@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { gameKeys, fetchGameDetail } from "@/lib/queries/game";
 import { GameDetailSkeleton } from "@/app/games/components/GameDetailSkeleton"; // 기존 경로 유지
@@ -49,12 +48,12 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
   const preloadTargets = useMemo(() => {
     const set = new Set<string>();
     if (backgroundImage) set.add(backgroundImage);
-    mediaList.slice(0, 6).forEach((m) => m.type === "image" && set.add(m.url));
+    mediaList.slice(0, 3).forEach((m) => m.type === "image" && set.add(m.url));
     return Array.from(set);
   }, [backgroundImage, mediaList]);
-  const isImagesReady = useImagePreload(preloadTargets, 4000);
+  const isImagesReady = useImagePreload(preloadTargets, 2000);
 
-  if (isLoading) return <GameDetailSkeleton />;
+  if (isLoading || !isImagesReady) return <GameDetailSkeleton />;
   if (error || !game) {
     return (
       <div className="container mx-auto min-h-screen flex items-center justify-center px-4">
@@ -68,7 +67,6 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
       </div>
     );
   }
-  if (!isImagesReady) return <GameDetailSkeleton />;
 
   return (
     <div className="relative">
@@ -105,12 +103,9 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
               src={backgroundImage}
               alt={`${backgroundImage} background`}
               fill
-              // 스케일 제거(누수 방지). 필요하면 scale-[1.02] 정도만.
-              className="object-cover opacity-40 will-change-transform"
-              sizes="50vw"
+              className="object-cover opacity-40"
+              sizes="100vw"
               priority
-              placeholder="blur"
-              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
             />
 
             {/* 상단 음영 (하단 25%는 마스크로 잘려 아래와 겹치지 않음) */}
@@ -129,28 +124,16 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
             />
           </div>
 
-          {/* 2) 블러 스트립: backdrop-filter는 종종 페인트 넘침 → 클립 유지 */}
+          {/* 2) 블러 스트립: backdrop-filter 간소화 */}
           <div
-            className="pointer-events-none absolute inset-x-0 [isolation:isolate] overflow-x-clip"
+            className="pointer-events-none absolute inset-x-0 overflow-x-clip"
             style={{
               bottom: 0,
               height: "var(--blurHeight)",
-              backdropFilter: "blur(22px) saturate(108%)",
-              WebkitBackdropFilter: "blur(22px) saturate(108%)",
-              WebkitMaskImage: `linear-gradient(to bottom,
-                rgba(0,0,0,0) 0,
-                rgba(0,0,0,0.08) var(--blurFeatherTop),
-                rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
-                rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
-                rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
-                black 100%)`,
-              maskImage: `linear-gradient(to bottom,
-                rgba(0,0,0,0) 0,
-                rgba(0,0,0,0.08) var(--blurFeatherTop),
-                rgba(0,0,0,0.22) calc(var(--blurFeatherTop) + 24px),
-                rgba(0,0,0,0.5)  calc(var(--blurFeatherTop) + 60px),
-                rgba(0,0,0,0.75) calc(var(--blurFeatherTop) + 96px),
-                black 100%)`,
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              WebkitMaskImage: `linear-gradient(to bottom, transparent 0, black 100%)`,
+              maskImage: `linear-gradient(to bottom, transparent 0, black 100%)`,
             }}
           />
         </div>
@@ -168,10 +151,7 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
           </Button>
         </div>
 
-        <motion.div
-          initial={{ opacity: 1, y: -200 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, type: "spring" }}>
+        <div className="animate-fadeIn">
           <div className="mt-4 mb-6 grid grid-cols-12 gap-4 max-[580px]:gap-3">
             <GameHero game={game} />
             {/* 통계 3종 */}
@@ -196,34 +176,23 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* 본문 */}
         <div className="grid grid-cols-12 gap-x-8 gap-y-10 max-[580px]:gap-x-4">
-          <div className="col-span-12 xl:col-span-7">
-            <motion.div
-              initial={{ opacity: 1, x: -200, scale: 1 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.7, type: "spring" }}>
-              <GameMediaGallery
-                gameName={game.name}
-                backgroundImage={backgroundImage}
-                mediaList={mediaList}
-                headerImage={game.headerImage}
-              />
-              <GameDescription html={game.description} />
-            </motion.div>
+          <div className="col-span-12 xl:col-span-7 animate-fadeIn">
+            <GameMediaGallery
+              gameName={game.name}
+              backgroundImage={backgroundImage}
+              mediaList={mediaList}
+              headerImage={game.headerImage}
+            />
+            <GameDescription html={game.description} />
           </div>
-          <div className="col-span-12 xl:col-span-5">
-            <motion.div
-              initial={{ opacity: 1, x: 200, scale: 1 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.7, type: "spring" }}
-              className="bg-card/40 rounded-2xl xl:sticky xl:top-6 ">
+          <div className="col-span-12 xl:col-span-5 animate-fadeIn">
+            <div className="bg-card/40 rounded-2xl xl:sticky xl:top-6 ">
               <GameInfoPanel game={game} />
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

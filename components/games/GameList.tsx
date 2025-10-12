@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { LoadingSkeleton } from "./LoadingSkeleton";
@@ -36,17 +36,17 @@ interface GameListProps {
   sortBy?: string;
   layoutMode?: "split" | "list-only";
   mode?: "vertical" | "horizontal";
+  scrollKey?: string;
 }
 
-export function GameList({
+export const GameList = memo(function GameList({
   games,
   isLoading,
   className,
-  sortBy,
   viewMode,
   mode = "vertical",
+  scrollKey,
 }: GameListProps) {
-  const listRef = useRef<HTMLDivElement | null>(null);
   // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
   const OPTIONS: EmblaOptionsType = {
     loop: true,
@@ -55,16 +55,14 @@ export function GameList({
     dragFree: true,
   };
 
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
+  const listRef = useRef<HTMLDivElement>(null);
 
-    // 레이아웃 적용 직후 스크롤
-    requestAnimationFrame(() => {
-      // 즉시
-      el.scrollTo({ top: 0, behavior: "auto" });
-    });
-  }, [games, sortBy, viewMode]); // ← viewMode 제거
+  // scrollKey 변경 시 맨 위로 스크롤
+  useEffect(() => {
+    if (scrollKey && listRef.current) {
+      listRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [scrollKey]);
 
   return (
     <>
@@ -76,13 +74,9 @@ export function GameList({
         ) : (
           <motion.div
             ref={listRef}
-            // 전체 컨테이너는 초기 페이드 없이
             initial={false}
-            // 컨테이너 레이아웃 애니메이션 (필요 시)
-            layout
-            transition={{ layout: { duration: 0.25, ease: "easeInOut" } }}
             className={cn("", className)}>
-            {mode == "horizontal" ? (
+            {mode === "horizontal" ? (
               <GameCarouselList
                 games={games}
                 options={OPTIONS}
@@ -93,8 +87,9 @@ export function GameList({
                   <GameCard
                     key={game.gameId}
                     game={game}
-                    priority={index < 4}
+                    priority={index < 6}
                     viewMode={viewMode}
+                    index={index}
                   />
                 );
               })
@@ -104,4 +99,4 @@ export function GameList({
       </AnimatePresence>
     </>
   );
-}
+});

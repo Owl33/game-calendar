@@ -4,7 +4,6 @@
 
 "use client";
 
-import { motion } from "motion/react";
 import Link from "next/link";
 import { Calendar, Search, TrendingUp, Star, ArrowRight } from "lucide-react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
@@ -52,11 +51,7 @@ const navigationCards: NavigationCard[] = [
 export function QuickNavigationCards() {
   return (
     <section className="py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="space-y-6">
+      <div className="space-y-6 animate-fadeIn">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-bold gradient-header-title">빠른 접근</h2>
           <p className="text-muted-foreground">원하는 기능을 바로 이용해보세요</p>
@@ -66,14 +61,10 @@ export function QuickNavigationCards() {
           {navigationCards.map((card, index) => {
             const Icon = card.icon;
             return (
-              <motion.div
+              <div
                 key={card.href}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: index * 0.1,
-                }}>
+                className="game-card"
+                style={{ "--index": index } as React.CSSProperties}>
                 <Link href={card.href} className="block h-full">
                   <InteractiveCard
                     className="h-full p-6 cursor-pointer group relative overflow-hidden"
@@ -113,11 +104,11 @@ export function QuickNavigationCards() {
                     </div>
                   </InteractiveCard>
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

@@ -4,7 +4,6 @@
 
 "use client";
 
-import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -38,11 +37,7 @@ export function HeroBanner({ game }: HeroBannerProps) {
       {/* 콘텐츠 */}
       <div className="relative h-full flex items-center">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-2xl space-y-6">
+          <div className="max-w-2xl space-y-6 animate-fadeIn">
             {/* 배지 */}
             <div className="flex gap-2">
               <Badge className="gradient-today-badge text-white text-sm px-3 py-1.5">
@@ -99,7 +94,7 @@ export function HeroBanner({ game }: HeroBannerProps) {
                 </Link>
               </Button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

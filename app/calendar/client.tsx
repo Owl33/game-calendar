@@ -3,7 +3,6 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "motion/react";
 import { GameCalendar } from "./components/GameCalendar";
 import { CalendarHeader } from "./components/CalendarHeader";
 import { GameList } from "@/components/games/GameList";
@@ -92,37 +91,28 @@ export default function CalendarClient({
 
   return (
     <div className="container mx-auto lg:h-[calc(100vh-120px)] min-h-0 flex flex-col">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={layoutMode}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+      <div
+        className={cn(
+          "flex-1 overflow-hidden min-h-0 transition-opacity duration-200",
+          layoutMode === "split" ? "lg:grid lg:grid-cols-12 lg:gap-4" : "block"
+        )}>
+        <div
           className={cn(
-            "flex-1 overflow-hidden min-h-0",
-            layoutMode === "split" ? "lg:grid lg:grid-cols-12 lg:gap-4" : "block"
+            "mb-6 lg:mb-0 transition-all duration-300",
+            layoutMode === "split" && "lg:col-span-8",
+            layoutMode === "list-only" && "lg:hidden"
           )}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className={cn(
-              "mb-6 lg:mb-0",
-              layoutMode === "split" && "lg:col-span-8",
-              layoutMode === "list-only" && "lg:hidden"
-            )}>
-            <GameCalendar
-              year={selectedYear}
-              month={selectedMonth}
-              selectedDay={selectedDay}
-              gamesByDate={gamesByDate}
-              onMonthChange={handleMonthChange}
-              onYearChange={handleYearChange}
-              onDateChange={handleDateChange}
-              onDaySelect={handleDaySelect}
-            />
-          </motion.div>
+          <GameCalendar
+            year={selectedYear}
+            month={selectedMonth}
+            selectedDay={selectedDay}
+            gamesByDate={gamesByDate}
+            onMonthChange={handleMonthChange}
+            onYearChange={handleYearChange}
+            onDateChange={handleDateChange}
+            onDaySelect={handleDaySelect}
+          />
+        </div>
 
           <div
             className={cn(
@@ -156,10 +146,10 @@ export default function CalendarClient({
               games={sortedGames}
               isLoading={isLoading}
               layoutMode={layoutMode}
+              scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
             />
           </div>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </div>
   );
 }

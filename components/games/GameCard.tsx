@@ -5,14 +5,26 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Calendar, Clock } from "lucide-react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
-import { isAAAgame, getDaysUntilRelease } from "@/utils/game";
+import { getDaysUntilRelease } from "@/utils/game";
 import Steam from "@/public/icon/steam.png";
 import Xbox from "@/public/icon/xbox.png";
 import Nintendo from "@/public/icon/nintendo.png";
-
 import Psn from "@/public/icon/psn.png";
-
 import { PopScoreBadge } from "./PopScoreBadge";
+import { memo, useMemo } from "react";
+
+// 이미지 로고 매핑 (컴포넌트 외부로 이동)
+const platformLogos: Record<string, any> = {
+  steam: Steam,
+  psn: Psn,
+  playstation: Psn,
+  xbox: Xbox,
+  nintendo: Nintendo,
+};
+
+function findLogo(store: string) {
+  return platformLogos[store.toLowerCase()] || Steam;
+}
 type ViewMode = "card" | "list";
 
 interface GameCardProps {
@@ -35,6 +47,7 @@ interface GameCardProps {
   onClick?: () => void;
   priority?: boolean;
   viewMode?: ViewMode;
+  index?: number;
 }
 
 const variants: Record<
@@ -68,6 +81,7 @@ const variants: Record<
   },
 };
 
+// 날짜 포맷팅 함수 (컴포넌트 외부로 이동)
 function toYmd(d?: Date | string | null) {
   if (!d) return "";
   const dt = typeof d === "string" ? new Date(d) : d;
@@ -78,43 +92,31 @@ function toYmd(d?: Date | string | null) {
   return `${y}-${m}-${day}`;
 }
 
-function findLogo(store: string) {
-  switch (store) {
-    case "steam":
-      return Steam;
-    case "psn":
-    case "playstation":
-      return Psn;
-    case "xbox":
-      return Xbox;
-    case "nintendo":
-      return Nintendo;
-    default:
-      return Steam;
-  }
-}
-
-export function GameCard({
+export const GameCard = memo(function GameCard({
   game,
-  className,
   onClick,
   priority = false,
   viewMode = "card",
+  index = 0,
 }: GameCardProps) {
   const v = variants[viewMode];
+
+  // 계산 결과 - 단순 계산은 useMemo 제거
   const daysUntilRelease = getDaysUntilRelease(game.releaseDate);
   const isUpcoming = daysUntilRelease > 0;
   const isToday = daysUntilRelease === 0;
+  const isPopular = game.popularityScore > 70;
 
-  const getReleaseText = () => {
+  // 복잡한 계산만 useMemo 유지
+  const releaseText = useMemo(() => {
     const iso = toYmd(game.releaseDate ?? null);
     if (iso) return new Date(iso).toLocaleDateString("ko-KR");
     if (game.releaseDateRaw) return String(game.releaseDateRaw);
     return "TBA";
-  };
-  console.log(game.ogName);
+  }, [game.releaseDate, game.releaseDateRaw]);
+
   const priceText =
-    game.isFree == true
+    game.isFree === true
       ? "무료"
       : game?.currentPrice
       ? `₩ ${new Intl.NumberFormat("ko-KR").format(game.currentPrice)}`
@@ -135,11 +137,9 @@ export function GameCard({
             src={game.headerImage || ""}
             alt={game.name}
             priority={priority}
-            className="object-cover"
-            sizes="90"
+            className="object-cover will-change-transform"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading={priority ? undefined : "lazy"}
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNhYWFhYWE7c3RvcC1vcGFjaXR5OjAuMiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzcwNzA3MDtzdG9wLW9wYWNpdHk6MC4yIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyMjUiIGZpbGw9InVybCgjZykiLz48L3N2Zz4="
           />
         </AspectRatio>
       </div>
@@ -150,7 +150,7 @@ export function GameCard({
         <div className=" ">
           <div className="flex items-center gap-2">
             <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
-            {isAAAgame(game) && (
+            {isPopular && (
               <Badge
                 className={cn(
                   "px-2 py-0  ml-1 text-white font-bold border-0 shadow-lg",
@@ -176,7 +176,7 @@ export function GameCard({
                 isToday && "text-success font-bold",
                 isUpcoming && "text-info"
               )}>
-              {getReleaseText()}
+              {releaseText}
             </span>
           </div>
           {isToday && (
@@ -246,6 +246,8 @@ export function GameCard({
 
   return (
     <InteractiveCard
+      className="game-card"
+      style={{ "--index": index } as React.CSSProperties}
       hoverScale={viewMode === "card" ? 1.03 : 1.01}
       hoverY={viewMode === "card" ? -4 : -2}
       hoverRotateX={viewMode === "card" ? 3 : 0}
@@ -265,4 +267,4 @@ export function GameCard({
       </Link>
     </InteractiveCard>
   );
-}
+});

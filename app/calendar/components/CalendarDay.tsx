@@ -9,7 +9,6 @@ import { Sheet } from "@/components/ui/sheet";
 import { Game } from "@/types/game.types";
 import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
 import { isAAAgame } from "@/utils/game";
 
@@ -33,12 +32,14 @@ export function CalendarDay({
   const [isHovered, setIsHovered] = useState(false);
 
   const hoverContent = hasGames ? (
-    <motion.div
-      initial={{ opacity: 0, y: -10, scale: 0.9 }}
-      animate={{ opacity: 1, y: -4, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.9 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-      className="absolute min-w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50">
+    <div
+      className={cn(
+        "absolute min-w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50",
+        "transition-all duration-150 ease-out",
+        isHovered
+          ? "opacity-100 -translate-y-1 scale-100"
+          : "opacity-0 translate-y-[-10px] scale-90 pointer-events-none"
+      )}>
       <Sheet className="p-3">
         <p className="font-semibold text-sm mb-1">이 날의 게임 ({games.length}개)</p>
 
@@ -57,7 +58,7 @@ export function CalendarDay({
           </div>
         )}
       </Sheet>
-    </motion.div>
+    </div>
   ) : null;
 
   return (
@@ -113,7 +114,7 @@ export function CalendarDay({
         )}
       </InteractiveCard>
 
-      <AnimatePresence>{isHovered && hoverContent}</AnimatePresence>
+      {hoverContent}
     </div>
   );
 }

@@ -152,8 +152,34 @@
   }
 }
 
+/* 페이드인 애니메이션 (Framer Motion 대체) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* 세련된 그라데이션 클래스 */
 @layer components {
+  .game-card {
+    animation: fadeInUp 0.4s ease-out forwards;
+    animation-delay: calc(var(--index, 0) * 20ms); /* stagger 효과 */
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
   .gradient-aaa-badge {
     background: linear-gradient(
       135deg,

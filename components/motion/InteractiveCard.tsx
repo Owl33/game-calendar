@@ -4,12 +4,13 @@
  */
 
 import { motion } from "motion/react";
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 import { cn } from "@/lib/utils";
 
 interface InteractiveCardProps {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -40,16 +41,17 @@ interface InteractiveCardProps {
   preserve3d?: boolean;
 }
 
-export function InteractiveCard({
+export const InteractiveCard = memo(function InteractiveCard({
   children,
   className,
+  style,
   onClick,
   onMouseEnter,
   onMouseLeave,
   initialY = 20,
   initialScale = 0.9,
   delay = 0,
-  duration = 0.2,
+  duration = 0.15,
   hoverScale = 1.05,
   hoverY = -6,
   hoverRotateX = 0,
@@ -63,10 +65,10 @@ export function InteractiveCard({
   inactiveShadow,
   preserve3d = false,
 }: InteractiveCardProps) {
-  // 조건부 애니메이션 (isActive가 있을 경우)
-  const getAnimateProps = () => {
-    if (isActive !== undefined) {
-      return isActive
+  // 조건부 애니메이션 (isActive가 있을 경우) - 최적화
+  const animateProps =
+    isActive !== undefined
+      ? isActive
         ? {
             opacity: 1,
             scale: activeScale ?? hoverScale,
@@ -78,66 +80,48 @@ export function InteractiveCard({
             scale: 1,
             y: 0,
             boxShadow: inactiveShadow,
-          };
-    }
-    return { opacity: 1, y: 0, scale: 1 };
+          }
+      : { opacity: 1, y: 0, scale: 1 };
+
+  // 호버 애니메이션 - 최적화
+  const hoverProps: Record<string, number | string | string[]> = {
+    scale: hoverScale,
+    y: hoverY,
+    ...(hoverRotateX && { rotateX: hoverRotateX }),
+    ...(hoverRotateY && { rotateY: hoverRotateY }),
+    ...(hoverShadow && { boxShadow: hoverShadow }),
   };
 
-  // 호버 애니메이션
-  const getHoverProps = () => {
-    const baseHover: Record<string, number | string | string[]> = {
-      scale: hoverScale,
-      y: hoverY,
-    };
-
-    if (hoverRotateX) baseHover.rotateX = hoverRotateX;
-    if (hoverRotateY) baseHover.rotateY = hoverRotateY;
-
-    // boxShadow 배열 지원
-    if (hoverShadow) {
-      baseHover.boxShadow = hoverShadow;
-    }
-
-    return baseHover;
-  };
-
-  // transition 설정
-  const getTransition = () => {
-    const baseTransition = {
-      delay,
-      scale: { duration, ease: "easeOut" as const },
-      y: { duration, ease: "easeOut" as const },
-    };
-
-    // boxShadow 배열일 경우 특별한 transition
-    if (Array.isArray(hoverShadow)) {
-      return {
-        ...baseTransition,
+  // transition 설정 - 최적화
+  const transition = Array.isArray(hoverShadow)
+    ? {
+        delay,
+        scale: { duration, ease: "easeOut" as const },
+        y: { duration, ease: "easeOut" as const },
         boxShadow: {
           duration: duration * 3,
           ease: "easeOut" as const,
           times: [0, 0.3, 1],
         },
+      }
+    : {
+        delay,
+        scale: { duration, ease: "easeOut" as const },
+        y: { duration, ease: "easeOut" as const },
       };
-    }
-
-    return baseTransition;
-  };
 
   return (
     <motion.div
-      className={cn(className, )}
-      initial={{ opacity: 0, y: initialY, scale: initialScale }}
-      animate={getAnimateProps()}
-      exit={{ opacity: 0, y: -initialY, scale: initialScale }}
-      whileHover={getHoverProps()}
+      className={cn(className)}
+      initial={false}
+      animate={animateProps}
+      whileHover={hoverProps}
       whileTap={{ scale: tapScale }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      transition={getTransition()}
-      style={preserve3d ? { transformStyle: "preserve-3d" } : undefined}
+      transition={transition}
       onClick={onClick}>
       {children}
     </motion.div>
   );
-}
+});

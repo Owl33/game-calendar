@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { motion } from "motion/react";
 import { SlidersHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -50,29 +48,10 @@ function useDebouncedValue<T>(value: T, delay = 250) {
 }
 
 export default function GamesClient({ initialFilters }: { initialFilters: FiltersState }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   // URL 기반 초기 필터(서버와 동일 정렬)
   const initial = useMemo(() => canonicalize(initialFilters), [initialFilters]);
-
-  useEffect(() => {
-    const handler = () => {
-      try {
-        // /games 경로에만 적용되도록 path=/games
-        document.cookie = "__games_reset=1; Max-Age=10; Path=/games; SameSite=Lax";
-      } catch {}
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, []);
-
-  // ⬇️ 새 문서가 뜬 뒤(하이드레이션 직후)에는 쿠키를 바로 지워서 다음 내비게이션에 영향 없게
-  useEffect(() => {
-    try {
-      document.cookie = "__games_reset=; Max-Age=0; Path=/games; SameSite=Lax";
-    } catch {}
-  }, []);
 
   // 쿼리키(안정 문자열)
   const keyStamp = useMemo(() => stableSerialize(initial), [initial]);
@@ -117,7 +96,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   );
 
   // 필터 변경 시: URL 동기화 후 맨 위로 이동 (뒤로가기는 브라우저가 복원하므로 건드리지 않음)
-  const routerRef = useRef(router);
+  const prevFiltersRef = useRef<string>("");
   useEffect(() => {
     const params = new URLSearchParams();
     if (debounced.startDate) params.set("startDate", debounced.startDate);
@@ -133,13 +112,12 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     params.set("sortOrder", debounced.sortOrder ?? "ASC");
     params.set("pageSize", String(debounced.pageSize ?? 24));
 
-    const next = params.toString();
-    const current = typeof window !== "undefined" ? location.search.slice(1) : "";
-    if (next === current) return;
-
-    routerRef.current.replace(`/games?${next}`, { scroll: false });
-    // URL 반영 직후 Top
-    queueMicrotask(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    const currentFilters = stableSerialize(debounced);
+    // 필터가 실제로 변경되었을 때만 스크롤 이동
+    if (prevFiltersRef.current && prevFiltersRef.current !== currentFilters) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    prevFiltersRef.current = currentFilters;
   }, [debounced]);
 
   // 무한 스크롤(필요 시에만 다음 페이지)
@@ -147,19 +125,20 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   useEffect(() => {
     const el = loadMoreRef.current;
     if (!el) return;
-
     const ob = new IntersectionObserver(
       (entries) => {
-        const hit = entries[0]?.isIntersecting;
-        if (hit && hasNextPage && !isFetchingNextPage) fetchNextPage();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
       },
-      { rootMargin: "200px 0px", threshold: 0.01 }
+      {
+        rootMargin: "400px", // 스크롤이 하단에 가까워지면 미리 로드
+        threshold: 0.1,
+      }
     );
-
     ob.observe(el);
     return () => ob.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, queryKey]);
-
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   return (
     <div className="container mx-auto ">
       <div className="grid grid-cols-12 gap-4">
@@ -188,7 +167,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
           </div>
         </aside>
 
-        <main className="col-span-12 lg:col-span-9 min-h-[60vh]">
+        <main className="col-span-12 lg:col-span-9 ">
           <div className="flex items-center flex-wrap justify-between mb-4 lg:mb-3">
             <div className="text-sm flex items-center gap-4"></div>
 
@@ -242,21 +221,24 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               </Select>
             </div>
           </div>
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}>
-            <GameList
-              className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}
-              games={flat}
-              isHeader={false}
-              isLoading={isLoading}
-            />
-          </motion.div>
-          <div
-            ref={loadMoreRef}
-            className="h-10"
+
+          <GameList
+            className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}
+            games={flat}
+            isHeader={false}
+            isLoading={isLoading}
           />
+          {hasNextPage && (
+            <div className="flex justify-center items-center py-8">
+              <div
+                ref={loadMoreRef}
+                className="h-1 w-full"
+              />
+              {isFetchingNextPage && (
+                <div className="text-sm text-muted-foreground">로딩 중...</div>
+              )}
+            </div>
+          )}
         </main>
       </div>
     </div>

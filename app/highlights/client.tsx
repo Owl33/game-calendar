@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarDays, ExternalLink, Plus, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CalendarDays, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GameList } from "@/components/games/GameList";
 import { gameKeys, fetchHighlight } from "@/lib/queries/game";
-import { Game, HighlightsResponse } from "@/types/game.types";
+import { HighlightsResponse } from "@/types/game.types";
 import React from "react";
 
 /** ===== Types (단일 파일 복붙용) ===== */
@@ -43,8 +42,8 @@ export default function HighlightsPage() {
     gcTime: 30 * 60 * 1000,
   });
   // const featured = data?.featured;
-  const popular = useMemo(() => data?.popular ?? [], [data?.popular]);
-  const upcoming = useMemo(() => data?.upcoming ?? [], [data?.upcoming]);
+  const popular = data?.popular ?? [];
+  const upcoming = data?.upcoming ?? [];
 
   if (error) {
     return (
