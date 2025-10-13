@@ -135,13 +135,12 @@ export default function CalendarClient({
             <GameListHeader
               sortBy={sortBy}
               onSortChange={setSortBy}
-              viewMode={viewMode}
               onViewModeChange={setViewMode}
               className="mb-4"
             />
 
             <GameList
-              viewMode={viewMode}
+            
               className="p-4 grid gap-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
               games={sortedGames}
               isLoading={isLoading}

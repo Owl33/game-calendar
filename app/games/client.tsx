@@ -1,3 +1,4 @@
+//app/gaems/client.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { GameVirtualList } from "@/components/games/GameVirtualList";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {
@@ -67,22 +69,22 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   type Page = Awaited<ReturnType<typeof fetchAllGamesPage>>;
   const cached = queryClient.getQueryData<InfiniteData<Page, number>>(queryKey);
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteQuery<Page, Error, InfiniteData<Page, number>, typeof queryKey, number>({
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery<
+    Page,
+    Error,
+    InfiniteData<Page, number>,
+    typeof queryKey,
+    number
+  >({
     queryKey,
     queryFn: fetchAllGamesPage,
-    meta: { filters: normalized }, 
+    meta: { filters: normalized },
     initialPageParam: 1,
     getNextPageParam: (last) => {
       const p = (last as any)?.pagination;
       return p?.hasNextPage ? (p.currentPage ?? 1) + 1 : undefined;
     },
-    initialData: cached,           // 동일 키면 SSR 캐시 활용
+    initialData: cached, // 동일 키면 SSR 캐시 활용
     placeholderData: (prev) => prev,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -179,8 +181,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={filters.sortBy}
                 onValueChange={(v: FiltersState["sortBy"]) =>
                   setFilters((f) => ({ ...f, sortBy: v }))
-                }
-              >
+                }>
                 <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="정렬 기준" />
                 </SelectTrigger>
@@ -195,8 +196,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={filters.sortOrder}
                 onValueChange={(v: FiltersState["sortOrder"]) =>
                   setFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
-                }
-              >
+                }>
                 <SelectTrigger className="w-[110px] h-9">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
@@ -210,14 +210,15 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={String(filters.pageSize)}
                 onValueChange={(v) =>
                   setFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
-                }
-              >
+                }>
                 <SelectTrigger className="w-[100px] h-9">
                   <SelectValue placeholder="페이지" />
                 </SelectTrigger>
                 <SelectContent position="popper">
                   {[10, 12, 18, 20, 24, 30, 40, 50].map((n) => (
-                    <SelectItem key={n} value={String(n)}>
+                    <SelectItem
+                      key={n}
+                      value={String(n)}>
                       {n}개
                     </SelectItem>
                   ))}
@@ -226,16 +227,20 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
             </div>
           </div>
 
-          <GameList
+          <GameVirtualList
             className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}
             games={flat}
+            pageSize={filters.pageSize}
             isHeader={false}
             isLoading={isLoading}
           />
 
           {hasNextPage && (
             <div className="flex justify-center items-center py-8">
-              <div ref={loadMoreRef} className="h-1 w-full" />
+              <div
+                ref={loadMoreRef}
+                className="h-1 w-full"
+              />
               {isFetchingNextPage && (
                 <div className="text-sm text-muted-foreground">로딩 중...</div>
               )}

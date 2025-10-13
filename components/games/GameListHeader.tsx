@@ -17,7 +17,6 @@ import { ArrowUpDown, Calendar, Plus, LayoutGrid, List } from "lucide-react";
 interface GameListHeaderProps {
   sortBy: "name" | "date" | "popularityScore";
   onSortChange: (sort: "name" | "date" | "popularityScore") => void;
-  viewMode: "card" | "list";
   onViewModeChange: (mode: "card" | "list") => void;
   className?: string;
   sorted?: boolean;
@@ -26,7 +25,6 @@ interface GameListHeaderProps {
 export function GameListHeader({
   sortBy,
   onSortChange,
-  viewMode,
   onViewModeChange,
   className,
 }: GameListHeaderProps) {
@@ -42,7 +40,7 @@ export function GameListHeader({
 
       <div className="flex items-center gap-2">
         {/* View Mode Toggle */}
-        <div className="flex items-center rounded-lg border bg-background p-1">
+        {/* <div className="flex items-center rounded-lg border bg-background p-1">
           <Button
             variant={viewMode === "card" ? "secondary" : "ghost"}
             size="sm"
@@ -57,7 +55,7 @@ export function GameListHeader({
             className="h-7 px-2">
             <List className="h-4 w-4" />
           </Button>
-        </div>
+        </div> */}
 
         {/* Sort Select */}
         <Select

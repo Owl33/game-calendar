@@ -1,3 +1,5 @@
+//app/gaems/page.tsx
+
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 import GamesClient from "./client";
 import { parseFiltersFromSearchParams, allGamesKey } from "@/utils/searchParams";

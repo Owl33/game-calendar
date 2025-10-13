@@ -1,3 +1,4 @@
+//components/games/GameCard.tsx
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
@@ -25,7 +26,8 @@ const platformLogos: Record<string, any> = {
 function findLogo(store: string) {
   return platformLogos[store.toLowerCase()] || Steam;
 }
-type ViewMode = "card" | "list";
+type ViewMode = "card";
+// | "list";
 
 interface GameCardProps {
   game: {
@@ -71,15 +73,15 @@ const variants: Record<
     title: "text-2xl",
     metaText: "text-xs",
   },
-  list: {
-    outer: "flex items-center gap-3 p-3",
-    body: "flex-1 min-w-0 flex flex-col justify-between gap-1",
-    mediaWrap: "relative flex-shrink-0 overflow-hidden rounded-md bg-black/95",
-    mediaInner: "fixed",
-    title: "text-base",
-    metaText: "text-xs",
-    thumbSize: "w-32 h-26",
-  },
+  // list: {
+  //   outer: "flex items-center gap-3 p-3",
+  //   body: "flex-1 min-w-0 flex flex-col justify-between gap-1",
+  //   mediaWrap: "relative flex-shrink-0 overflow-hidden rounded-md bg-black/95",
+  //   mediaInner: "fixed",
+  //   title: "text-base",
+  //   metaText: "text-xs",
+  //   thumbSize: "w-32 h-26",
+  // },
 };
 
 // 날짜 포맷팅 함수 (컴포넌트 외부로 이동)
@@ -126,13 +128,12 @@ export const GameCard = memo(function GameCard({
 
   const CardInner = (
     <div className={cn(v.outer, "rounded-xl bg-card  relative z-10")}>
-      {/* 썸네일 */}
       <PopScoreBadge
         score={game.popularityScore}
         placement="top-left"
       />
-
-      <div className={cn(v.mediaWrap, viewMode === "list" && v.thumbSize)}>
+      {/* viewMode === "list" && v.thumbSize */}
+      <div className={cn(v.mediaWrap)}>
         <AspectRatio ratio={2.14 / 1}>
           <Image
             fill
