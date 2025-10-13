@@ -32,6 +32,20 @@ export function useCalendarUrlState(initialSearchParams: SearchParams) {
   const [selectedMonth, setSelectedMonth] = useState(initialMonth);
   const [selectedDay, setSelectedDay] = useState<number | null>(initialDay);
 
+  // 🔑 URL 파라미터 변경 시 상태 동기화 (뒤로가기 대응)
+  useEffect(() => {
+    const currentUrlM = getFirst(initialSearchParams, "m");
+    const currentUrlD = getFirst(initialSearchParams, "d");
+
+    const year = isYYYYMM(currentUrlM) ? Number(currentUrlM.slice(0, 4)) : today.getFullYear();
+    const month = isYYYYMM(currentUrlM) ? Number(currentUrlM.slice(5, 7)) : today.getMonth() + 1;
+    const day = isDD(currentUrlD) ? Number(currentUrlD) : null;
+
+    if (year !== selectedYear) setSelectedYear(year);
+    if (month !== selectedMonth) setSelectedMonth(month);
+    if (day !== selectedDay) setSelectedDay(day);
+  }, [initialSearchParams, selectedYear, selectedMonth, selectedDay, today]);
+
   const [sortBy, setSortBy] = useState<SortBy>("popularityScore");
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("split");

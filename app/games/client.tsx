@@ -3,12 +3,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { useSearchParams, useRouter } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { GameList } from "@/components/games/GameList";
 import { FiltersPanel } from "./components/FiltersPanel";
-import { allGamesKey } from "@/utils/searchParams";
+import { allGamesKey, parseFiltersFromSearchParams } from "@/utils/searchParams";
 import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
 import {
@@ -52,12 +52,26 @@ function useDebouncedValue<T>(value: T, delay = 250) {
 
 export default function GamesClient({ initialFilters }: { initialFilters: FiltersState }) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // URL 기반 초기 필터(서버와 동일 정렬)
-  const initial = useMemo(() => canonicalize(initialFilters), [initialFilters]);
+  // 🔑 URL을 단일 진실 공급원으로 사용
+  // searchParams를 Record로 변환
+  const currentParams = useMemo(() => {
+    const params: Record<string, string | string[]> = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    return params;
+  }, [searchParams]);
 
-  // 로컬 필터 상태
-  const [filters, setFilters] = useState<FiltersState>(initial);
+  // URL에서 현재 필터 파싱 (서버와 동일한 로직)
+  const filters = useMemo(() => {
+    const parsed = parseFiltersFromSearchParams(currentParams);
+    return canonicalize(parsed);
+  }, [currentParams]);
+
+  // 디바운스된 필터 값 (쿼리 키와 API 호출용)
   const debounced = useDebouncedValue(filters, 250);
 
   // 🔑 현재 필터를 정규화해서 키/메타에 사용
@@ -98,6 +112,27 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     [data]
   );
 
+  // 필터 업데이트 함수 (URL을 직접 업데이트)
+  const updateFilters = (updater: (prev: FiltersState) => FiltersState) => {
+    const newFilters = updater(filters);
+    const params = new URLSearchParams();
+
+    if (newFilters.startDate) params.set("startDate", newFilters.startDate);
+    if (newFilters.endDate) params.set("endDate", newFilters.endDate);
+    if (newFilters.onlyUpcoming) params.set("onlyUpcoming", "true");
+    if (newFilters.genres?.length) params.set("genres", newFilters.genres.join(","));
+    if (newFilters.tags?.length) params.set("tags", newFilters.tags.join(","));
+    if (newFilters.developers?.length) params.set("developers", newFilters.developers.join(","));
+    if (newFilters.publishers?.length) params.set("publishers", newFilters.publishers.join(","));
+    if (newFilters.platforms?.length) params.set("platforms", newFilters.platforms.join(","));
+    params.set("popularityScore", String(newFilters.popularityScore ?? 40));
+    params.set("sortBy", newFilters.sortBy ?? "releaseDate");
+    params.set("sortOrder", newFilters.sortOrder ?? "ASC");
+    params.set("pageSize", String(newFilters.pageSize ?? 24));
+
+    router.replace(`/games?${params.toString()}`, { scroll: false });
+  };
+
   // 필터 변경 시 스크롤 상단 이동 (키가 바뀔 때만)
   const prevKeyRef = useRef<string>("");
   useEffect(() => {
@@ -107,25 +142,6 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     }
     prevKeyRef.current = current;
   }, [queryKey]);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (normalized.startDate) params.set("startDate", normalized.startDate);
-    if (normalized.endDate) params.set("endDate", normalized.endDate);
-    if (normalized.onlyUpcoming) params.set("onlyUpcoming", "true");
-    if (normalized.genres?.length) params.set("genres", normalized.genres.join(","));
-    if (normalized.tags?.length) params.set("tags", normalized.tags.join(","));
-    if (normalized.developers?.length) params.set("developers", normalized.developers.join(","));
-    if (normalized.publishers?.length) params.set("publishers", normalized.publishers.join(","));
-    if (normalized.platforms?.length) params.set("platforms", normalized.platforms.join(","));
-    params.set("popularityScore", String(normalized.popularityScore ?? 40));
-    params.set("sortBy", normalized.sortBy ?? "releaseDate");
-    params.set("sortOrder", normalized.sortOrder ?? "ASC");
-    params.set("pageSize", String(normalized.pageSize ?? 24));
-    const next = params.toString();
-    const current = typeof window !== "undefined" ? location.search.slice(1) : "";
-    if (next !== current) history.replaceState(null, "", `/games?${next}`);
-  }, [normalized]);
 
   // 무한 스크롤
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -156,8 +172,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
             <div className="px-4 pb-4 space-y-4">
               <FiltersPanel
                 value={filters}
-                onChange={setFilters}
-                onResetAll={() => setFilters(initialFilters)}
+                onChange={(newFilters) => updateFilters(() => newFilters)}
+                onResetAll={() => updateFilters(() => initialFilters)}
               />
             </div>
           </details>
@@ -165,8 +181,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
             <div className="rounded-xl border border-border/50 bg-card/60 p-4">
               <FiltersPanel
                 value={filters}
-                onChange={setFilters}
-                onResetAll={() => setFilters(initialFilters)}
+                onChange={(newFilters) => updateFilters(() => newFilters)}
+                onResetAll={() => updateFilters(() => initialFilters)}
               />
             </div>
           </div>
@@ -180,7 +196,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               <Select
                 value={filters.sortBy}
                 onValueChange={(v: FiltersState["sortBy"]) =>
-                  setFilters((f) => ({ ...f, sortBy: v }))
+                  updateFilters((f) => ({ ...f, sortBy: v }))
                 }>
                 <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="정렬 기준" />
@@ -195,7 +211,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               <Select
                 value={filters.sortOrder}
                 onValueChange={(v: FiltersState["sortOrder"]) =>
-                  setFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
+                  updateFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
                 }>
                 <SelectTrigger className="w-[110px] h-9">
                   <SelectValue placeholder="정렬" />
@@ -209,7 +225,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               <Select
                 value={String(filters.pageSize)}
                 onValueChange={(v) =>
-                  setFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
+                  updateFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
                 }>
                 <SelectTrigger className="w-[100px] h-9">
                   <SelectValue placeholder="페이지" />
