@@ -38,6 +38,7 @@ function stableSerialize(obj: unknown) {
   keys.sort();
   return JSON.stringify(obj, keys);
 }
+
 function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -53,35 +54,36 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   // URL 기반 초기 필터(서버와 동일 정렬)
   const initial = useMemo(() => canonicalize(initialFilters), [initialFilters]);
 
-  // 쿼리키(안정 문자열)
-  const keyStamp = useMemo(() => stableSerialize(initial), [initial]);
-  const queryKey = useMemo(() => allGamesKey(initial, keyStamp), [initial, keyStamp]);
-
-  // 로컬 필터 상태(키는 initial로 고정)
+  // 로컬 필터 상태
   const [filters, setFilters] = useState<FiltersState>(initial);
   const debounced = useDebouncedValue(filters, 250);
 
-  // 서버 프리패치 결과
+  // 🔑 현재 필터를 정규화해서 키/메타에 사용
+  const normalized = useMemo(() => canonicalize(debounced), [debounced]);
+  const keyStamp = useMemo(() => stableSerialize(normalized), [normalized]);
+  const queryKey = useMemo(() => allGamesKey(normalized, keyStamp), [normalized, keyStamp]);
+
+  // 서버 프리패치 캐시(동일 키일 때만 사용됨)
   type Page = Awaited<ReturnType<typeof fetchAllGamesPage>>;
   const cached = queryClient.getQueryData<InfiniteData<Page, number>>(queryKey);
 
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery<
-    Page,
-    Error,
-    InfiniteData<Page, number>,
-    typeof queryKey,
-    number
-  >({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery<Page, Error, InfiniteData<Page, number>, typeof queryKey, number>({
     queryKey,
     queryFn: fetchAllGamesPage,
-    meta: { filters: initial },
+    meta: { filters: normalized }, 
     initialPageParam: 1,
     getNextPageParam: (last) => {
       const p = (last as any)?.pagination;
       return p?.hasNextPage ? (p.currentPage ?? 1) + 1 : undefined;
     },
-    initialData: cached, // 서버에서 온 dehydrated 캐시 그대로 사용
-    placeholderData: (prev) => prev, // 캐시 즉시 사용
+    initialData: cached,           // 동일 키면 SSR 캐시 활용
+    placeholderData: (prev) => prev,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -89,38 +91,41 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     gcTime: 60 * 60 * 1000,
   });
 
-  // 평탄화
   const flat = useMemo(
     () => data?.pages?.flatMap((p: any) => (Array.isArray(p?.data) ? p.data : [])) ?? [],
     [data]
   );
 
-  // 필터 변경 시: URL 동기화 후 맨 위로 이동 (뒤로가기는 브라우저가 복원하므로 건드리지 않음)
-  const prevFiltersRef = useRef<string>("");
+  // 필터 변경 시 스크롤 상단 이동 (키가 바뀔 때만)
+  const prevKeyRef = useRef<string>("");
+  useEffect(() => {
+    const current = JSON.stringify(queryKey);
+    if (prevKeyRef.current && prevKeyRef.current !== current) {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+    prevKeyRef.current = current;
+  }, [queryKey]);
+
   useEffect(() => {
     const params = new URLSearchParams();
-    if (debounced.startDate) params.set("startDate", debounced.startDate);
-    if (debounced.endDate) params.set("endDate", debounced.endDate);
-    if (debounced.onlyUpcoming) params.set("onlyUpcoming", "true");
-    if (debounced.genres?.length) params.set("genres", debounced.genres.join(","));
-    if (debounced.tags?.length) params.set("tags", debounced.tags.join(","));
-    if (debounced.developers?.length) params.set("developers", debounced.developers.join(","));
-    if (debounced.publishers?.length) params.set("publishers", debounced.publishers.join(","));
-    if (debounced.platforms?.length) params.set("platforms", debounced.platforms.join(","));
-    params.set("popularityScore", String(debounced.popularityScore ?? 40));
-    params.set("sortBy", debounced.sortBy ?? "releaseDate");
-    params.set("sortOrder", debounced.sortOrder ?? "ASC");
-    params.set("pageSize", String(debounced.pageSize ?? 24));
+    if (normalized.startDate) params.set("startDate", normalized.startDate);
+    if (normalized.endDate) params.set("endDate", normalized.endDate);
+    if (normalized.onlyUpcoming) params.set("onlyUpcoming", "true");
+    if (normalized.genres?.length) params.set("genres", normalized.genres.join(","));
+    if (normalized.tags?.length) params.set("tags", normalized.tags.join(","));
+    if (normalized.developers?.length) params.set("developers", normalized.developers.join(","));
+    if (normalized.publishers?.length) params.set("publishers", normalized.publishers.join(","));
+    if (normalized.platforms?.length) params.set("platforms", normalized.platforms.join(","));
+    params.set("popularityScore", String(normalized.popularityScore ?? 40));
+    params.set("sortBy", normalized.sortBy ?? "releaseDate");
+    params.set("sortOrder", normalized.sortOrder ?? "ASC");
+    params.set("pageSize", String(normalized.pageSize ?? 24));
+    const next = params.toString();
+    const current = typeof window !== "undefined" ? location.search.slice(1) : "";
+    if (next !== current) history.replaceState(null, "", `/games?${next}`);
+  }, [normalized]);
 
-    const currentFilters = stableSerialize(debounced);
-    // 필터가 실제로 변경되었을 때만 스크롤 이동
-    if (prevFiltersRef.current && prevFiltersRef.current !== currentFilters) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    prevFiltersRef.current = currentFilters;
-  }, [debounced]);
-
-  // 무한 스크롤(필요 시에만 다음 페이지)
+  // 무한 스크롤
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = loadMoreRef.current;
@@ -131,14 +136,12 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
           fetchNextPage();
         }
       },
-      {
-        rootMargin: "400px", // 스크롤이 하단에 가까워지면 미리 로드
-        threshold: 0.1,
-      }
+      { rootMargin: "400px", threshold: 0.1 }
     );
     ob.observe(el);
     return () => ob.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, queryKey]); // ✅ 키가 바뀌면 옵저버 갱신
+
   return (
     <div className="container mx-auto ">
       <div className="grid grid-cols-12 gap-4">
@@ -176,7 +179,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={filters.sortBy}
                 onValueChange={(v: FiltersState["sortBy"]) =>
                   setFilters((f) => ({ ...f, sortBy: v }))
-                }>
+                }
+              >
                 <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="정렬 기준" />
                 </SelectTrigger>
@@ -191,7 +195,8 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={filters.sortOrder}
                 onValueChange={(v: FiltersState["sortOrder"]) =>
                   setFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
-                }>
+                }
+              >
                 <SelectTrigger className="w-[110px] h-9">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
@@ -205,15 +210,14 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 value={String(filters.pageSize)}
                 onValueChange={(v) =>
                   setFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
-                }>
+                }
+              >
                 <SelectTrigger className="w-[100px] h-9">
                   <SelectValue placeholder="페이지" />
                 </SelectTrigger>
                 <SelectContent position="popper">
                   {[10, 12, 18, 20, 24, 30, 40, 50].map((n) => (
-                    <SelectItem
-                      key={n}
-                      value={String(n)}>
+                    <SelectItem key={n} value={String(n)}>
                       {n}개
                     </SelectItem>
                   ))}
@@ -228,12 +232,10 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
             isHeader={false}
             isLoading={isLoading}
           />
+
           {hasNextPage && (
             <div className="flex justify-center items-center py-8">
-              <div
-                ref={loadMoreRef}
-                className="h-1 w-full"
-              />
+              <div ref={loadMoreRef} className="h-1 w-full" />
               {isFetchingNextPage && (
                 <div className="text-sm text-muted-foreground">로딩 중...</div>
               )}
