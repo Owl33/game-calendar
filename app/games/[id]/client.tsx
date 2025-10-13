@@ -14,7 +14,7 @@ import GameDescription from "./components/GameDescription";
 import Image from "next/image";
 import { ThumbsUp, Trophy, UserPlus, ArrowLeft } from "lucide-react";
 import { useImagePreload } from "@/hooks/useImagePreload";
-import { cn } from "@/lib/utils";
+import { cn, shimmer, toBase64 } from "@/lib/utils";
 
 export default function GameDetailClient({ gameId }: { gameId: string }) {
   const router = useRouter();
@@ -106,6 +106,8 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
               className="object-cover opacity-40"
               sizes="100vw"
               priority
+              placeholder="blur"
+              blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(1920, 1080))}`}
             />
 
             {/* 상단 음영 (하단 25%는 마스크로 잘려 아래와 겹치지 않음) */}

@@ -3,14 +3,8 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query";
 import { Header } from "@/components/layout/Header";
-import { PageTransition } from "@/components/motion/PageTransition";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import "../styles/globals.css";
-const pretendard = localFont({
-  src: "../public/fonts/PretendardVariable.woff2",
-  display: "swap",
-  weight: "100 900",
-  variable: "--font-pretendard",
-});
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content"
@@ -33,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${spoqa.variable}`}>
       <body className={` flex flex-col min-h-screen w-full`}>
+        <ServiceWorkerRegister />
         <QueryProvider>
           <ThemeProvider
             attribute="class"

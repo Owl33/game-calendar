@@ -48,8 +48,6 @@ export const InteractiveCard = memo(function InteractiveCard({
   onClick,
   onMouseEnter,
   onMouseLeave,
-  initialY = 20,
-  initialScale = 0.9,
   delay = 0,
   duration = 0.15,
   hoverScale = 1.05,
@@ -120,6 +118,11 @@ export const InteractiveCard = memo(function InteractiveCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       transition={transition}
+      style={{
+        willChange: "transform",
+        ...(preserve3d ? { transformStyle: "preserve-3d" } : {}),
+        ...style
+      }}
       onClick={onClick}>
       {children}
     </motion.div>

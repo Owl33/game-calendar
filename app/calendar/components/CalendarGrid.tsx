@@ -5,9 +5,7 @@
 "use client";
 
 import { GamesByDate } from "@/types/game.types";
-import { AnimatePresence, motion } from "motion/react";
 import { CalendarDay } from "./CalendarDay";
-import { Sheet } from "lucide-react";
 
 interface CalendarGridProps {
   year: number;

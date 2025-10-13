@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
 import { Game } from "@/types/game.types";
+import { shimmer, toBase64 } from "@/lib/utils";
 
 interface HeroBannerProps {
   game: Game;
@@ -29,6 +30,8 @@ export function HeroBanner({ game }: HeroBannerProps) {
           className="object-cover"
           sizes="100vw"
           priority
+          placeholder="blur"
+          blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(1920, 1080))}`}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />

@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, shimmer, toBase64 } from "@/lib/utils";
 import { Calendar, Clock } from "lucide-react";
 import { InteractiveCard } from "@/components/motion/InteractiveCard";
 import { getDaysUntilRelease } from "@/utils/game";
@@ -48,6 +48,7 @@ interface GameCardProps {
   priority?: boolean;
   viewMode?: ViewMode;
   index?: number;
+  disableAnimation?: boolean;
 }
 
 const variants: Record<
@@ -98,6 +99,7 @@ export const GameCard = memo(function GameCard({
   priority = false,
   viewMode = "card",
   index = 0,
+  disableAnimation = false,
 }: GameCardProps) {
   const v = variants[viewMode];
 
@@ -137,6 +139,8 @@ export const GameCard = memo(function GameCard({
             src={game.headerImage || ""}
             alt={game.name}
             priority={priority}
+            placeholder="blur"
+            blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(460, 215))}`}
             className="object-cover will-change-transform"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading={priority ? undefined : "lazy"}
@@ -246,8 +250,8 @@ export const GameCard = memo(function GameCard({
 
   return (
     <InteractiveCard
-      className="game-card"
-      style={{ "--index": index } as React.CSSProperties}
+      className={disableAnimation ? "" : "game-card"}
+      style={disableAnimation ? undefined : ({ "--index": index } as React.CSSProperties)}
       hoverScale={viewMode === "card" ? 1.03 : 1.01}
       hoverY={viewMode === "card" ? -4 : -2}
       hoverRotateX={viewMode === "card" ? 3 : 0}
