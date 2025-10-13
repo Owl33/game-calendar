@@ -68,55 +68,57 @@ export const GameVirtualList = memo(function GameList({
   pageSize,
   scrollKey,
 }: GameListProps) {
-  // 0) 로딩/빈
-  if (isLoading) return <LoadingSkeleton />;
-  if (games.length === 0) return <EmptyState />;
-
-  // 2) 세로 모드: 가상화
   const itemsPerRow = useItemsPerRow();
+
   const rows = useMemo(() => {
     const r: (typeof games)[] = [];
-    for (let i = 0; i < games.length; i += itemsPerRow) r.push(games.slice(i, i + itemsPerRow));
+    const n = Math.max(1, itemsPerRow);
+    for (let i = 0; i < games.length; i += n) r.push(games.slice(i, i + n));
     return r;
   }, [games, itemsPerRow]);
-  const minRowsByPage = pageSize ? Math.ceil(pageSize / Math.max(1, itemsPerRow)) : 0;
 
-  // 복원 키
+  const minRowsByPage = useMemo(
+    () => (pageSize ? Math.ceil(pageSize / Math.max(1, itemsPerRow)) : 0),
+    [pageSize, itemsPerRow]
+  );
+
   const STORAGE_KEY = useMemo(() => {
     if (scrollKey && scrollKey.trim()) return `games:list:offset:${scrollKey}`;
     const base = typeof window !== "undefined" ? window.location.search : "";
     return `games:list:offset:/games${base}`;
   }, [scrollKey]);
 
-  const reload = typeof window !== "undefined" ? isReloadNavigation() : false;
-
-  // 저장된 오프셋
-  const savedOffsetRef = useRef<number>(0);
+  // 새로고침 여부와 저장된 오프셋을 렌더 시 계산(SSR 안전 처리)
+  const reloadRef = useRef(false);
   if (typeof window !== "undefined") {
-    if (reload) {
+    // 한 번만 평가
+    if (!reloadRef.current) reloadRef.current = isReloadNavigation();
+  }
+
+  const savedOffsetRef = useRef<number>(0);
+  if (typeof window !== "undefined" && savedOffsetRef.current === 0) {
+    if (reloadRef.current) {
+      // 새로고침이면 복원값 초기화
       sessionStorage.removeItem(STORAGE_KEY);
       savedOffsetRef.current = 0;
-    } else if (savedOffsetRef.current === 0) {
+    } else {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       savedOffsetRef.current = raw ? Number(raw) || 0 : 0;
     }
   }
-  const maxKeepRows = Math.max(minRowsByPage, 6); // 최소 한 페이지 분량, 없으면 적어도 6행
-  const rangeExtractor = (range: Range) => {
-    // 기본 추출(연속 인덱스 배열)
-    const base = defaultRangeExtractor(range);
 
-    // 이미 충분히 작으면 그대로 반환
+  const maxKeepRows = Math.max(minRowsByPage, 6); // 최소 한 페이지 분량, 없으면 적어도 6행
+
+  const rangeExtractor = (range: Range) => {
+    const base = defaultRangeExtractor(range);
     if (base.length <= maxKeepRows) return base;
 
-    // 뷰포트 중앙을 기준으로 windowing
     const center = Math.floor((range.startIndex + range.endIndex) / 2);
     const half = Math.floor(maxKeepRows / 2);
 
     let start = Math.max(range.startIndex, center - half);
-    let end = Math.min(range.endIndex, start + maxKeepRows - 1);
+    const end = Math.min(range.endIndex, start + maxKeepRows - 1); // ✅ end는 재할당 안 하므로 const
 
-    // 길이 보정(경계에 걸렸을 때)
     if (end - start + 1 < maxKeepRows) {
       start = Math.max(range.startIndex, end - maxKeepRows + 1);
     }
@@ -124,43 +126,47 @@ export const GameVirtualList = memo(function GameList({
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
-  // Virtualizer (※ 측정 사용 안 함 → 경고/드리프트 원천 제거)
+  // Virtualizer (측정 사용 안 함)
   const virtualizer = useWindowVirtualizer({
     count: Math.max(rows.length, minRowsByPage),
-    estimateSize: () => 350,
+    estimateSize: () => 352,
     overscan: 24,
-    getItemKey: (index) => rows[index]?.[0]?.gameId ?? `row-${index}`, // 없는 행은 row-index 키
+    getItemKey: (index) => rows[index]?.[0]?.gameId ?? `row-${index}`,
     initialOffset: savedOffsetRef.current,
     rangeExtractor,
   });
 
-  // mount 시 복원 / 새로고침이면 꼭 0으로
+  // mount 시 복원 / 새로고침이면 0으로
   useEffect(() => {
-    if (reload) {
+    if (reloadRef.current) {
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
     if (savedOffsetRef.current > 0) {
       window.scrollTo({ top: savedOffsetRef.current, behavior: "auto" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 떠날 때 저장
   useEffect(() => {
-    if (reload) return;
+    if (reloadRef.current) return;
     const save = () => {
       sessionStorage.setItem(STORAGE_KEY, String(window.scrollY || 0));
     };
     window.addEventListener("pagehide", save);
-    window.addEventListener("visibilitychange", () => {
+    const onVis = () => {
       if (document.visibilityState === "hidden") save();
-    });
+    };
+    window.addEventListener("visibilitychange", onVis);
     return () => {
       save();
       window.removeEventListener("pagehide", save);
+      window.removeEventListener("visibilitychange", onVis);
     };
-  }, [STORAGE_KEY, reload]);
+  }, [STORAGE_KEY]);
+
+  if (isLoading) return <LoadingSkeleton />;
+  if (games.length === 0) return <EmptyState />;
 
   const virtualItems = virtualizer.getVirtualItems();
   const totalSize = virtualizer.getTotalSize();
@@ -175,28 +181,26 @@ export const GameVirtualList = memo(function GameList({
 
       {/* 가상 행 */}
       {virtualItems.map((vItem) => {
-        const row = rows[vItem.index]; // 있을 수도, 없을 수도
+        const row = rows[vItem.index];
         return (
           <div
             key={vItem.key}
             className={cn("grid gap-4", className)}
             style={{ marginBottom: 16 }}>
-            {
-              row
-                ? row.map((game, colIndex) => {
-                    const absoluteIndex = vItem.index * itemsPerRow + colIndex;
-                    return (
-                      <GameCard
-                        key={game.gameId}
-                        game={game}
-                        priority={absoluteIndex < 6}
-                        index={absoluteIndex}
-                        disableAnimation
-                      />
-                    );
-                  })
-                : null /* 빈 행은 카드 렌더 X → 공간만 유지 */
-            }
+            {row
+              ? row.map((game, colIndex) => {
+                  const absoluteIndex = vItem.index * Math.max(1, itemsPerRow) + colIndex;
+                  return (
+                    <GameCard
+                      key={game.gameId}
+                      game={game}
+                      priority={absoluteIndex < 6}
+                      index={absoluteIndex}
+                      disableAnimation
+                    />
+                  );
+                })
+              : null}
           </div>
         );
       })}

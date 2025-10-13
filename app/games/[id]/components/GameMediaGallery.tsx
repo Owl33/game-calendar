@@ -42,7 +42,6 @@ function GameMediaGallery({
   return (
     <>
       {/* ==== HERO BACKGROUND (No horizontal overflow) ==== */}
- 
 
       {/* ==== MAIN MEDIA (Video / Image) ==== */}
       {dedupedMedia.length > 0 && (
@@ -121,8 +120,8 @@ function GameMediaGallery({
                       alt={`${gameName} media ${i + 1}`}
                       fill
                       className="object-cover"
+                      priority
                       sizes="200px"
-                      loading="eager"
                     />
                   )}
                 </AspectRatio>
