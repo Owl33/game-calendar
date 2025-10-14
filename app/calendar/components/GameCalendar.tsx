@@ -32,7 +32,7 @@ export function GameCalendar({
   className,
 }: GameCalendarProps) {
   return (
-    <div className={`space-y-4 ${className} h-full flex flex-col`}>
+    <div className={`${className} h-full flex flex-col gap-3`}>
       <CalendarHeader
         year={year}
         selectedMonth={month}
@@ -42,7 +42,7 @@ export function GameCalendar({
       />
 
       {/* 모바일에서는 CalendarGrid 숨김 */}
-      <div className="hidden lg:block  flex-1">
+      <div className="hidden lg:block flex-1 min-h-0">
         <CalendarGrid
           year={year}
           month={month}

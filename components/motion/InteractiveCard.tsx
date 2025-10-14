@@ -4,7 +4,7 @@
  */
 
 import { motion } from "motion/react";
-import { ReactNode, memo } from "react";
+import { ReactNode, memo, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface InteractiveCardProps {
@@ -41,7 +41,8 @@ interface InteractiveCardProps {
   preserve3d?: boolean;
 }
 
-export const InteractiveCard = memo(function InteractiveCard({
+export const InteractiveCard = memo(
+  forwardRef<HTMLDivElement, InteractiveCardProps>(function InteractiveCard({
   children,
   className,
   style,
@@ -62,69 +63,71 @@ export const InteractiveCard = memo(function InteractiveCard({
   activeShadow,
   inactiveShadow,
   preserve3d = false,
-}: InteractiveCardProps) {
-  // 조건부 애니메이션 (isActive가 있을 경우) - 최적화
-  const animateProps =
-    isActive !== undefined
-      ? isActive
-        ? {
-            opacity: 1,
-            scale: activeScale ?? hoverScale,
-            y: activeY ?? hoverY,
-            boxShadow: activeShadow,
-          }
-        : {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            boxShadow: inactiveShadow,
-          }
-      : { opacity: 1, y: 0, scale: 1 };
+}: InteractiveCardProps, ref) {
+    // 조건부 애니메이션 (isActive가 있을 경우) - 최적화
+    const animateProps =
+      isActive !== undefined
+        ? isActive
+          ? {
+              opacity: 1,
+              scale: activeScale ?? hoverScale,
+              y: activeY ?? hoverY,
+              boxShadow: activeShadow,
+            }
+          : {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              boxShadow: inactiveShadow,
+            }
+        : { opacity: 1, y: 0, scale: 1 };
 
-  // 호버 애니메이션 - 최적화
-  const hoverProps: Record<string, number | string | string[]> = {
-    scale: hoverScale,
-    y: hoverY,
-    ...(hoverRotateX && { rotateX: hoverRotateX }),
-    ...(hoverRotateY && { rotateY: hoverRotateY }),
-    ...(hoverShadow && { boxShadow: hoverShadow }),
-  };
+    // 호버 애니메이션 - 최적화
+    const hoverProps: Record<string, number | string | string[]> = {
+      scale: hoverScale,
+      y: hoverY,
+      ...(hoverRotateX && { rotateX: hoverRotateX }),
+      ...(hoverRotateY && { rotateY: hoverRotateY }),
+      ...(hoverShadow && { boxShadow: hoverShadow }),
+    };
 
-  // transition 설정 - 최적화
-  const transition = Array.isArray(hoverShadow)
-    ? {
-        delay,
-        scale: { duration, ease: "easeOut" as const },
-        y: { duration, ease: "easeOut" as const },
-        boxShadow: {
-          duration: duration * 3,
-          ease: "easeOut" as const,
-          times: [0, 0.3, 1],
-        },
-      }
-    : {
-        delay,
-        scale: { duration, ease: "easeOut" as const },
-        y: { duration, ease: "easeOut" as const },
-      };
+    // transition 설정 - 최적화
+    const transition = Array.isArray(hoverShadow)
+      ? {
+          delay,
+          scale: { duration, ease: "easeOut" as const },
+          y: { duration, ease: "easeOut" as const },
+          boxShadow: {
+            duration: duration * 3,
+            ease: "easeOut" as const,
+            times: [0, 0.3, 1],
+          },
+        }
+      : {
+          delay,
+          scale: { duration, ease: "easeOut" as const },
+          y: { duration, ease: "easeOut" as const },
+        };
 
-  return (
-    <motion.div
-      className={cn(className)}
-      initial={false}
-      animate={animateProps}
-      whileHover={hoverProps}
-      whileTap={{ scale: tapScale }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      transition={transition}
-      style={{
-        willChange: "transform",
-        ...(preserve3d ? { transformStyle: "preserve-3d" } : {}),
-        ...style
-      }}
-      onClick={onClick}>
-      {children}
-    </motion.div>
-  );
-});
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(className)}
+        initial={false}
+        animate={animateProps}
+        whileHover={hoverProps}
+        whileTap={{ scale: tapScale }}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        transition={transition}
+        style={{
+          willChange: "transform",
+          ...(preserve3d ? { transformStyle: "preserve-3d" } : {}),
+          ...style,
+        }}
+        onClick={onClick}>
+        {children}
+      </motion.div>
+    );
+  })
+);

@@ -35,14 +35,18 @@ export function CalendarGrid({
     { name: "토", className: "text-info" },
   ];
 
+  // 달력의 행 수 계산 (5주 또는 6주)
+  const totalCells = firstDay + lastDay;
+  const rows = Math.ceil(totalCells / 7);
+
   return (
-    <div className="space-y-4 h-full flex flex-col ">
+    <div className="h-full flex flex-col gap-2">
       {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 text-center font-semibold text-sm">
+      <div className="grid grid-cols-7 text-center font-semibold text-sm flex-shrink-0">
         {weekDays.map((weekDay, index) => (
           <div
             key={index}
-            className={`py-2 text-muted-foreground ${weekDay.className}`}>
+            className={`py-1 text-muted-foreground ${weekDay.className}`}>
             {weekDay.name}
           </div>
         ))}
@@ -51,13 +55,16 @@ export function CalendarGrid({
       {/* 날짜 그리드 */}
       <div
         key={`${year}-${month}`}
-        className="px-2 grid grid-cols-7 gap-3
- ">
+        className="grid grid-cols-7 px-2 flex-1 min-h-0"
+        style={{
+          gap: "0.75rem",
+          gridTemplateRows: `repeat(${rows}, 1fr)`,
+        }}>
         {/* 빈 칸 (월 시작 전) */}
         {Array.from({ length: firstDay }).map((_, index) => (
           <div
             key={`empty-${index}`}
-            className="h-full p-3 rounded-xl bg-muted/70"
+            className="p-3 rounded-xl bg-muted/70 w-full h-full"
           />
         ))}
 

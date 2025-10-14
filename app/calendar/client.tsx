@@ -38,6 +38,7 @@ export default function CalendarClient({
     queryFn: ({ signal }) => fetchCalendarMonth(yearMonth, signal),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    placeholderData: (prev) => prev,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -90,7 +91,7 @@ export default function CalendarClient({
   };
 
   return (
-    <div className="container mx-auto lg:h-[calc(100vh-120px)] min-h-0 flex flex-col">
+    <div className="container mx-auto lg:h-[calc(100vh-128px)] min-h-0 flex flex-col">
       <div
         className={cn(
           "flex-1 overflow-hidden min-h-0 transition-opacity duration-200",
@@ -114,40 +115,39 @@ export default function CalendarClient({
           />
         </div>
 
-          <div
-            className={cn(
-              layoutMode === "split" && "lg:col-span-4",
-              layoutMode === "list-only" && "lg:max-w-4xl lg:mx-auto",
-              "h-full min-h-0 flex flex-col"
-            )}>
-            {layoutMode === "list-only" && (
-              <div className="hidden lg:block mb-4">
-                <CalendarHeader
-                  year={selectedYear}
-                  selectedMonth={selectedMonth}
-                  onMonthChange={handleMonthChange}
-                  onYearChange={handleYearChange}
-                  onDateChange={handleDateChange}
-                />
-              </div>
-            )}
+        <div
+          className={cn(
+            layoutMode === "split" && "lg:col-span-4",
+            layoutMode === "list-only" && "lg:max-w-4xl lg:mx-auto",
+            "h-full min-h-0 flex flex-col"
+          )}>
+          {layoutMode === "list-only" && (
+            <div className="hidden lg:block mb-4">
+              <CalendarHeader
+                year={selectedYear}
+                selectedMonth={selectedMonth}
+                onMonthChange={handleMonthChange}
+                onYearChange={handleYearChange}
+                onDateChange={handleDateChange}
+              />
+            </div>
+          )}
 
-            <GameListHeader
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              onViewModeChange={setViewMode}
-              className="mb-4"
-            />
+          <GameListHeader
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onViewModeChange={setViewMode}
+            className="mb-4"
+          />
 
-            <GameList
-            
-              className="p-4 grid gap-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
-              games={sortedGames}
-              isLoading={isLoading}
-              layoutMode={layoutMode}
-              scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
-            />
-          </div>
+          <GameList
+            className="p-4 grid gap-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
+            games={sortedGames}
+            isLoading={isLoading}
+            layoutMode={layoutMode}
+            scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
+          />
+        </div>
       </div>
     </div>
   );
