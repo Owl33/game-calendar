@@ -71,8 +71,12 @@ export const GameList = memo(function GameList({
           <EmptyState />
         ) : (
           <motion.div
+            key={scrollKey}
             ref={listRef}
-            initial={false}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className={cn("", className)}>
             {mode === "horizontal" ? (
               <GameCarouselList

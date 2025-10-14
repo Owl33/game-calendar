@@ -143,6 +143,76 @@ export function FiltersPanel({
           onReset={resetDates}
           disabled={!f.startDate && !f.endDate && !f.onlyUpcoming}
         />
+
+        {/* 퀵 버튼 */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => {
+              const now = new Date();
+              const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+              onChange({
+                ...f,
+                startDate: oneYearAgo.toISOString().split("T")[0],
+                endDate: now.toISOString().split("T")[0],
+                onlyUpcoming: false,
+              });
+            }}>
+            최근 1년
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => {
+              const now = new Date();
+              const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+              onChange({
+                ...f,
+                startDate: fiveYearsAgo.toISOString().split("T")[0],
+                endDate: now.toISOString().split("T")[0],
+                onlyUpcoming: false,
+              });
+            }}>
+            최근 5년
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => {
+              const now = new Date();
+              const yearEnd = new Date(now.getFullYear(), 11, 31);
+              onChange({
+                ...f,
+                startDate: now.toISOString().split("T")[0],
+                endDate: yearEnd.toISOString().split("T")[0],
+                onlyUpcoming: false,
+              });
+            }}>
+            올해 예정
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={() => {
+              const now = new Date();
+              const nextYearStart = new Date(now.getFullYear() + 1, 0, 1);
+              const nextYearEnd = new Date(now.getFullYear() + 1, 11, 31);
+              onChange({
+                ...f,
+                startDate: nextYearStart.toISOString().split("T")[0],
+                endDate: nextYearEnd.toISOString().split("T")[0],
+                onlyUpcoming: false,
+              });
+            }}>
+            내년 예정
+          </Button>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <Input
             type="date"

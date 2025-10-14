@@ -1,10 +1,10 @@
 /**
- * CalendarDay - 캘린더 개별 날짜 셀
+ * CalendarDay - 캘린더 개별 날짜 셀 (수정 버전)
  */
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { Sheet } from "@/components/ui/sheet";
 import { Game } from "@/types/game.types";
 import { cn } from "@/lib/utils";
@@ -19,11 +19,7 @@ interface CalendarDayProps {
   onClick: () => void;
 }
 
-/**
- * 셀 높이에 따라 폰트 크기 클래스를 결정
- * @param cardHeight - 카드의 전체 높이
- * @returns Tailwind 폰트 크기 클래스
- */
+/** 셀 높이에 따른 폰트 크기 매핑(클래스는 Tailwind 유효 값만 사용) */
 function getFontSizeClasses(cardHeight: number): {
   daySize: string;
   gameSize: string;
@@ -45,72 +41,74 @@ function getFontSizeClasses(cardHeight: number): {
   }
 }
 
-/**
- * 셀 높이에 따라 표시 가능한 게임 수를 계산
- * @param cardElement - InteractiveCard DOM 요소
- * @returns 표시 가능한 게임 수
- */
+/** 셀 높이에 따라 표시 가능한 게임 수 계산 (안전가드 포함) */
 function calculateMaxGames(cardElement: HTMLDivElement): number {
-  const totalHeight = cardElement.offsetHeight;
+  const totalHeight = cardElement.offsetHeight || 0;
 
-  // ✅ 실제 렌더링되는 라인 높이에 맞춰 조정
-  // py-0.5 (4px) + icon(12px) + text + gap = 약 22-32px
-  let ITEM_LINE_HEIGHT = 22;
-  if (totalHeight >= 240) ITEM_LINE_HEIGHT = 32; // text-xl 기준
-  else if (totalHeight >= 120) ITEM_LINE_HEIGHT = 24; // text-sm 기준
-
-  const PADDING = 24; // ✅ p-3 = 12px * 2 = 24px
-  const SAFETY_MARGIN = 16; // ✅ 여유 공간 (오버플로우 방지)
-
-  // 헤더 높이 측정 (pb-1 포함됨)
+  // 헤더를 data-attribute로 찾도록 변경 (클래스 체인 의존 제거)
   const headerElement = cardElement.querySelector(
-    ".flex.items-center.justify-between"
-  ) as HTMLElement;
-  const headerHeight = headerElement ? headerElement.offsetHeight : 32;
+    "[data-calendar-day-header]"
+  ) as HTMLElement | null;
 
-  const availableHeight = totalHeight - headerHeight - PADDING - SAFETY_MARGIN;
-  const maxGames = Math.floor(availableHeight / ITEM_LINE_HEIGHT);
+  const headerHeight = headerElement?.offsetHeight ?? 32;
 
-  // 최소값 제한 없음 - 공간이 없으면 0개, 최대 15개
+  // 폰트 크기를 간접 반영: 높이에 따른 라인 높이 가정
+  let ITEM_LINE_HEIGHT = 18;
+  if (totalHeight >= 240) ITEM_LINE_HEIGHT = 28;
+  else if (totalHeight >= 120) ITEM_LINE_HEIGHT = 20;
+
+  const V_PADDING = 24; // p-3 수직 합산
+  const SAFETY_MARGIN = 16; // 하단 여유
+  const AVAILABLE = Math.max(0, totalHeight - headerHeight - V_PADDING - SAFETY_MARGIN);
+
+  const maxGames = Math.floor(AVAILABLE / ITEM_LINE_HEIGHT);
+
+  // 공간 없으면 0개, 최대 15개로 안전 제한
   return Math.max(0, Math.min(15, maxGames));
 }
 
 export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProps) {
   const hasGames = games.length > 0;
   const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+
+  // InteractiveCard가 ref를 DOM으로 포워딩하지 않을 수 있으므로
+  // 바깥에 측정용 래퍼 div를 두고 ref는 여기에 단다.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const [maxDisplayGames, setMaxDisplayGames] = useState(0);
-  const [fontSizes, setFontSizes] = useState({
-    daySize: "text-lg",
-    gameSize: "text-sm",
-    countSize: "text-xs",
-  });
+  const [fontSizes, setFontSizes] = useState(() => getFontSizeClasses(120));
 
-  // 셀 높이에 따라 표시 가능한 게임 수와 폰트 크기를 동적으로 계산
-  useEffect(() => {
-    if (!cardRef.current) return;
+  // 레이아웃 측정은 useLayoutEffect + rAF + ResizeObserver 조합으로 안정화
+  useLayoutEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
 
-    const updateSizes = () => {
-      if (cardRef.current) {
-        const height = cardRef.current.offsetHeight;
-        const newMaxGames = calculateMaxGames(cardRef.current);
-        const newFontSizes = getFontSizeClasses(height);
+    let frame = 0;
+    let ro: ResizeObserver | null = null;
 
-        setMaxDisplayGames(newMaxGames);
-        setFontSizes(newFontSizes);
-      }
+    const measure = () => {
+      const height = el.offsetHeight || 0;
+      setFontSizes(getFontSizeClasses(height));
+      setMaxDisplayGames(calculateMaxGames(el));
     };
 
-    // 초기 계산 - 약간 지연시켜서 헤더가 렌더링된 후 측정
-    const timer = setTimeout(updateSizes, 0);
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
 
-    // ResizeObserver로 크기 변화 감지
-    const resizeObserver = new ResizeObserver(updateSizes);
-    resizeObserver.observe(cardRef.current);
+    // 초기 측정
+    schedule();
+
+    // 크기 변화 감지
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(schedule);
+      ro.observe(el);
+    }
 
     return () => {
-      clearTimeout(timer);
-      resizeObserver.disconnect();
+      cancelAnimationFrame(frame);
+      ro?.disconnect();
     };
   }, [games]);
 
@@ -119,7 +117,7 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
   const hoverContent = hasGames ? (
     <div
       className={cn(
-        "absolute min-w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-[100]",
+        "absolute min-w-48 bottom-full left-1/2 -translate-x-1/2 mb-2 z-[100]",
         "transition-all duration-150 ease-out",
         isHovered
           ? "opacity-100 -translate-y-1 scale-100"
@@ -138,7 +136,7 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
         ))}
         {games.length > 5 && (
           <div className="flex items-center gap-1 py-0.5">
-            <div className={cn("min-w-[3px] h-3", "bg-info")} />
+            <div className="min-w-[3px] h-3 bg-info" />
             <span className="text-sm font-medium truncate">+ {games.length - 5}개 더</span>
           </div>
         )}
@@ -148,19 +146,21 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
 
   return (
     <div
+      ref={wrapperRef}
       className="relative w-full h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}>
       <InteractiveCard
-        ref={cardRef}
         className={cn(
           "p-3 relative overflow-hidden rounded-2xl w-full h-full flex flex-col",
           hasGames ? "bg-card cursor-pointer" : "bg-card/60 opacity-60",
           isSelected && ["ring-2 ring-primary ring-offset-2 ring-offset-background"]
         )}
         onClick={hasGames ? onClick : undefined}>
-        {/* 헤더: 날짜와 게임 인디케이터 */}
-        <div className="flex items-center pb-1 justify-between flex-shrink-0">
+        {/* 헤더 (data-attribute로 식별) */}
+        <div
+          data-calendar-day-header
+          className="flex items-center pb-1 justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <p
               className={cn(
@@ -179,12 +179,12 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
           </div>
 
           {/* 인기도 높은 게임 스타 표시 */}
-          {hasGames && games.some((game) => isAAAgame(game)) && (
+          {hasGames && games.some((g) => isAAAgame(g)) && (
             <Star className="w-4 h-4 text-highlight fill-highlight" />
           )}
         </div>
 
-        {/* 게임 정보 */}
+        {/* 게임 목록 */}
         {hasGames ? (
           <div className="space-y-0 overflow-hidden flex-1 min-h-0">
             {displayGames.map((game) => (

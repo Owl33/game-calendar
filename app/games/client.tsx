@@ -225,13 +225,13 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               <Select
                 value={String(filters.pageSize)}
                 onValueChange={(v) =>
-                  updateFilters((f) => ({ ...f, pageSize: Math.min(50, Math.max(10, Number(v))) }))
+                  updateFilters((f) => ({ ...f, pageSize: Math.min(40, Math.max(12, Number(v))) }))
                 }>
                 <SelectTrigger className="w-[100px] h-9">
                   <SelectValue placeholder="페이지" />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  {[10, 12, 18, 20, 24, 30, 40, 50].map((n) => (
+                  {[12, 18, 24, 30, 40].map((n) => (
                     <SelectItem
                       key={n}
                       value={String(n)}>
