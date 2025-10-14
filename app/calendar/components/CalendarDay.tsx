@@ -19,98 +19,99 @@ interface CalendarDayProps {
   onClick: () => void;
 }
 
-/**
- * 셀 높이에 따라 폰트 크기 클래스를 결정
- * @param cardHeight - 카드의 전체 높이
- * @returns Tailwind 폰트 크기 클래스
- */
+/** 카드(셀) 전체 높이에 따라 폰트 크기 구간 결정 */
 function getFontSizeClasses(cardHeight: number): {
   daySize: string;
   gameSize: string;
   countSize: string;
+  lineHeightPx: number; // 리스트 아이템 라인 높이(px) 반환 (게임명 한 줄의 총 라인 높이)
 } {
-  // 0~119: 매우 작음, 120~239: 보통, 240 이상: 큼  (일관된 구간)
+  // 0~119: 작음, 120~239: 중간, 240+: 큼
   if (cardHeight >= 240) {
+    // text-xl 가독성 기준 라인 높이
     return {
-      daySize: "text-3xl", // 크다
+      daySize: "text-3xl",
       gameSize: "text-xl",
       countSize: "text-base",
+      lineHeightPx: 32,
     };
-  } else {
+  } else if (cardHeight >= 120) {
     return {
-      daySize: "text-lg", // 보통
+      daySize: "text-lg",
       gameSize: "text-sm",
       countSize: "text-xs",
+      lineHeightPx: 24,
+    };
+  } else {
+    // 아주 작은 셀
+    return {
+      daySize: "text-lg",
+      gameSize: "text-sm",
+      countSize: "text-xs",
+      lineHeightPx: 22,
     };
   }
 }
 
-/**
- * 셀 높이에 따라 표시 가능한 게임 수를 계산
- * @param cardElement - InteractiveCard DOM 요소
- * @returns 표시 가능한 게임 수
- */
-function calculateMaxGames(cardElement: HTMLDivElement): number {
-  const totalHeight = cardElement.offsetHeight;
-
-  // ✅ 실제 렌더링되는 라인 높이에 맞춰 조정
-  // py-0.5 (4px) + icon(12px) + text + gap = 약 22-32px
-  let ITEM_LINE_HEIGHT = 22;
-  if (totalHeight >= 240) ITEM_LINE_HEIGHT = 32; // text-xl 기준
-  else if (totalHeight >= 120) ITEM_LINE_HEIGHT = 24; // text-sm 기준
-
-  const PADDING = 24; // ✅ p-3 = 12px * 2 = 24px
-  const SAFETY_MARGIN = 16; // ✅ 여유 공간 (오버플로우 방지)
-
-  // 헤더 높이 측정 (pb-1 포함됨)
-  const headerElement = cardElement.querySelector(
-    ".flex.items-center.justify-between"
-  ) as HTMLElement;
-  const headerHeight = headerElement ? headerElement.offsetHeight : 32;
-
-  const availableHeight = totalHeight - headerHeight - PADDING - SAFETY_MARGIN;
-  const maxGames = Math.floor(availableHeight / ITEM_LINE_HEIGHT);
-
-  // 최소값 제한 없음 - 공간이 없으면 0개, 최대 15개
-  return Math.max(0, Math.min(15, maxGames));
-}
-
 export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProps) {
   const hasGames = games.length > 0;
+
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   const [maxDisplayGames, setMaxDisplayGames] = useState(0);
-  const [fontSizes, setFontSizes] = useState({
-    daySize: "text-lg",
-    gameSize: "text-sm",
-    countSize: "text-xs",
-  });
+  const [fontSizes, setFontSizes] = useState(() =>
+    getFontSizeClasses(0)
+  );
 
-  // 셀 높이에 따라 표시 가능한 게임 수와 폰트 크기를 동적으로 계산
   useEffect(() => {
-    if (!cardRef.current) return;
+    let raf = 0;
 
-    const updateSizes = () => {
-      if (cardRef.current) {
-        const height = cardRef.current.offsetHeight;
-        const newMaxGames = calculateMaxGames(cardRef.current);
-        const newFontSizes = getFontSizeClasses(height);
+    const measure = () => {
+      // rAF로 합쳐서 깜빡임 최소화
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const card = cardRef.current;
+        const content = contentRef.current;
+        if (!card || !content) return;
 
-        setMaxDisplayGames(newMaxGames);
-        setFontSizes(newFontSizes);
-      }
+        const cardH = card.clientHeight;
+        const sizes = getFontSizeClasses(cardH);
+
+        // 리스트 영역의 실제 사용 가능 높이만으로 계산
+        const contentH = content.clientHeight;
+        const max = Math.floor(contentH / sizes.lineHeightPx);
+
+        setFontSizes(sizes);
+        setMaxDisplayGames(Math.max(0, Math.min(15, max)));
+      });
     };
 
-    // 초기 계산 - 약간 지연시켜서 헤더가 렌더링된 후 측정
-    const timer = setTimeout(updateSizes, 0);
+    // 초기 측정
+    measure();
 
-    // ResizeObserver로 크기 변화 감지
-    const resizeObserver = new ResizeObserver(updateSizes);
-    resizeObserver.observe(cardRef.current);
+    // 크기 변화 감지
+    const cardObserver = new ResizeObserver(measure);
+    const contentObserver = new ResizeObserver(measure);
+
+    if (cardRef.current) cardObserver.observe(cardRef.current);
+    if (contentRef.current) contentObserver.observe(contentRef.current);
+
+    // games가 바뀌면(내용이 길어져 줄바꿈/랩핑 변화 가능) 재측정
+    // 또한 hover 등으로 스크롤바 유무가 달라질 수 있으니 재측정
+    // 여기서는 games 길이/이름 등이 바뀌었을 때만 의존
+    // (내용이 매우 잦게 바뀐다면 디바운스 고려)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const contentLenKey = games.length;
+
+    // 즉시 한 번 더
+    measure();
 
     return () => {
-      clearTimeout(timer);
-      resizeObserver.disconnect();
+      cancelAnimationFrame(raf);
+      cardObserver.disconnect();
+      contentObserver.disconnect();
     };
   }, [games]);
 
@@ -124,21 +125,20 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
         isHovered
           ? "opacity-100 -translate-y-1 scale-100"
           : "opacity-0 translate-y-[-10px] scale-90 pointer-events-none"
-      )}>
+      )}
+    >
       <Sheet className="p-3">
         <p className="font-semibold text-sm mb-1">이 날의 게임 ({games.length}개)</p>
 
         {games.slice(0, 5).map((game) => (
-          <div
-            key={game.gameId}
-            className="flex items-center gap-1 py-1">
+          <div key={game.gameId} className="flex items-center gap-1 py-1">
             <div className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")} />
             <span className="text-sm font-medium truncate">{game.name}</span>
           </div>
         ))}
         {games.length > 5 && (
           <div className="flex items-center gap-1 py-0.5">
-            <div className={cn("min-w-[3px] h-3", "bg-info")} />
+            <div className="min-w-[3px] h-3 bg-info" />
             <span className="text-sm font-medium truncate">+ {games.length - 5}개 더</span>
           </div>
         )}
@@ -150,7 +150,8 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
     <div
       className="relative w-full h-full"
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}>
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <InteractiveCard
         ref={cardRef}
         className={cn(
@@ -158,8 +159,9 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
           hasGames ? "bg-card cursor-pointer" : "bg-card/60 opacity-60",
           isSelected && ["ring-2 ring-primary ring-offset-2 ring-offset-background"]
         )}
-        onClick={hasGames ? onClick : undefined}>
-        {/* 헤더: 날짜와 게임 인디케이터 */}
+        onClick={hasGames ? onClick : undefined}
+      >
+        {/* 헤더: 날짜와 게임 인디케이터 (고정 높이 영역) */}
         <div className="flex items-center pb-1 justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <p
@@ -168,7 +170,8 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
                 fontSizes.daySize,
                 isSelected ? "text-primary font-extrabold" : "text-foreground",
                 hasGames && !isSelected && "text-accent-foreground"
-              )}>
+              )}
+            >
               {day}
               {hasGames && (
                 <span className={cn("ml-1 opacity-60 font-medium", fontSizes.countSize)}>
@@ -178,19 +181,16 @@ export function CalendarDay({ day, games, isSelected, onClick }: CalendarDayProp
             </p>
           </div>
 
-          {/* 인기도 높은 게임 스타 표시 */}
-          {hasGames && games.some((game) => isAAAgame(game)) && (
+          {hasGames && games.some((g) => isAAAgame(g)) && (
             <Star className="w-4 h-4 text-highlight fill-highlight" />
           )}
         </div>
 
-        {/* 게임 정보 */}
+        {/* 리스트: flex-1 영역의 실제 높이만을 기준으로 max 표시 수 계산 */}
         {hasGames ? (
-          <div className="space-y-0 overflow-hidden flex-1 min-h-0">
+          <div ref={contentRef} className="space-y-0 overflow-hidden flex-1 min-h-0">
             {displayGames.map((game) => (
-              <div
-                key={game.gameId}
-                className="flex items-center gap-1 py-0.5">
+              <div key={game.gameId} className="flex items-center gap-1 py-0.5">
                 <div
                   className={cn("min-w-[3px] h-3", isAAAgame(game) ? "bg-highlight" : "bg-info")}
                 />
