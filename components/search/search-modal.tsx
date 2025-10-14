@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "motion/react";
+import { motion, type Transition } from "motion/react";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Transition } from "motion/react";
 
 /* ====== Types ====== */
 export type SearchItem = {
@@ -40,29 +39,6 @@ function useDebounce<T>(value: T, delay = 250) {
   return v;
 }
 
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
-  useEffect(() => {
-    const m = window.matchMedia(query);
-    const onChange = () => setMatches(m.matches);
-    onChange();
-
-    if ("addEventListener" in m) {
-      m.addEventListener("change", onChange as EventListener);
-    } else {
-      (m as any).addListener?.(onChange);
-    }
-    return () => {
-      if ("removeEventListener" in m) {
-        m.removeEventListener("change", onChange as EventListener);
-      } else {
-        (m as any).removeListener?.(onChange);
-      }
-    };
-  }, [query]);
-  return matches;
-}
-
 function formatDateISO(d?: string | null) {
   if (!d) return "출시일 정보 없음";
   try {
@@ -88,8 +64,6 @@ function highlight(text: string, q: string) {
   );
 }
 
-/* ====== Mobile UX helpers ====== */
-
 /** 바디 스크롤 잠금 (모달 열렸을 때 배경 스크롤 방지) */
 function useBodyScrollLock(locked: boolean) {
   useLayoutEffect(() => {
@@ -112,87 +86,6 @@ function useBodyScrollLock(locked: boolean) {
       el.style.paddingRight = prevPaddingRight || "";
     };
   }, [locked]);
-}
-
-/**
- * VisualViewport로 실제 뷰포트 높이와 키보드 높이 추정
- * CSS 변수로 --vvh, --kb 설정 (루트에 주입)
- * 모바일 키보드 대응: 안정적인 높이 계산 + 부드러운 전환
- */
-function useVisualViewportVars(enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) return;
-
-    const root = document.documentElement;
-    const vv = window.visualViewport;
-
-    const apply = () => {
-      const innerH = window.innerHeight; // 레이아웃 뷰포트 높이
-      const vvh = vv?.height ?? innerH;
-      const offsetTop = vv?.offsetTop ?? 0;
-      const kb = Math.max(0, innerH - vvh - offsetTop); // 키보드(추정)
-
-      root.style.setProperty("--vvh", `${vvh}px`);
-      root.style.setProperty("--kb", `${kb}px`);
-      // 모달 실제 사용 가능 높이 (상단 툴바 등 제외)
-      root.style.setProperty("--modal-available-height", `${vvh - 16}px`); // 16px = 상하 margin
-      // 안전 여백(iOS 홈 인디케이터)도 고려
-      root.style.setProperty("--safe-bottom", `env(safe-area-inset-bottom, 0px)`);
-    };
-
-    apply();
-
-    if (vv) {
-      vv.addEventListener("resize", apply);
-      vv.addEventListener("scroll", apply);
-    }
-    const onWinResize = () => apply();
-    window.addEventListener("resize", onWinResize);
-
-    return () => {
-      root.style.removeProperty("--vvh");
-      root.style.removeProperty("--kb");
-      root.style.removeProperty("--modal-available-height");
-      root.style.removeProperty("--safe-bottom");
-      if (vv) {
-        vv.removeEventListener("resize", apply);
-        vv.removeEventListener("scroll", apply);
-      }
-      window.removeEventListener("resize", onWinResize);
-    };
-  }, [enabled]);
-}
-
-/**
- * 포커스 시 입력창이 가려지면 자동 인뷰
- * 모바일에서 키보드가 올라올 때 입력창이 시야에 보이도록 보장
- */
-function useKeepInputVisible<T extends HTMLElement>(ref: React.RefObject<T>, isMobile: boolean) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !isMobile) return;
-
-    // 키보드 애니메이션 완료 대기를 위한 더 긴 딜레이
-    const onFocus = () => {
-      setTimeout(() => {
-        // 모달 컨테이너 내에서만 스크롤 (페이지 전체 스크롤 방지)
-        const scrollContainer = el.closest("[data-modal-scroller='true']");
-        if (scrollContainer) {
-          const containerRect = scrollContainer.getBoundingClientRect();
-          const inputRect = el.getBoundingClientRect();
-          const relativeTop = inputRect.top - containerRect.top;
-
-          // 입력창이 컨테이너 상단 1/3 지점에 오도록 스크롤
-          if (relativeTop < 0 || relativeTop > containerRect.height / 3) {
-            scrollContainer.scrollTop = Math.max(0, scrollContainer.scrollTop + relativeTop - 60);
-          }
-        }
-      }, 350); // iOS 키보드 애니메이션 시간 고려
-    };
-
-    el.addEventListener("focus", onFocus);
-    return () => el.removeEventListener("focus", onFocus);
-  }, [ref, isMobile]);
 }
 
 /* ====== Result Item ====== */
@@ -224,13 +117,15 @@ function ResultItem({
         active
           ? "border-primary/40 ring-2 ring-primary/30"
           : "border-border/50 hover:border-border/70"
-      )}>
+      )}
+    >
       <div className="flex gap-3 sm:gap-4">
         <div
           className={cn(
             "shrink-0 rounded-lg overflow-hidden border",
             active ? "border-primary/40" : "border-border/50"
-          )}>
+          )}
+        >
           {item.headerImage ? (
             <div className="relative h-24 w-28 sm:h-20 sm:w-32">
               <Image
@@ -259,7 +154,8 @@ function ResultItem({
                     ? "bg-blue-500/15 text-blue-600"
                     : "bg-slate-500/15 text-slate-600"
                 )}
-                title="인기도 점수">
+                title="인기도 점수"
+              >
                 <Star className="h-3.5 w-3.5" />
                 {item.popularityScore}
               </span>
@@ -268,9 +164,7 @@ function ResultItem({
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">{dateStr}</span>
             {typeof item.followersCache === "number" && item.followersCache > 0 && (
-              <Badge
-                variant="secondary"
-                className="rounded-full">
+              <Badge variant="secondary" className="rounded-full">
                 팔로워 {Intl.NumberFormat().format(item.followersCache)}
               </Badge>
             )}
@@ -298,7 +192,7 @@ function ResultSkeleton() {
   );
 }
 
-/* ====== Component ====== */
+/* ====== Component (심플 · 모바일 100%) ====== */
 export default function SearchModal({ open, onClose, initialQuery = "" }: SearchModalProps) {
   const [query, setQuery] = useState(initialQuery);
   const debouncedQ = useDebounce(query, 250);
@@ -306,41 +200,15 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   const queryClient = useQueryClient();
 
   const [activeIdx, setActiveIdx] = useState<number>(-1);
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const isMobile = useMediaQuery("(max-width: 639px)");
-  const isTablet = useMediaQuery("(min-width: 640px) and (max-width: 1023px)");
-  useKeepInputVisible(inputRef as React.RefObject<HTMLInputElement>, isMobile || isTablet);
 
-  // 모바일 UX 핵심: 뷰포트/키보드 변수 주입 + 바디 스크롤 잠금
-  useVisualViewportVars(open && (isMobile || isTablet));
+  // 바디 스크롤 잠금
   useBodyScrollLock(open);
-
-  // 키보드 상태 감지 (모바일/태블릿)
-  useEffect(() => {
-    if (!open || (!isMobile && !isTablet)) return;
-
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const checkKeyboard = () => {
-      const innerH = window.innerHeight;
-      const vvh = vv.height;
-      const kbHeight = Math.max(0, innerH - vvh - (vv.offsetTop ?? 0));
-      // 키보드가 100px 이상 올라왔으면 활성 상태로 간주
-      setIsKeyboardOpen(kbHeight > 100);
-    };
-
-    checkKeyboard();
-    vv.addEventListener("resize", checkKeyboard);
-    return () => vv.removeEventListener("resize", checkKeyboard);
-  }, [open, isMobile, isTablet]);
 
   const handleClose = useCallback(() => {
     setQuery("");
     setActiveIdx(-1);
-    setIsKeyboardOpen(false);
     queryClient.removeQueries({ queryKey: ["searchGames"], exact: false });
     onClose();
   }, [onClose, queryClient]);
@@ -357,14 +225,13 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
     }
   }, [open, initialQuery]);
 
-  // Escape로 닫기 + iOS overscroll 제어
+  // ESC & 배경 터치 스크롤 방지
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     const stopTouchMove = (e: TouchEvent) => {
-      // 모달 영역 안에서만 스크롤 허용
       const target = e.target as HTMLElement | null;
       const scroller = target?.closest?.("[data-modal-scroller='true']") as HTMLElement | null;
       if (!scroller) {
@@ -373,7 +240,6 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
       }
     };
     document.addEventListener("keydown", onKey);
-    // iOS에서 배경 스크롤 방지 (모달 외부 touchmove 막기)
     document.addEventListener("touchmove", stopTouchMove, { passive: false });
     return () => {
       document.removeEventListener("keydown", onKey);
@@ -433,18 +299,12 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
     [results, activeIdx]
   );
 
-  // 애니메이션 분기 (모바일/태블릿 통합)
-  const isMobileOrTablet = isMobile || isTablet;
-  const modalInitial = isMobileOrTablet
-    ? { y: "100%", opacity: 1, scale: 1 }
-    : { opacity: 0, scale: 0.9, y: 20 };
-  const modalAnimate = isMobileOrTablet
-    ? { y: 0, opacity: 1, scale: 1 }
-    : { opacity: 1, scale: 1, y: 0 };
-  const MOBILE_TRANSITION: Transition = { type: "spring", stiffness: 280, damping: 28 };
-  const DESKTOP_TRANSITION: Transition = { duration: 0.2 };
-
   if (!open) return null;
+
+  // 단일 애니메이션(모바일/데스크톱 공통, 심플)
+  const MODAL_INITIAL = { opacity: 0, y: 16 };
+  const MODAL_ANIMATE = { opacity: 1, y: 0 };
+  const MODAL_TRANSITION: Transition = { duration: 0.2 };
 
   return (
     <>
@@ -457,67 +317,39 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
         style={{ touchAction: "none" }}
       />
 
-      {/* Container */}
+
       <motion.div
         className={cn(
           "fixed z-[101] overflow-hidden flex flex-col overscroll-contain",
-          isMobileOrTablet
-            ? "inset-x-0 bottom-0 rounded-t-2xl bg-card/95 backdrop-blur-xl shadow-2xl border-t border-border/60"
-            : "top-1/2 left-1/2 w-full max-w-2xl mx-4 h-[620px] sm:h-[540px] rounded-2xl bg-card/90 backdrop-blur-xl shadow-2xl border border-border/60 -translate-x-1/2 -translate-y-1/2"
+          // 기본(모바일) 풀스크린
+          "inset-0 h-[100dvh] w-full bg-card/95 backdrop-blur-xl rounded-none border-t border-border/60",
+          // sm 이상부터는 중앙 모달로
+          "sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2",
+          "sm:w-full sm:max-w-2xl sm:h-[540px] sm:rounded-2xl sm:border sm:border-border/60 sm:shadow-2xl"
         )}
-        initial={modalInitial}
-        animate={modalAnimate}
-        transition={isMobileOrTablet ? MOBILE_TRANSITION : DESKTOP_TRANSITION}
+        initial={MODAL_INITIAL}
+        animate={MODAL_ANIMATE}
+        transition={MODAL_TRANSITION}
         role="dialog"
         aria-modal="true"
-        // 키보드 열려있을 때는 드래그 비활성화 (오동작 방지)
-        drag={isMobileOrTablet && !isKeyboardOpen ? "y" : false}
-        dragConstraints={isMobileOrTablet ? { top: 0, bottom: 0 } : undefined}
-        dragElastic={isMobileOrTablet ? 0.2 : undefined}
-        onDragEnd={(e, info) => {
-          if (!isMobileOrTablet || isKeyboardOpen) return;
-          if (info.offset.y > 120 || info.velocity.y > 800) handleClose();
-        }}
-        /* 모바일/태블릿에서 키보드 고려: 안정적인 높이 + 부드러운 전환 */
-        style={
-          isMobileOrTablet
-            ? {
-                // 고정 높이 전략: 키보드 상태와 무관하게 안정적인 높이 유지
-                height: isKeyboardOpen
-                  ? "calc(var(--modal-available-height, 90vh))"
-                  : "min(85vh, calc(var(--vvh, 100vh) - 32px))",
-                maxHeight: "calc(var(--vvh, 100vh) - 16px)",
-                // 부드러운 전환 애니메이션
-                transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                // 하단 안전 영역 확보
-                paddingBottom: isKeyboardOpen ? "8px" : "max(env(safe-area-inset-bottom, 0px), 8px)",
-              }
-            : undefined
-        }>
+      >
         {/* Header */}
-        <div
-          className={cn(
-            "flex items-center justify-between flex-shrink-0 border-border/60",
-            isMobileOrTablet ? "p-4 border-b" : "p-5 border-b"
-          )}>
-          {isMobileOrTablet && (
-            <div className="mx-auto absolute left-1/2 -translate-x-1/2 -top-2 w-12 h-1.5 rounded-full bg-muted/70" />
-          )}
+        <div className="flex items-center justify-between flex-shrink-0 p-4 sm:p-5 border-b border-border/60">
+          {/* 모바일 상단 핸들 같은 건 최소화 위해 제거(심플) */}
           <h2 className="text-lg font-semibold text-foreground">게임 검색</h2>
           <Button
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0 rounded-full"
             onClick={handleClose}
-            aria-label="닫기">
+            aria-label="닫기"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Input */}
-        <div
-          className={cn("flex-shrink-0", isMobileOrTablet ? "p-4 pb-2" : "p-5 pb-3")}
-          data-modal-scroller="true">
+        <div className="flex-shrink-0 p-4 sm:p-5" data-modal-scroller="true">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -531,23 +363,16 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
               onKeyDown={onKeyDownInput}
               className="pl-10 h-12 rounded-xl"
               autoFocus
-              // 모바일/태블릿 입력 UX 강화
               inputMode="search"
               autoComplete="off"
               enterKeyHint="search"
               spellCheck={false}
-              // iOS 키보드 자동 줌 방지 (font-size 16px 이상 필수)
-              style={{ fontSize: "16px" }}
+              style={{ fontSize: "16px" }} // iOS 줌 방지
             />
           </div>
-          {!isMobileOrTablet && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              최소 2자 입력 · ↑/↓ 선택 · Enter 이동 · Esc 닫기
-            </p>
-          )}
-          {isMobileOrTablet && !isKeyboardOpen && (
-            <p className="mt-2 text-xs text-muted-foreground">최소 2자 입력 · Enter 이동 · Esc 닫기</p>
-          )}
+          <p className="mt-2 text-xs text-muted-foreground hidden sm:block">
+            최소 2자 입력 · ↑/↓ 선택 · Enter 이동 · Esc 닫기
+          </p>
         </div>
 
         {/* Results */}
@@ -555,20 +380,15 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
           ref={listRef}
           data-modal-scroller="true"
           className={cn(
-            "relative flex-1 py-4 min-h-0 overflow-y-auto space-y-3",
-            isMobileOrTablet ? "px-4 pb-4" : "px-5 pb-5",
-            // 키보드 열렸을 때 스크롤 영역 최적화
-            isKeyboardOpen && "pb-2"
+            "relative flex-1 min-h-0 overflow-y-auto space-y-3 px-4 pb-4 sm:px-5 sm:pb-5 pt-4"
           )}
           role="listbox"
           aria-label="검색 결과"
-          // iOS 바운스 방지 + 스크롤 성능 + 모멘텀 스크롤
           style={{
             WebkitOverflowScrolling: "touch",
             overscrollBehavior: "contain",
-            // 키보드 상태에 따른 동적 패딩
-            paddingBottom: isKeyboardOpen ? "8px" : undefined,
-          }}>
+          }}
+        >
           {/* 상단 로딩바 */}
           {enabled && isFetching && (
             <motion.div
@@ -584,7 +404,8 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 rounded-2xl text-sm">
+              className="mt-2 rounded-2xl text-sm"
+            >
               <div className="flex items-center gap-2 text-foreground">
                 <Search className="h-4 w-4 opacity-80" />
                 <span className="font-medium">빠른 검색 팁</span>
@@ -600,7 +421,8 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
                           setQuery(s);
                           setActiveIdx(-1);
                         }}
-                        className="text-xs rounded-full border border-border/60 px-2.5 py-1 hover:bg-accent transition">
+                        className="text-xs rounded-full border border-border/60 px-2.5 py-1 hover:bg-accent transition"
+                      >
                         {s}
                       </button>
                     ))}
@@ -626,7 +448,8 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 rounded-2xl border border-dashed border-border/60 bg-yellow-500/5 p-5">
+              className="mt-2 rounded-2xl border border-dashed border-border/60 bg-yellow-500/5 p-5"
+            >
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm font-medium text-yellow-700">2자 이상 입력해 주세요</span>
@@ -659,7 +482,8 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 rounded-2xl border border-dashed border-border/60 p-8 text-center">
+              className="mt-2 rounded-2xl border border-dashed border-border/60 p-8 text-center"
+            >
               <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                 <Search className="h-5 w-5 text-muted-foreground" />
               </div>
@@ -675,7 +499,8 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
                       setQuery(s);
                       setActiveIdx(-1);
                     }}
-                    className="text-xs rounded-full border border-border/60 px-2.5 py-1 hover:bg-accent transition">
+                    className="text-xs rounded-full border border-border/60 px-2.5 py-1 hover:bg-accent transition"
+                  >
                     {s}
                   </button>
                 ))}
