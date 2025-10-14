@@ -54,8 +54,7 @@ export function CalendarGrid({
 
       {/* 날짜 그리드 */}
       <div
-        key={`${year}-${month}`}
-        className="grid grid-cols-7 px-2 flex-1 min-h-0"
+        className="grid grid-cols-7 px-2 flex-1 min-h-0 "
         style={{
           gap: "0.75rem",
           gridTemplateRows: `repeat(${rows}, 1fr)`,
