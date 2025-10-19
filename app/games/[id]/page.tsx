@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: { params: GamePageParams }): 
   const limitedDescription = plainDescription.slice(0, 155);
   const description =
     limitedDescription.length === plainDescription.length ? limitedDescription : `${limitedDescription}…`;
-  const title = `${game.name} 출시 정보 | 릴리즈픽`;
+  const title = `${game.name} `;
   const ogUrl = absoluteUrl(`/games/${id}`);
   const ogImage = game.headerImage ? absoluteUrl(game.headerImage) : absoluteUrl("/og-image.png");
 
