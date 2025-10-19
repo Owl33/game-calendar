@@ -20,16 +20,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/highlights`,
+      url: `${siteUrl}/games`,
       lastModified,
       changeFrequency: "daily",
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/games`,
+      url: `${siteUrl}/highlights`,
       lastModified,
-      changeFrequency: "daily",
+      changeFrequency: "always",
       priority: 0.7,
     },
+
   ];
 }
