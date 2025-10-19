@@ -61,7 +61,6 @@ export default function HighlightsPage() {
       {/* ===== COLLAGE HERO ===== */}
       <section className="relative">
         <div className="max-w-3xl mb-8">
-          <h1 className="font-bold text-4xl mb-8">게임 캘린더</h1>
           <div className="flex flex-wrap gap-2 mt-4">
             <Button
               asChild

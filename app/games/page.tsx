@@ -1,13 +1,33 @@
-//app/gaems/page.tsx
+// app/games/page.tsx
 
+import type { Metadata } from "next";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 import GamesClient from "./client";
 import { parseFiltersFromSearchParams, allGamesKey } from "@/utils/searchParams";
 import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
 import { cookies } from "next/headers"; // ✅ 추가
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "전체 게임",
+  description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
+  alternates: {
+    canonical: "/games",
+  },
+  openGraph: {
+    title: "전체 게임",
+    description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
+    url: absoluteUrl("/games"),
+  },
+  twitter: {
+    card: "summary",
+    title: "전체 게임",
+    description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
+  },
+};
 
 // (동일) canonicalize / stableSerialize 유지
 function canonicalize(f: FiltersState): FiltersState {

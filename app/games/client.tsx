@@ -192,13 +192,13 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
           <div className="flex items-center flex-wrap justify-between mb-4 lg:mb-3">
             <div className="text-sm flex items-center gap-4"></div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Select
                 value={filters.sortBy}
                 onValueChange={(v: FiltersState["sortBy"]) =>
                   updateFilters((f) => ({ ...f, sortBy: v }))
                 }>
-                <SelectTrigger className="w-[140px] h-9">
+                <SelectTrigger className="w-[90px] h-9">
                   <SelectValue placeholder="정렬 기준" />
                 </SelectTrigger>
                 <SelectContent position="popper">
@@ -213,7 +213,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 onValueChange={(v: FiltersState["sortOrder"]) =>
                   updateFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
                 }>
-                <SelectTrigger className="w-[110px] h-9">
+                <SelectTrigger className="w-[100px] h-9">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent position="popper">
@@ -227,7 +227,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
                 onValueChange={(v) =>
                   updateFilters((f) => ({ ...f, pageSize: Math.min(40, Math.max(12, Number(v))) }))
                 }>
-                <SelectTrigger className="w-[100px] h-9">
+                <SelectTrigger className="w-[80px] h-9">
                   <SelectValue placeholder="페이지" />
                 </SelectTrigger>
                 <SelectContent position="popper">

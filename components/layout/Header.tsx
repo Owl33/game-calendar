@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchModal from "@/components/search/search-modal";
-
+import Image from "next/image";
 interface HeaderProps {
   className?: string;
 }
@@ -40,16 +40,25 @@ export function Header({ className }: HeaderProps) {
   }, [open]);
 
   return (
-    <header className={cn("border-b border-border/40 h-14", className)}>
+    <header className={cn("border-b border-border/40 h-16", className)}>
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* 로고 */}
         <Link
           href="/"
-          className="flex items-center gap-2">
-          <h1 className="font-bold text-xl gradient-header-title cursor-pointer hover:opacity-80 transition-opacity">
+          className=" flex items-center gap-2">
+          {/* <h1 className="font-bold text-xl gradient-header-title cursor-pointer hover:opacity-80 transition-opacity">
             Game Calendar
-          </h1>
-        </Link>
+          </h1> */}
+
+
+      <Image
+        src="/header-logo.png"
+        alt="ReleasePicks"
+        width={0}
+        height={0}
+            style={{width:'auto',height:'auto'}}
+></Image>  
+            </Link>
 
         {/* 네비 + 검색 버튼 */}
         <div className="flex items-center gap-4">
