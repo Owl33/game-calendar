@@ -154,6 +154,7 @@ function GameMediaGallery({
                       <Image
                         src={m.url}
                         alt={`${gameName} media ${i + 1}`}
+                      priority
                         fill
                         className="object-cover"
                         sizes="50vw"
