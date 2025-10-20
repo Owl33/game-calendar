@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: { params: GamePageParams }): 
 
   if (!detail?.game) {
     return {
-      title: "게임 정보를 찾을 수 없어요 | 릴리즈픽",
+      title: "게임 정보를 찾을 수 없어요 : 릴리즈픽",
       description: "요청하신 게임 내용을 찾을 수 없습니다. 다른 게임을 검색해 보세요.",
       alternates: {
         canonical: `/games/${id}`,
@@ -59,13 +59,13 @@ export async function generateMetadata({ params }: { params: GamePageParams }): 
         follow: false,
       },
       openGraph: {
-        title: "게임 정보를 찾을 수 없어요 | 릴리즈픽",
+        title: "게임 정보를 찾을 수 없어요 : 릴리즈픽",
         description: "요청하신 게임 내용을 찾을 수 없습니다. 다른 게임을 검색해 보세요.",
         url: absoluteUrl(`/games/${id}`),
       },
       twitter: {
         card: "summary",
-        title: "게임 정보를 찾을 수 없어요 | 릴리즈픽",
+        title: "게임 정보를 찾을 수 없어요 : 릴리즈픽",
         description: "요청하신 게임 내용을 찾을 수 없습니다. 다른 게임을 검색해 보세요.",
       },
     };
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: { params: GamePageParams }): 
   const limitedDescription = plainDescription.slice(0, 155);
   const description =
     limitedDescription.length === plainDescription.length ? limitedDescription : `${limitedDescription}…`;
-  const title = `${game.name} `;
+  const title = `${game.name} : 릴리즈픽`;
   const ogUrl = absoluteUrl(`/games/${id}`);
   const ogImage = game.headerImage ? absoluteUrl(game.headerImage) : absoluteUrl("/og-image.png");
 

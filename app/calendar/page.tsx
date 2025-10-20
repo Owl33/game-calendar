@@ -7,14 +7,14 @@ import { isYYYYMM, getFirst, toYYYYMM } from "@/utils/searchParams";
 import { absoluteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "캘린더",
+  title: "캘린더 : 릴리즈픽",
   description:
     "PC·콘솔 신작 출시 일정을 달력형태로 확인 할 수 있습니다. 신작 게임을 놓치지 마세요!",
   alternates: {
     canonical: "/calendar",
   },
   openGraph: {
-    title: "캘린더",
+    title: "캘린더 : 릴리즈픽",
     description:
       "PC·콘솔 신작 출시 일정을 달력형태로 확인 할 수 있습니다. 신작 게임을 놓치지 마세요!",
     url: absoluteUrl("/calendar"),
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "캘린더",
+    title: "캘린더 : 릴리즈픽",
     description:
       "PC·콘솔 신작 출시 일정을 달력형태로 확인 할 수 있습니다. 신작 게임을 놓치지 마세요!",
   },

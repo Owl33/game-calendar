@@ -12,19 +12,19 @@ import { absoluteUrl } from "@/lib/seo";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "전체 게임",
+  title: "전체 게임 : 릴리즈픽",
   description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
   alternates: {
     canonical: "/games",
   },
   openGraph: {
-    title: "전체 게임",
+    title: "전체 게임 : 릴리즈픽",
     description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
     url: absoluteUrl("/games"),
   },
   twitter: {
+    title: "전체 게임 : 릴리즈픽",
     card: "summary",
-    title: "전체 게임",
     description: "필터를 사용해 여러 조건으로 원하는 게임을 찾고 필터링하세요.",
   },
 };

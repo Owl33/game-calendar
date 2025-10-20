@@ -74,7 +74,7 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
         <div
           className={cn(
             // 절대배치 + 부모 기준 꽉 채우기
-            "absolute inset-0 top-0 -z-10 lg:-m-8 -m-4",
+            "absolute inset-0 top-0 -z-10 lg:-my-8 --my-4",
             // 높이(원하는 값으로 조정)
             "h-[76vh] lg:h-[64vh]",
             // 가로 넘침 방지 + 페인트 경계 고정
