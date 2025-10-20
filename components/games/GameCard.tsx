@@ -154,7 +154,7 @@ export const GameCard = memo(function GameCard({
         {/* 타이틀 & 인기작 */}
         <div className=" ">
           <div className="flex items-center gap-2">
-            <h3 className={cn("font-bold text-foreground line-clamp-1", v.title)}>{game.name}</h3>
+            <h3 className={cn("font-bold text-foreground truncate", v.title)}>{game.name}</h3>
             {isPopular && (
               <Badge
                 className={cn(
