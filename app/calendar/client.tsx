@@ -141,12 +141,13 @@ export default function CalendarClient({
           />
 
           <GameList
-            className="p-4 grid gap-4 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]"
+            className="lg:p-4  overflow-y-auto overflow-x-hidden lg:[scrollbar-gutter:stable]"
+
             games={sortedGames}
             isLoading={isLoading}
             layoutMode={layoutMode}
             scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
-          />
+            />
         </div>
       </div>
     </div>
