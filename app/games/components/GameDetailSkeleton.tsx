@@ -74,7 +74,7 @@ export function GameDetailSkeleton() {
         {/* 콘텐츠 영역 */}
         <div className="grid grid-cols-12 gap-x-8 gap-y-10 max-[580px]:gap-x-4">
           {/* 왼쪽: 미디어 */}
-          <div className="col-span-12 xl:col-span-7 space-y-6">
+          <div className="col-span-12 lg:col-span-7 space-y-6">
             {/* 메인 미디어 */}
             <AspectRatio ratio={16 / 9} className="bg-black/90 rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-xl">
               <SkeletonPulse className="w-full h-full" delay={0.8} />
@@ -112,8 +112,8 @@ export function GameDetailSkeleton() {
           </div>
 
           {/* 오른쪽: 정보 패널 */}
-          <div className="col-span-12 xl:col-span-5">
-            <div className="xl:sticky xl:top-6 space-y-4">
+          <div className="col-span-12 lg:col-span-5">
+            <div className="lg:sticky lg:top-6 space-y-4">
               {/* 출시 가격 */}
               <section className="rounded-2xl p-5 space-y-3">
                 <SkeletonPulse className="h-4 w-20 rounded-md" delay={1.3} />

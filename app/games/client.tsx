@@ -244,7 +244,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
           </div>
 
           <GameVirtualList
-            className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}
+            className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}
             games={flat}
             pageSize={filters.pageSize}
             isHeader={false}

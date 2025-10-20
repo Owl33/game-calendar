@@ -11,7 +11,7 @@ import { findLogo, formatNumber } from "@/utils/media";
 function GameInfoPanel({ game }: { game: any }) {
   console.log(game);
   return (
-    <div className="bg-card/40 px-0 p-3 rounded-2xl xl:sticky xl:top-6">
+    <div className="bg-card/40 px-0 p-3 rounded-2xl lg:sticky lg:top-6">
       <div>
         {/* 가격 + 상점 */}
         <section className="rounded-2xl p-5">
@@ -157,39 +157,7 @@ function GameInfoPanel({ game }: { game: any }) {
           </section>
         )}
 
-        {/* DLC */}
-        <section className="rounded-2xl p-5 ">
-          <h2 className="text-xl font-bold mb-2">DLC 및 추가 콘텐츠</h2>
-          {Array.isArray(game.dlcs) && game.dlcs.length > 0 ? (
-            <div className="space-y-2 ">
-              {game.dlcs.slice(0, 7).map((dlc: any) => (
-                <div
-                  key={dlc.name}
-                  className="rounded-xl p-3">
-                  <div className="flex flex-wrap lg:flex-nowrap gap-4 items-center justify-between">
-                    <h3 className="font-medium text-sm truncate ">{dlc.name}</h3>
-                    <div className="w-20 lg:text-end">
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(dlc.releaseDate).toLocaleDateString("ko-KR")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {game.dlcs.length > 7 && (
-                <div className="rounded-xl p-3">
-                  <div className="">
-                    <h3 className="font-medium text-sm truncate ">
-                      + {game.dlcs.length - 7}개 DLC
-                    </h3>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">DLC 및 추가 컨텐츠 정보 없음</p>
-          )}
-        </section>
+    
       </div>
     </div>
   );
