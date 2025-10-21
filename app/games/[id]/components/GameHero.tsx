@@ -57,8 +57,11 @@ function GameHero({ game }: { game: any }) {
                     width={18}
                     height={18}
                   />
-                  <span className="text-sm ">{release.releaseDate}</span>
-                </div>
+    <p className="text-sm">
+              {game?.releaseDate
+                && new Date(game.releaseDate).toLocaleDateString("ko-KR")
+                }
+            </p>                </div>
               ))}
             </div>
           )}
