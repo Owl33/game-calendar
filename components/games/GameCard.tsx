@@ -81,7 +81,7 @@ const variants: Record<
     body: "col-span-7 space-y-2",
     mediaInner: "fixed",
     title: "text-base sm:text-lg",
-    metaText: "text-xs sm:text-sm",
+    metaText: "text-xs ",
     thumbSize: undefined,
   },
 };
