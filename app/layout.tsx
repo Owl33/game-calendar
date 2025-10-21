@@ -101,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </ThemeProvider>
         </QueryProvider>
         <Analytics></Analytics>
+  
       </body>
     </html>
   );

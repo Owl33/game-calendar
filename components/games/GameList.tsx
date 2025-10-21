@@ -4,10 +4,9 @@
 
 "use client";
 
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { LoadingSkeleton } from "./LoadingSkeleton";
 import { EmptyState } from "./EmptyState";
 import { GameCard } from "./GameCard";
 import { GameCarouselList } from "./GameCarouselList";
@@ -62,13 +61,70 @@ export const GameList = memo(function GameList({
     }
   }, [scrollKey]);
 
+  const skeletonGames = useMemo(() => {
+    const count = mode === "horizontal" ? 5 : 6;
+    return Array.from({ length: count }, (_, index) => ({
+      gameId: -index - 1,
+      name: `loading-${index}`,
+      releaseDate: new Date(),
+      popularityScore: 0,
+      headerImage: "",
+      genres: [] as string[],
+      platforms: [] as string[],
+      currentPrice: null,
+      releaseDateRaw: null,
+      comingSoon: false,
+      gameType: "",
+      isFree: false,
+      releaseStatus: null,
+    }));
+  }, [mode]);
+
+  const shouldShowEmpty = !isLoading && games.length === 0;
+  const displayGames = isLoading ? skeletonGames : games;
+
   return (
     <>
       <AnimatePresence mode="wait">
         {isLoading ? (
-          <LoadingSkeleton />
-        ) : games.length === 0 ? (
-          <EmptyState />
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className={cn("", className)}>
+            {mode === "horizontal" ? (
+              <GameCarouselList
+                games={displayGames}
+                options={OPTIONS}
+                isLoading
+              />
+            ) : (
+              displayGames.map((game, index) => {
+                return (
+                  <GameCard
+                    key={`loading-${index}`}
+                    game={game}
+                    priority={false}
+                    index={index}
+                    disableAnimation
+                    isLoading
+                  />
+                );
+              })
+            )}
+          </motion.div>
+        ) : shouldShowEmpty ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className={cn("", className)}>
+            <EmptyState />
+          </motion.div>
         ) : (
           <motion.div
             key={scrollKey}
@@ -80,11 +136,11 @@ export const GameList = memo(function GameList({
             className={cn("", className)}>
             {mode === "horizontal" ? (
               <GameCarouselList
-                games={games}
+                games={displayGames}
                 options={OPTIONS}
               />
             ) : (
-              games.map((game, index) => {
+              displayGames.map((game, index) => {
                 return (
                   <GameCard
                     key={game.gameId}

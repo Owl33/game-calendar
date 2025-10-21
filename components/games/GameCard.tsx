@@ -13,6 +13,7 @@ import Nintendo from "@/public/icon/nintendo.png";
 import Psn from "@/public/icon/psn.png";
 import { PopScoreBadge } from "./PopScoreBadge";
 import { memo, useMemo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // 이미지 로고 매핑 (컴포넌트 외부로 이동)
 const platformLogos: Record<string, any> = {
@@ -51,6 +52,7 @@ interface GameCardProps {
   viewMode?: ViewMode;
   index?: number;
   disableAnimation?: boolean;
+  isLoading?: boolean;
 }
 
 const variants: Record<
@@ -102,6 +104,7 @@ export const GameCard = memo(function GameCard({
   viewMode = "card",
   index = 0,
   disableAnimation = false,
+  isLoading = false,
 }: GameCardProps) {
   const v = variants[viewMode];
 
@@ -126,6 +129,44 @@ export const GameCard = memo(function GameCard({
       ? `₩ ${new Intl.NumberFormat("ko-KR").format(game.currentPrice)}`
       : "가격 정보 없음";
 
+  if (isLoading) {
+    return (
+      <div
+        className={cn(
+          v.outer,
+          "rounded-xl bg-card border border-border/30 p-0 relative z-10 overflow-hidden"
+        )}>
+        <div className={cn(v.mediaWrap)}>
+          <AspectRatio ratio={2.14 / 1}>
+            <Skeleton className="h-full w-full rounded-none" />
+          </AspectRatio>
+        </div>
+        <div className={cn(v.body, "space-y-3")}>
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-2/3 rounded-md" />
+            <Skeleton className="h-4 w-1/2 rounded-md" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-20 rounded-md" />
+            <Skeleton className="h-5 w-16 rounded-md" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-5 w-16 rounded-md" />
+            <Skeleton className="h-5 w-14 rounded-md" />
+            <Skeleton className="h-5 w-12 rounded-md" />
+          </div>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-6 w-24 rounded-md" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-5 w-5 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const CardInner = (
     <div className={cn(v.outer, "rounded-xl bg-card  relative z-10")}>
       <PopScoreBadge

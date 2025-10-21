@@ -141,7 +141,7 @@ export default function CalendarClient({
           />
 
           <GameList
-            className="lg:p-4  overflow-y-auto overflow-x-hidden lg:[scrollbar-gutter:stable]"
+            className="p-4 space-y-4 overflow-y-auto overflow-x-hidden lg:[scrollbar-gutter:stable]"
 
             games={sortedGames}
             isLoading={isLoading}

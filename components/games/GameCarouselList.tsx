@@ -9,9 +9,10 @@ import { GameCard } from "../games/GameCard";
 type PropType = {
   games: any[];
   options?: EmblaOptionsType;
+  isLoading?: boolean;
 };
 
-export const GameCarouselList: React.FC<PropType> = ({ options, games }) => {
+export const GameCarouselList: React.FC<PropType> = ({ options, games, isLoading = false }) => {
   // Autoplay 인스턴스 (리렌더에도 동일 인스턴스 유지)
   const autoplay = useRef<AutoplayType>(
     Autoplay({
@@ -47,9 +48,9 @@ export const GameCarouselList: React.FC<PropType> = ({ options, games }) => {
             ml-[calc(var(--slide-spacing)*-1)]
             [touch-action:pan-y_pinch-zoom]
           ">
-          {games.map((game) => (
+          {games.map((game, index) => (
             <div
-              key={game.gameId}
+              key={isLoading ? `loading-${index}` : game.gameId}
               className="
                 shrink-0
                 basis-[var(--slide-size)]
@@ -60,7 +61,12 @@ export const GameCarouselList: React.FC<PropType> = ({ options, games }) => {
               ">
               {/* 카드 래퍼: 슬라이드 높이 고정(원하면 제거/조절) */}
               <div>
-                <GameCard game={game} />
+                <GameCard
+                  game={game}
+                  isLoading={isLoading}
+                  disableAnimation={isLoading}
+                  priority={!isLoading && index < 3}
+                />
               </div>
             </div>
           ))}

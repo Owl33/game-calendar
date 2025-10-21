@@ -58,7 +58,6 @@ export default function HighlightsPage() {
 
   return (
     <div className="container mx-auto min-h-screen">
-      {/* ===== COLLAGE HERO ===== */}
       <section className="relative">
         <div className="max-w-3xl mb-8">
           <div className="flex flex-wrap gap-2 mt-4">
@@ -67,7 +66,7 @@ export default function HighlightsPage() {
               size="sm">
               <Link href="/calendar">
                 <CalendarDays className="w-4 h-4 mr-1.5" />
-                캘린더 보기
+                캘린더
               </Link>
             </Button>
             <Button
@@ -75,13 +74,12 @@ export default function HighlightsPage() {
               size="sm"
               variant="secondary">
               <Link href="/games">
-                전체 게임 보기
+                전체 게임
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Link>
             </Button>
           </div>
         </div>
-        {/* Featured spotlight card */}
         <FeaturedSpotlightCard></FeaturedSpotlightCard>
       </section>
       <section className="my-8">
@@ -111,7 +109,6 @@ export default function HighlightsPage() {
   );
 }
 export function FeaturedSpotlightCard() {
-  // 하드코딩 데이터 (원하면 props로 변경)
   const title = "Nioh 3";
   const subtitle = "Team NINJA · Koei Tecmo";
   const release = "2026-02-05";
@@ -126,7 +123,6 @@ export function FeaturedSpotlightCard() {
           relative group overflow-hidden rounded-2xl
           aspect-[4/5] sm:aspect-[16/9] lg:aspect-[12/5]
         ">
-      {/* 배경 이미지 */}
       <Image
         fill
         src={bg}
@@ -138,18 +134,12 @@ export function FeaturedSpotlightCard() {
         className="object-cover"
       />
 
-      {/* 비네트/그라디언트 (강도 ↓) */}
-      {/* 모서리 비네트: 검은기 옅게 */}
-      {/* <div className="pointer-events-none absolute inset-0 rounded-2xl [background:radial-gradient(120%_95%_at_50%_100%,rgba(0,0,0,0.45)_0%,rgba(0,0,0,0.6)_40%,rgba(0,0,0,0.75)_100%)]" /> */}
-      {/* 하단 가독성용 그라디언트도 옅게 */}
+   
       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-      {/* 상단 하이라이트도 과하지 않게 */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-2xl bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      {/* 내용 */}
       <div className="absolute inset-0 p-4 sm:p-6 md:p-8 grid">
         <div className="self-end max-w-[94%] md:max-w-[72%]">
-          {/* 라벨 */}
           <div className="mb-2.5 sm:mb-3 flex flex-wrap items-center gap-2">
             {genres.map((g) => (
               <span
@@ -167,17 +157,14 @@ export function FeaturedSpotlightCard() {
             </span>
           </div>
 
-          {/* 타이틀 (모바일에서 더 큼) */}
           <h2 className="font-display text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
             {title}
           </h2>
 
-          {/* 서브타이틀 */}
           <p className="mt-1 text-white/85 text-sm md:text-base drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">
             {subtitle}
           </p>
 
-          {/* 출시일 + 액션들 */}
           <div className="mt-3.5 sm:mt-4 flex flex-wrap items-center gap-2 md:gap-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-white/90 backdrop-blur-[1.5px] ring-1 ring-white/20">
               <CalendarDays className="size-4" />
