@@ -27,7 +27,7 @@ const platformLogos: Record<string, any> = {
 function findLogo(store: string) {
   return platformLogos[store.toLowerCase()] || Steam;
 }
-type ViewMode = "card";
+type ViewMode = "card" | "list";
 // | "list";
 
 interface GameCardProps {
@@ -69,21 +69,21 @@ const variants: Record<
 > = {
   card: {
     outer: "flex flex-col gap-4",
-    body: "px-4 pb-4 flex-1 min-w-0 space-y-3",
     mediaWrap: "w-full overflow-hidden rounded-t-lg bg-black/95",
+    body: "px-4 pb-4 flex-1 min-w-0 space-y-3",
     mediaInner: "ratio",
     title: "text-2xl",
     metaText: "text-xs",
   },
-  // list: {
-  //   outer: "flex items-center gap-3 p-3",
-  //   body: "flex-1 min-w-0 flex flex-col justify-between gap-1",
-  //   mediaWrap: "relative flex-shrink-0 overflow-hidden rounded-md bg-black/95",
-  //   mediaInner: "fixed",
-  //   title: "text-base",
-  //   metaText: "text-xs",
-  //   thumbSize: "w-32 h-26",
-  // },
+  list: {
+    outer: "grid grid-cols-12 gap-6",
+    mediaWrap: "relative col-span-5 overflow-hidden rounded-lg  ",
+    body: "col-span-7 space-y-2",
+    mediaInner: "fixed",
+    title: "text-base sm:text-lg",
+    metaText: "text-xs sm:text-sm",
+    thumbSize: undefined,
+  },
 };
 
 // 날짜 포맷팅 함수 (컴포넌트 외부로 이동)
@@ -107,6 +107,7 @@ export const GameCard = memo(function GameCard({
   isLoading = false,
 }: GameCardProps) {
   const v = variants[viewMode];
+  const isListView = viewMode === "list";
 
   // 계산 결과 - 단순 계산은 useMemo 제거
   const daysUntilRelease = getDaysUntilRelease(game.releaseDate);
@@ -130,18 +131,54 @@ export const GameCard = memo(function GameCard({
       : "가격 정보 없음";
 
   if (isLoading) {
-    return (
-      <div
-        className={cn(
-          v.outer,
-          "rounded-xl bg-card border border-border/30 p-0 relative z-10 overflow-hidden"
-        )}>
-        <div className={cn(v.mediaWrap)}>
-          <AspectRatio ratio={2.14 / 1}>
-            <Skeleton className="h-full w-full rounded-none" />
-          </AspectRatio>
+    if (isListView) {
+      return (
+        <div className="rounded-xl bg-card border border-border/40 relative z-10 p-3 sm:p-4">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-[minmax(7.5rem,8.75rem)_1fr]">
+            <div className="relative overflow-hidden rounded-lg bg-black/80">
+              <AspectRatio ratio={2.14 / 1}>
+                <Skeleton className="h-full w-full rounded-none" />
+              </AspectRatio>
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-2/3 rounded-md" />
+              <Skeleton className="h-4 w-1/2 rounded-md" />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 md:col-span-2">
+              <Skeleton className="h-4 w-24 rounded-md" />
+              <Skeleton className="h-5 w-16 rounded-md" />
+              <Skeleton className="h-5 w-20 rounded-md" />
+            </div>
+            <div className="flex flex-wrap gap-2 md:col-span-2">
+              <Skeleton className="h-5 w-16 rounded-md" />
+              <Skeleton className="h-5 w-14 rounded-md" />
+              <Skeleton className="h-5 w-12 rounded-md" />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 md:col-span-2">
+              <Skeleton className="h-6 w-24 rounded-md" />
+              <div className="flex gap-2">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-5 rounded-full" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className={cn(v.body, "space-y-3")}>
+      );
+    }
+
+    return (
+      <div className={cn("rounded-xl bg-card border border-border/30 relative z-10", v.outer)}>
+        <div className={cn(v.mediaWrap)}>
+          {v.mediaInner === "ratio" ? (
+            <AspectRatio ratio={2.14 / 1}>
+              <Skeleton className="h-full w-full rounded-none" />
+            </AspectRatio>
+          ) : (
+            <Skeleton className="h-full w-full" />
+          )}
+        </div>
+        <div className={cn(v.body)}>
           <div className="space-y-2">
             <Skeleton className="h-6 w-2/3 rounded-md" />
             <Skeleton className="h-4 w-1/2 rounded-md" />
@@ -167,33 +204,47 @@ export const GameCard = memo(function GameCard({
       </div>
     );
   }
+
+  const imageSizes = isListView
+    ? "(max-width: 640px) 100vw, 240px"
+    : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
+
+  const imageElement = (
+    <Image
+      fill
+      src={game.headerImage || ""}
+      alt={game.name}
+      priority={priority}
+      placeholder="blur"
+      blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(460, 215))}`}
+      className={cn(
+        "object-cover will-change-transform",
+        isListView && "transition-transform duration-200 group-hover:scale-[1.02]"
+      )}
+      sizes={imageSizes}
+      loading={priority ? undefined : "lazy"}
+    />
+  );
+
   const CardInner = (
-    <div className={cn(v.outer, "rounded-xl bg-card  relative z-10")}>
+    <div className={cn("rounded-xl bg-card relative z-10", v.outer)}>
       <PopScoreBadge
         score={game.popularityScore}
         placement="top-left"
       />
       {/* viewMode === "list" && v.thumbSize */}
       <div className={cn(v.mediaWrap)}>
-        <AspectRatio ratio={2.14 / 1}>
-          <Image
-            fill
-            src={game.headerImage || ""}
-            alt={game.name}
-            priority={priority}
-            placeholder="blur"
-            blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(460, 215))}`}
-            className="object-cover will-change-transform"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            loading={priority ? undefined : "lazy"}
-          />
-        </AspectRatio>
+        {v.mediaInner === "ratio" ? (
+          <AspectRatio ratio={2.14 / 1}>{imageElement}</AspectRatio>
+        ) : (
+          imageElement
+        )}
       </div>
 
       {/* 본문 */}
-      <div className={v.body}>
+      <div className={cn(v.body)}>
         {/* 타이틀 & 인기작 */}
-        <div className=" ">
+        <div>
           <div className="flex items-center gap-2">
             <h3 className={cn("font-bold text-foreground truncate", v.title)}>{game.name}</h3>
             {isPopular && (
@@ -212,7 +263,11 @@ export const GameCard = memo(function GameCard({
         </div>
 
         {/* 출시일/상태 */}
-        <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            viewMode === "list" && "flex-wrap gap-y-1 text-xs sm:text-sm"
+          )}>
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3 text-muted-foreground" />
             <span
@@ -238,54 +293,65 @@ export const GameCard = memo(function GameCard({
           )}
           {game.releaseStatus === "early_access" && <Badge variant="outline">얼리억세스</Badge>}
         </div>
-
-        {/* 장르 */}
-        {game.genres?.length > 0 && (
-          <div className={cn("flex overflow-hidden gap-2", viewMode === "card" ? "mt-2" : "")}>
-            {game.genres.slice(0, viewMode === "card" ? 3 : 4).map((g: string) => (
+        {viewMode == "card" && (
+          <>
+            {/* 장르 */}
+            {game.genres?.length > 0 && (
+              <div
+                className={cn(
+                  "flex gap-2",
+                  viewMode === "card" ? "mt-2 overflow-hidden" : "flex-wrap text-xs sm:text-sm"
+                )}>
+                {game.genres.slice(0, viewMode === "card" ? 3 : 4).map((g: string) => (
+                  <Badge
+                    key={g}
+                    variant="secondary"
+                    className="text-xs px-2 py-0.5 font-semibold border">
+                    {g}
+                  </Badge>
+                ))}
+                {game.genres.length > (viewMode === "card" ? 3 : 4) && (
+                  <Badge className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0">
+                    +{game.genres.length - (viewMode === "card" ? 3 : 4)}
+                  </Badge>
+                )}
+              </div>
+            )}
+            {game.genres?.length === 0 && (
               <Badge
-                key={g}
                 variant="secondary"
                 className="text-xs px-2 py-0.5 font-semibold border">
-                {g}
-              </Badge>
-            ))}
-            {game.genres.length > (viewMode === "card" ? 3 : 4) && (
-              <Badge className="text-xs px-2 py-0.5 bg-muted text-muted-foreground border-0">
-                +{game.genres.length - (viewMode === "card" ? 3 : 4)}
+                장르 정보 없음
               </Badge>
             )}
-          </div>
-        )}
-        {game.genres?.length === 0 && (
-          <Badge
-            variant="secondary"
-            className="text-xs px-2 py-0.5 font-semibold border">
-            장르 정보 없음
-          </Badge>
-        )}
 
-        {/* 가격/플랫폼 */}
-        <div className={cn("flex items-center justify-between")}>
-          <div className="flex items-center gap-2">
-            <p className={cn(viewMode === "card" ? "text-md font-bold" : "text-sm font-bold")}>
-              {priceText}
-            </p>
-          </div>
-          {game.platforms?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {game.platforms.map((p: string) => (
-                <Image
-                  key={p}
-                  src={findLogo(p)}
-                  alt={p}
-                  width={viewMode === "card" ? 18 : 14}
-                  height={viewMode === "card" ? 18 : 14}
-                />
-              ))}
+         
+          </>
+        )}
+           {/* 가격/플랫폼 */}
+            <div className={cn("flex items-center justify-between")}>
+              <div className="flex items-center gap-2">
+                <p
+                  className={cn(
+                    viewMode === "card" ? "text-md font-bold" : "text-sm font-default  "
+                  )}>
+                  {priceText}
+                </p>
+              </div>
+              {game.platforms?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {game.platforms.map((p: string) => (
+                    <Image
+                      key={p}
+                      src={findLogo(p)}
+                      alt={p}
+                      width={viewMode === "card" ? 18 : 14}
+                      height={viewMode === "card" ? 18 : 14}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
       </div>
     </div>
   );

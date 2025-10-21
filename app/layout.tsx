@@ -6,7 +6,7 @@ import { QueryProvider } from "@/providers/query";
 import { Header } from "@/components/layout/Header";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { absoluteUrl, getSiteOrigin } from "@/lib/seo";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 import "../styles/globals.css";
 const resolvedSiteUrl = getSiteOrigin();
 
@@ -55,9 +55,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },

@@ -4,10 +4,10 @@ import { Crown, Star, TrendingUp, Gamepad2, LucideIcon } from "lucide-react";
 type Tier = "S" | "A" | "B" | "C";
 
 function scoreToTier(score: number): { tier: Tier; color: string; Icon: LucideIcon; label: string } {
-  if (score >= 80) return { tier: "S", color: "yellow", Icon: Crown, label: "핫한 대작" };
-  if (score >= 69) return { tier: "A", color: "blue", Icon: Star, label: "인기 급상승" };
-  if (score >= 50) return { tier: "B", color: "violet", Icon: TrendingUp, label: "주목작" };
-  return { tier: "C", color: "slate", Icon: Gamepad2, label: "잠재력" };
+  if (score >= 80) return { tier: "S", color: "yellow", Icon: Crown, label: "인기작" };
+  if (score >= 69) return { tier: "A", color: "blue", Icon: Star, label: "인지도 있음" };
+  if (score >= 50) return { tier: "B", color: "violet", Icon: TrendingUp, label: "인지도 없음" };
+  return { tier: "C", color: "slate", Icon: Gamepad2, label: "인지도 없음" };
 }
 
 export function PopScoreBadge({
@@ -22,10 +22,10 @@ export function PopScoreBadge({
   const { color, Icon, label } = scoreToTier(score);
 
   const pos = {
-    "top-right": "top-3 right-3",
-    "top-left": "top-3 left-3",
-    "bottom-right": "bottom-3 right-3",
-    "bottom-left": "bottom-3 left-3",
+    "top-right": "top-2 right-2",
+    "top-left": "top-2 left-2",
+    "bottom-right": "bottom-2 right-2",
+    "bottom-left": "bottom-2 left-2",
   }[placement];
 
   return (

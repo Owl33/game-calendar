@@ -19,7 +19,7 @@ interface GameListHeaderProps {
   onSortChange: (sort: "name" | "date" | "popularityScore") => void;
   onViewModeChange: (mode: "card" | "list") => void;
   className?: string;
-  sorted?: boolean;
+  sorted?: boolean;viewMode:'card' | 'list'
 }
 
 export function GameListHeader({
@@ -27,6 +27,7 @@ export function GameListHeader({
   onSortChange,
   onViewModeChange,
   className,
+  viewMode
 }: GameListHeaderProps) {
   const sortOptions = [
     { value: "popularityScore", label: "인기순", icon: Plus },
@@ -40,7 +41,7 @@ export function GameListHeader({
 
       <div className="flex items-center gap-2">
         {/* View Mode Toggle */}
-        {/* <div className="flex items-center rounded-lg border bg-background p-1">
+        <div className="flex items-center rounded-lg border bg-background p-1">
           <Button
             variant={viewMode === "card" ? "secondary" : "ghost"}
             size="sm"
@@ -55,7 +56,7 @@ export function GameListHeader({
             className="h-7 px-2">
             <List className="h-4 w-4" />
           </Button>
-        </div> */}
+        </div>
 
         {/* Sort Select */}
         <Select

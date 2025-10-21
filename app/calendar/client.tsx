@@ -135,7 +135,7 @@ export default function CalendarClient({
 
           <GameListHeader
             sortBy={sortBy}
-            onSortChange={setSortBy}
+            onSortChange={setSortBy}viewMode={viewMode}
             onViewModeChange={setViewMode}
             className="mb-4"
           />
@@ -145,7 +145,7 @@ export default function CalendarClient({
 
             games={sortedGames}
             isLoading={isLoading}
-            layoutMode={layoutMode}
+            viewMode={viewMode}
             scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
             />
         </div>

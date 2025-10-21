@@ -31,8 +31,8 @@ interface GameListProps {
   sorted?: boolean;
   className?: string;
   isHeader?: boolean;
+  viewMode:'card'|'list',
   sortBy?: string;
-  layoutMode?: "split" | "list-only";
   mode?: "vertical" | "horizontal";
   scrollKey?: string;
 }
@@ -41,6 +41,7 @@ export const GameList = memo(function GameList({
   games,
   isLoading,
   className,
+  viewMode,
   mode = "vertical",
   scrollKey,
 }: GameListProps) {
@@ -143,6 +144,7 @@ export const GameList = memo(function GameList({
               displayGames.map((game, index) => {
                 return (
                   <GameCard
+                  viewMode={viewMode}
                     key={game.gameId}
                     game={game}
                     priority={index < 6}
