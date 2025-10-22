@@ -14,12 +14,23 @@ export const metadata: Metadata = {
   metadataBase: new URL(resolvedSiteUrl),
   title: {
     default: "릴리즈픽",
-    template: "",
+    template: "%s : 릴리즈픽",
   },
   description:
     "릴리즈픽에서는 멀티 플랫폼의 게임 발매일과 정보를 한눈에 확인할 수 있습니다. Steam과 Playstaion, Nintendo 등 주요 플랫폼의 신작 출시 정보를 한곳에서 확인하고, 신작을 놓치지 마세요!",
   applicationName: "릴리즈픽",
-  keywords: ["릴리즈픽", "게임 캘린더", "게임 출시", "콘솔 게임", "PC 게임", "신작 게임"],
+  keywords: [
+    "릴리즈픽",
+    "게임 캘린더",
+    "게임 출시 일정",
+    "콘솔 신작 게임",
+    "PC 신작 게임",
+    "닌텐도 출시 일정",
+    "플레이스테이션 출시 일정",
+    "스팀 신작",
+    "신규 게임",
+    "출시 게임",
+  ],
   creator: "releasePicks",
   publisher: "releasePicks",
   formatDetection: {

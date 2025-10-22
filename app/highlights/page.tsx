@@ -7,22 +7,42 @@ import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 0; // 최신성 우선 (필요 시 조정)
 
+const HIGHLIGHTS_DESCRIPTION =
+  "곧 출시 예정 게임, 인기 타이틀 게임을 릴리즈픽 하이라이트에서 만나보세요.";
+
 export const metadata: Metadata = {
-  title: "게임 하이라이트 : 릴리즈픽",
-  description: "곧 출시 예정 게임과 역대 인기 게임을 확인해보세요!",
+  title: "하이라이트",
+  description: HIGHLIGHTS_DESCRIPTION,
+  keywords: [
+    "게임 하이라이트",
+    "인기 게임 추천",
+    "곧 출시 예정 게임",
+    "인디 게임 추천",
+    "게임 큐레이션",
+  ],
   alternates: {
     canonical: "/highlights",
   },
   openGraph: {
-    title: "게임 하이라이트 : 릴리즈픽",
-    description: "곧 출시 예정 게임과 역대 인기 게임을 확인해보세요!",
+    title: "게임 하이라이트",
+    description: HIGHLIGHTS_DESCRIPTION,
     url: absoluteUrl("/highlights"),
+    type: "article",
   },
   twitter: {
-    card: "summary",
-    title: "게임 하이라이트 : 릴리즈픽",
-    description: "곧 출시 예정 게임과 역대 인기 게임을 확인해보세요!",
+    card: "summary_large_image",
+    title: "게임 하이라이트",
+    description: HIGHLIGHTS_DESCRIPTION,
   },
+};
+
+const highlightsLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "하이라이트",
+  description: HIGHLIGHTS_DESCRIPTION,
+  url: absoluteUrl("/highlights"),
+  about: ["게임 출시 예정", "인기 게임", "게임 추천"],
 };
 
 export default async function Page() {
@@ -37,6 +57,12 @@ export default async function Page() {
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(highlightsLd),
+        }}
+      />
       <HighlightsClient />
     </HydrationBoundary>
   );
