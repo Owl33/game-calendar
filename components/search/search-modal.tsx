@@ -1,6 +1,7 @@
+//components/search-modal.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, type Transition } from "motion/react";
 import Image from "next/image";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 /* ====== Types ====== */
 export type SearchItem = {
@@ -62,30 +64,6 @@ function highlight(text: string, q: string) {
       {after}
     </>
   );
-}
-
-/** 바디 스크롤 잠금 (모달 열렸을 때 배경 스크롤 방지) */
-function useBodyScrollLock(locked: boolean) {
-  useLayoutEffect(() => {
-    const el = document.documentElement;
-    const prevOverflow = el.style.overflow;
-    const prevPaddingRight = el.style.paddingRight;
-    const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
-    if (locked) {
-      el.style.overflow = "hidden";
-      if (hasScrollbar) {
-        const scrollBarW = window.innerWidth - document.documentElement.clientWidth;
-        el.style.paddingRight = `${scrollBarW}px`;
-      }
-    } else {
-      el.style.overflow = prevOverflow || "";
-      el.style.paddingRight = prevPaddingRight || "";
-    }
-    return () => {
-      el.style.overflow = prevOverflow || "";
-      el.style.paddingRight = prevPaddingRight || "";
-    };
-  }, [locked]);
 }
 
 /* ====== Result Item ====== */
@@ -203,9 +181,6 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 바디 스크롤 잠금
-  useBodyScrollLock(open);
-
   const handleClose = useCallback(() => {
     setQuery("");
     setActiveIdx(-1);
@@ -299,7 +274,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
     [results, activeIdx]
   );
 
-  if (!open) return null;
+  // if (!open) return null;
 
   // 단일 애니메이션(모바일/데스크톱 공통, 심플)
   const MODAL_INITIAL = { opacity: 0, y: 16 };
@@ -307,46 +282,16 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
   const MODAL_TRANSITION: Transition = { duration: 0.2 };
 
   return (
-    <>
-      {/* Backdrop */}
-      <motion.div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        onClick={handleClose}
-        style={{ touchAction: "none" }}
-      />
+<ModalOverlay
+  open={open}
+  title="게임 검색"
+  onClose={handleClose}
+  variant="centered"
+  size="2xl"
+  desktopHeight="540px"        // 데스크톱에서만 높이 제한
+  // 애니메이션 기본값 그대로 사용(필요시 initial/animate/exit/transition 덮어쓰기 가능)
+>
 
-
-      <motion.div
-        className={cn(
-          "fixed z-[101] overflow-hidden flex flex-col overscroll-contain",
-          // 기본(모바일) 풀스크린
-          "inset-0 h-[100dvh] w-full bg-card/95 backdrop-blur-xl rounded-none border-t border-border/60",
-          // sm 이상부터는 중앙 모달로
-          "sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2",
-          "sm:w-full sm:max-w-2xl sm:h-[540px] sm:rounded-2xl sm:border sm:border-border/60 sm:shadow-2xl"
-        )}
-        initial={MODAL_INITIAL}
-        animate={MODAL_ANIMATE}
-        transition={MODAL_TRANSITION}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between flex-shrink-0 p-4 sm:p-5 border-b border-border/60">
-          {/* 모바일 상단 핸들 같은 건 최소화 위해 제거(심플) */}
-          <h2 className="text-lg font-semibold text-foreground">게임 검색</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 rounded-full"
-            onClick={handleClose}
-            aria-label="닫기"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
 
         {/* Input */}
         <div className="flex-shrink-0 p-4 sm:p-5" data-modal-scroller="true">
@@ -522,7 +467,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
               />
             ))}
         </div>
-      </motion.div>
-    </>
+
+      </ModalOverlay>
   );
 }

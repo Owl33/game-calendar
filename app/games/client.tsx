@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { FiltersPanel } from "./components/FiltersPanel";
@@ -18,8 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { GameVirtualList } from "@/components/games/GameVirtualList";
 import { REVIEW_FILTER_ALL, sanitizeReviewFilters } from "@/utils/reviewScore";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {
@@ -65,6 +67,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // 🔑 URL을 단일 진실 공급원으로 사용
   // searchParams를 Record로 변환
@@ -183,19 +186,39 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     <div className="container mx-auto ">
       <div className="grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-3">
-          <details className="lg:hidden rounded-xl border border-border/50 bg-card/60 overflow-hidden">
-            <summary className="list-none cursor-pointer px-4 py-3 flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="font-semibold">필터</span>
-            </summary>
-            <div className="px-4 pb-4 space-y-4">
-              <FiltersPanel
-                value={filters}
-                onChange={(newFilters) => updateFilters(() => newFilters)}
-                onResetAll={() => updateFilters(() => initialFilters)}
-              />
-            </div>
-          </details>
+          <div className="lg:hidden mb-4">
+      <div className="lg:hidden mb-4">
+  {/* 트리거 버튼 */}
+  <Button
+    variant="outline"
+    className="w-full justify-center gap-2 h-11"
+    onClick={() => setMobileFiltersOpen(true)}
+  >
+    <SlidersHorizontal className="w-4 h-4" />
+    필터 열기
+  </Button>
+
+  {/* 오버레이 */}
+<ModalOverlay
+  open={mobileFiltersOpen}
+  onClose={() => setMobileFiltersOpen(false)}
+  title="필터"
+  // 기본: variant="centered", size="xl", blur/border/shadow=true
+  // 닫힘/열림 애니메이션 기본값 사용
+>
+ 
+  <div className="overflow-y-auto p-4">
+    <FiltersPanel
+      value={filters}
+      onChange={(newFilters) => updateFilters(() => newFilters)}
+      onResetAll={() => updateFilters(() => initialFilters)}
+    />
+  </div>
+</ModalOverlay>
+
+</div>
+
+          </div>
           <div className="hidden lg:block sticky top-5 space-y-4">
             <div className="rounded-xl border border-border/50 bg-card/60 p-4">
               <FiltersPanel

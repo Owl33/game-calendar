@@ -108,23 +108,48 @@ export const GameVirtualList = memo(function GameList({
   }
 
   const maxKeepRows = Math.max(minRowsByPage, 6); // 최소 한 페이지 분량, 없으면 적어도 6행
+    const TOP_SLACK = 1;      // 상단 여유 행 수 (원하는 만큼 조절 가능)
+const BOTTOM_SLACK = 0;   // 필요하면 하단도 여유를 줄 수 있음
 
-  const rangeExtractor = (range: Range) => {
-    const base = defaultRangeExtractor(range);
-    if (base.length <= maxKeepRows) return base;
+const rangeExtractor = (range: Range) => {
+  const base = defaultRangeExtractor(range);
 
-    const center = Math.floor((range.startIndex + range.endIndex) / 2);
-    const half = Math.floor(maxKeepRows / 2);
+  // rows 길이가 필요하므로 클로저로 접근
+  const rowCount = rows.length;
 
-    let start = Math.max(range.startIndex, center - half);
-    const end = Math.min(range.endIndex, start + maxKeepRows - 1); // ✅ end는 재할당 안 하므로 const
-
-    if (end - start + 1 < maxKeepRows) {
-      start = Math.max(range.startIndex, end - maxKeepRows + 1);
-    }
-
+  // 기본 범위에 여유만 살짝 주는 빠른 경로
+  // (현재 base가 충분히 작다면, 단순 버퍼만 적용해서 반환)
+  if (base.length <= maxKeepRows) {
+    const start = Math.max(range.startIndex - TOP_SLACK, 0);
+    const end = Math.min(range.endIndex + BOTTOM_SLACK, rowCount - 1);
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
+  }
+
+  // maxKeepRows로 트림하되, 시작 지점을 위로 조금 당겨서 상단 여유 확보
+  const center = Math.floor((range.startIndex + range.endIndex) / 2);
+  const half = Math.floor(maxKeepRows / 2);
+
+  // 🔑 포인트: -TOP_SLACK 만큼 위로 당겨 시작
+  let start = Math.max(range.startIndex - TOP_SLACK, center - half - TOP_SLACK);
+  let end = start + maxKeepRows - 1;
+
+  // 범위 보정 (가시 범위 및 전체 길이 안쪽으로)
+  if (end > rowCount - 1) {
+    end = rowCount - 1;
+    start = Math.max(end - maxKeepRows + 1, 0);
+  }
+  if (start < Math.max(0, range.startIndex - TOP_SLACK)) {
+    start = Math.max(0, range.startIndex - TOP_SLACK);
+    end = Math.min(start + maxKeepRows - 1, rowCount - 1);
+  }
+  if (end < Math.min(rowCount - 1, range.endIndex + BOTTOM_SLACK)) {
+    end = Math.min(rowCount - 1, range.endIndex + BOTTOM_SLACK);
+    start = Math.max(end - maxKeepRows + 1, 0);
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+};
+
 
   // Virtualizer (측정 사용 안 함)
   const virtualizer = useWindowVirtualizer({

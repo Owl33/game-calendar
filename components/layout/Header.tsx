@@ -27,17 +27,6 @@ export function Header({ className }: HeaderProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // 모달 열릴 때 배경 스크롤 잠금
-  useEffect(() => {
-    if (open) {
-      document.documentElement.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-    }
-    return () => {
-      document.documentElement.style.overflow = "";
-    };
-  }, [open]);
 
   return (
     <header className={cn("border-b border-border/40 h-16", className)}>
