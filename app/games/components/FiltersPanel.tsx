@@ -465,7 +465,7 @@ export function FiltersPanel({
           </PopoverTrigger>
           <PopoverContent className="w-[260px] p-0">
             <div className="p-3 space-y-3">
-              <label className="p-2 flex items-center gap-2 text-sm font-medium text-foreground hover:bg-muted/40 text-sm cursor-pointer">
+              <label className="p-2 flex items-center gap-2 font-medium text-foreground hover:bg-muted/40 text-sm cursor-pointer">
                 <Checkbox
                   checked={
                     pendingReviewState.allSelected

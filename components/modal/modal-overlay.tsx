@@ -44,21 +44,7 @@ const DEFAULT_ANIMATE = { opacity: 1, y: 0 };
 const DEFAULT_EXIT = { opacity: 0, y: 8 };
 const DEFAULT_TRANSITION: Transition = { duration: 0.28, ease: [0.22, 1, 0.36, 1] };
 
-function sizeToMaxW(size: Size) {
-  switch (size) {
-    case "sm":
-      return "sm:max-w-sm";
-    case "md":
-      return "sm:max-w-md";
-    case "lg":
-      return "sm:max-w-lg";
-    case "xl":
-      return "sm:max-w-xl";
-    case "2xl":
-    default:
-      return "sm:max-w-2xl";
-  }
-}
+
 
 export function ModalOverlay({
   open,
