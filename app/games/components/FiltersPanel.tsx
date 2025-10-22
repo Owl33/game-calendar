@@ -504,7 +504,7 @@ export function FiltersPanel({
                 type="button"
                 className="w-full"
                 onClick={applyPendingReviews}>
-                {`{${pendingReviewState.unique.length}}개 적용`}
+                {`${pendingReviewState.unique.length}개 적용`}
               </Button>
             </div>
           </PopoverContent>
