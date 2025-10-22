@@ -8,6 +8,7 @@ import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
 import { cookies } from "next/headers"; // ✅ 추가
 import { absoluteUrl } from "@/lib/seo";
+import { REVIEW_FILTER_ALL, sanitizeReviewFilters } from "@/utils/reviewScore";
 
 export const revalidate = 0;
 
@@ -32,6 +33,13 @@ export const metadata: Metadata = {
 // (동일) canonicalize / stableSerialize 유지
 function canonicalize(f: FiltersState): FiltersState {
   const sort = (a?: string[]) => (Array.isArray(a) ? [...a].sort() : []);
+  const review =
+    !f.reviewScoreDesc.length || f.reviewScoreDesc.includes(REVIEW_FILTER_ALL)
+      ? [REVIEW_FILTER_ALL]
+      : (() => {
+          const sanitized = sanitizeReviewFilters(f.reviewScoreDesc);
+          return sanitized.length === 0 ? [REVIEW_FILTER_ALL] : sanitized;
+        })();
   return {
     ...f,
     genres: sort(f.genres),
@@ -39,6 +47,7 @@ function canonicalize(f: FiltersState): FiltersState {
     developers: sort(f.developers),
     publishers: sort(f.publishers),
     platforms: sort(f.platforms),
+    reviewScoreDesc: review,
   };
 }
 function stableSerialize(obj: unknown) {

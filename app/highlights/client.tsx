@@ -44,7 +44,7 @@ export default function HighlightsPage() {
   // const featured = data?.featured;
   const popular = data?.popular ?? [];
   const upcoming = data?.upcoming ?? [];
-
+  
   if (error) {
     return (
       <div className="container mx-auto py-10">
@@ -55,7 +55,12 @@ export default function HighlightsPage() {
       </div>
     );
   }
-
+const onPasteMail = () =>{
+  const mail ='owl33@releasepicks.com'
+      window.navigator.clipboard.writeText(mail).then(() => {
+        alert(`${mail} 주소를 복사했습니다.`);
+      });
+}
   return (
     <div className="container mx-auto min-h-screen">
       <section className="relative">
@@ -65,7 +70,6 @@ export default function HighlightsPage() {
               asChild
               size="sm">
               <Link href="/calendar">
-                <CalendarDays className="w-4 h-4 mr-1.5" />
                 캘린더
               </Link>
             </Button>
@@ -105,6 +109,39 @@ export default function HighlightsPage() {
           games={upcoming}
           isLoading={isLoading}></GameList>
       </section>
+      <footer className="mt-4 pt-4   flex flex-col items-center">
+<div className=" flex  gap-4"> 
+        <Button
+              asChild
+              size="sm"
+              variant="secondary">
+              <Link href="https://store.steampowered.com/">
+                Steam
+              </Link>
+            </Button>
+                  <Button
+              asChild
+              size="sm"
+              variant="secondary">
+              <Link href="https://rawg.io/" target="_blank">
+                RAWG
+              </Link>
+            </Button>
+                  <Button
+              
+              size="sm"
+              variant="secondary"
+              onClick={onPasteMail}
+              >
+                문의 및 건의 사항
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+
+</div>
+<div className="">
+
+</div>
+      </footer>
     </div>
   );
 }

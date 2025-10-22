@@ -1,6 +1,14 @@
 import { memo, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { formatNumber } from "@/utils/media";
+import { getReviewScoreLabel, getReviewTone, type ReviewTone } from "@/utils/reviewScore";
+
+const REVIEW_TONE_CLASS: Record<ReviewTone, string> = {
+  positive: "text-blue-500",
+  mixed: "text-amber-600",
+  negative: "text-red-500",
+  none: "text-muted-foreground",
+};
 
 function GameStatCard({
   icon,
@@ -17,42 +25,13 @@ function GameStatCard({
     if (kind === "reviews") {
       const desc = game.reviewScoreDesc ?? null;
       const total = game.totalReviews ?? null;
-      const colored =
-        desc === "Overwhelmingly Positive" ||
-        desc === "Very Positive" ||
-        desc === "Mostly Positive" ||
-        desc === "Positive"
-          ? "text-blue-500"
-          : desc === "Mixed"
-          ? "text-amber-600"
-          : desc
-          ? "text-red-500"
-          : "";
-
-      const label =
-        desc === "Overwhelmingly Positive"
-          ? "압도적으로 긍정적"
-          : desc === "Very Positive"
-          ? "매우 긍정적"
-          : desc === "Mostly Positive"
-          ? "대체로 긍정적"
-          : desc === "Positive"
-          ? "긍정적"
-          : desc === "Mixed"
-          ? "복합적"
-          : desc === "Negative"
-          ? "부정적"
-          : desc === "Mostly Negative"
-          ? "대체로 부정적"
-          : desc === "Very Negative"
-          ? "매우 부정적"
-          : desc === "Overwhelmingly Negative"
-          ? "압도적으로 부정적"
-          : "유저 리뷰 없음";
+      const tone = getReviewTone(desc);
+      const colored = REVIEW_TONE_CLASS[tone];
+      const label = getReviewScoreLabel(desc);
       return (
         <div className="flex items-baseline gap-2">
           <span className={cn("font-semibold text-2xl", colored)}>{label}</span>
-          {total && <span className=" font-medium">({formatNumber(total)})</span>}
+          {total > 0 ? <span className=" font-medium">({formatNumber(total)})</span> : ""}
         </div>
       );
     }

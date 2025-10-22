@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Filter, Minus, Plus } from "lucide-react";
+import { Filter, Minus, Plus, ChevronDown } from "lucide-react";
 
 import { SectionHeader } from "./SectionHeader";
 import { TokenSection } from "./TokenSection";
 import type { FiltersState } from "@/types/game.types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  REVIEW_FILTER_ALL,
+  buildReviewFilterOptions,
+  sanitizeReviewFilters,
+} from "@/utils/reviewScore";
 
 // 필요 시 문자열로 관리(플랫폼 라벨들)
 const GENRE_OPTIONS = [
@@ -35,6 +41,7 @@ const TAG_OPTIONS = [
   "MMO",
 ];
 const PLATFORM_OPTIONS: string[] = ["pc", "playstation", "xbox", "nintendo"];
+const REVIEW_OPTIONS = buildReviewFilterOptions();
 
 export function FiltersPanel({
   value,
@@ -53,6 +60,121 @@ export function FiltersPanel({
   const resetTags = () => onChange({ ...f, tags: [] });
   const resetDevelopers = () => onChange({ ...f, developers: [] });
   const resetPublishers = () => onChange({ ...f, publishers: [] });
+  const resetReview = () => onChange({ ...f, reviewScoreDesc: [REVIEW_FILTER_ALL] });
+
+  const reviewState = useMemo(() => {
+    const total = REVIEW_OPTIONS.length;
+    const selectedAll = !f.reviewScoreDesc.length || f.reviewScoreDesc.includes(REVIEW_FILTER_ALL);
+    const active = selectedAll
+      ? REVIEW_OPTIONS.map((opt) => opt.value)
+      : sanitizeReviewFilters(f.reviewScoreDesc);
+    const unique = Array.from(new Set(active));
+    const summary =
+      selectedAll || unique.length === 0
+        ? "전체"
+        : unique.length === 1
+        ? REVIEW_OPTIONS.find((opt) => opt.value === unique[0])?.label ?? "선택됨 1개"
+        : `선택됨 ${unique.length}개`;
+    const indeterminate = !selectedAll && unique.length > 0 && unique.length < total;
+    return {
+      selectedAll,
+      activeValues: unique,
+      summary,
+      indeterminate,
+      total,
+    };
+  }, [f.reviewScoreDesc]);
+
+  const [reviewPopoverOpen, setReviewPopoverOpen] = useState(false);
+  const [pendingReviewValues, setPendingReviewValues] = useState(() =>
+    reviewState.selectedAll
+      ? REVIEW_OPTIONS.map((opt) => opt.value)
+      : reviewState.activeValues,
+  );
+
+  const skipPendingSyncRef = useRef(false);
+
+  useEffect(() => {
+    if (skipPendingSyncRef.current) {
+      skipPendingSyncRef.current = false;
+      return;
+    }
+    if (!reviewPopoverOpen) {
+      setPendingReviewValues(
+        reviewState.selectedAll
+          ? REVIEW_OPTIONS.map((opt) => opt.value)
+          : reviewState.activeValues,
+      );
+    }
+  }, [reviewPopoverOpen, reviewState.selectedAll, reviewState.activeValues]);
+
+  const pendingReviewState = useMemo(() => {
+    const unique = sanitizeReviewFilters(pendingReviewValues);
+    const total = REVIEW_OPTIONS.length;
+    const allSelected = unique.length === total;
+    const indeterminate = unique.length > 0 && unique.length < total;
+    return { unique, allSelected, indeterminate, total };
+  }, [pendingReviewValues]);
+
+  const hasPendingChanges = useMemo(() => {
+    const pending = pendingReviewState.unique;
+    const applied = reviewState.selectedAll
+      ? REVIEW_OPTIONS.map((opt) => opt.value)
+      : reviewState.activeValues;
+    if (applied.length !== pending.length) {
+      return true;
+    }
+    return applied.some((value, idx) => value !== pending[idx]);
+  }, [pendingReviewState.unique, reviewState.selectedAll, reviewState.activeValues]);
+
+  const handleReviewPopoverOpenChange = (open: boolean) => {
+    setReviewPopoverOpen(open);
+    if (open) {
+      setPendingReviewValues(
+        reviewState.selectedAll
+          ? REVIEW_OPTIONS.map((opt) => opt.value)
+          : reviewState.activeValues,
+      );
+    }
+  };
+
+  const handlePendingReviewToggle = (
+    value:
+      | "Overwhelmingly Positive"
+      | "Very Positive"
+      | "Mostly Positive"
+      | "Positive"
+      | "Mixed"
+      | "Negative"
+      | "Mostly Negative"
+      | "Very Negative"
+      | "Overwhelmingly Negative"
+      | "none",
+  ) => {
+    setPendingReviewValues((prev) => {
+      const exists = prev.includes(value);
+      const nextValues = exists ? prev.filter((v) => v !== value) : [...prev, value];
+      return sanitizeReviewFilters(nextValues);
+    });
+  };
+
+  const selectAllPendingReviews = () => {
+    setPendingReviewValues(REVIEW_OPTIONS.map((opt) => opt.value));
+  };
+
+  const applyPendingReviews = () => {
+    const sanitized = sanitizeReviewFilters(pendingReviewValues);
+    const isAllSelected = sanitized.length === 0 || sanitized.length === pendingReviewState.total;
+    if (hasPendingChanges) {
+      const final = isAllSelected ? [REVIEW_FILTER_ALL] : sanitized;
+      onChange({ ...f, reviewScoreDesc: final });
+    }
+    skipPendingSyncRef.current = true;
+    setPendingReviewValues(
+      isAllSelected ? REVIEW_OPTIONS.map((opt) => opt.value) : sanitized,
+    );
+    setReviewPopoverOpen(false);
+  };
 
   const [localPopularity, setLocalPopularity] = useState(f.popularityScore);
   useEffect(() => setLocalPopularity(f.popularityScore), [f.popularityScore]);
@@ -322,6 +444,73 @@ export function FiltersPanel({
         </div>
       </section>
 
+      {/* 스팀 리뷰 */}
+      <section className="">
+        <SectionHeader
+          title="스팀 리뷰"
+          onReset={resetReview}
+          disabled={reviewState.selectedAll}
+        />
+        <Popover
+          open={reviewPopoverOpen}
+          onOpenChange={handleReviewPopoverOpenChange}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-between text-sm mt-3">
+              <span>{reviewState.summary}</span>
+              <ChevronDown className="h-4 w-4 opacity-70" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[260px] p-0">
+            <div className="p-3 space-y-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Checkbox
+                  checked={
+                    pendingReviewState.allSelected
+                      ? true
+                      : pendingReviewState.indeterminate
+                      ? "indeterminate"
+                      : false
+                  }
+                  onCheckedChange={(checked) => {
+                    if (checked === true) {
+                      selectAllPendingReviews();
+                    } else {
+                      setPendingReviewValues([]);
+                    }
+                  }}
+                />
+                <span>전체</span>
+              </label>
+              <div className="max-h-56 space-y-1 overflow-auto pr-1">
+                {REVIEW_OPTIONS.map((option) => {
+                  const checked = pendingReviewState.unique.includes(option.value);
+                  return (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/40 text-sm cursor-pointer">
+                      <Checkbox
+                        checked={pendingReviewState.allSelected ? true : checked}
+                        onCheckedChange={() => handlePendingReviewToggle(option.value)}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={applyPendingReviews}>
+                {`{${pendingReviewState.unique.length}}개 적용`}
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </section>
+
       {/* 개발사 */}
       <TokenSection
         title="개발사"
@@ -341,7 +530,7 @@ export function FiltersPanel({
       />
 
       {/* 퍼블리셔 */}
-      <TokenSection
+      {/* <TokenSection
         title="퍼블리셔"
         tokens={f.publishers}
         onChange={(tokens) => onChange({ ...f, publishers: tokens })}
@@ -356,7 +545,7 @@ export function FiltersPanel({
             초기화
           </Button>
         }
-      />
+      /> */}
 
       {/* 플랫폼 */}
       <section className="space-y-2">

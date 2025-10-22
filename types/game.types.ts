@@ -23,9 +23,10 @@ export interface Game {
   releaseStatus: string;
   popularityScore: number;
   isFree: boolean;
-  gameType:string;
+  gameType: string;
   headerImage: string | null;
   genres: string[];
+  reviewScoreDesc: string | null;
 }
 export interface HighlightsResponse {
   featured: Game;
@@ -130,6 +131,7 @@ export type FiltersState = {
   developers: string[];
   publishers: string[];
   platforms: string[]; // ✅ 글로벌과 일치
+  reviewScoreDesc: string[];
   sortBy: "releaseDate" | "popularity" | "name";
   sortOrder: "ASC" | "DESC";
   pageSize: number;

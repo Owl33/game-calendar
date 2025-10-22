@@ -19,10 +19,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GameVirtualList } from "@/components/games/GameVirtualList";
+import { REVIEW_FILTER_ALL, sanitizeReviewFilters } from "@/utils/reviewScore";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {
   const sort = (a?: string[]) => (Array.isArray(a) ? [...a].sort() : []);
+  const review =
+    !f.reviewScoreDesc ||
+    f.reviewScoreDesc.length === 0 ||
+    f.reviewScoreDesc.includes(REVIEW_FILTER_ALL)
+      ? [REVIEW_FILTER_ALL]
+      : (() => {
+          const sanitized = sanitizeReviewFilters(f.reviewScoreDesc);
+          return sanitized.length === 0 ? [REVIEW_FILTER_ALL] : sanitized;
+        })();
   return {
     ...f,
     genres: sort(f.genres),
@@ -30,6 +40,7 @@ function canonicalize(f: FiltersState): FiltersState {
     developers: sort(f.developers),
     publishers: sort(f.publishers),
     platforms: sort(f.platforms),
+    reviewScoreDesc: review,
   };
 }
 
@@ -125,6 +136,14 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     if (newFilters.developers?.length) params.set("developers", newFilters.developers.join(","));
     if (newFilters.publishers?.length) params.set("publishers", newFilters.publishers.join(","));
     if (newFilters.platforms?.length) params.set("platforms", newFilters.platforms.join(","));
+    if (
+      !newFilters.reviewScoreDesc?.length ||
+      newFilters.reviewScoreDesc.includes(REVIEW_FILTER_ALL)
+    ) {
+      params.set("reviewScoreDesc", REVIEW_FILTER_ALL);
+    } else {
+      params.set("reviewScoreDesc", newFilters.reviewScoreDesc.join(","));
+    }
     params.set("popularityScore", String(newFilters.popularityScore ?? 40));
     params.set("sortBy", newFilters.sortBy ?? "releaseDate");
     params.set("sortOrder", newFilters.sortOrder ?? "ASC");

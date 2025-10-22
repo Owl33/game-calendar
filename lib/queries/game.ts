@@ -7,6 +7,7 @@ import type {
   Game,
   HighlightsResponse,
 } from "@/types/game.types";
+import { REVIEW_FILTER_ALL } from "@/utils/reviewScore";
 
 export const gameKeys = {
   // 이건 건드리지 않아도 되지만, 앞으로는 stamp만으로 키를 만들 걸 권장합니다.
@@ -34,11 +35,17 @@ function buildListParams(page: number, f: FiltersState) {
   const developers = arrCsv(f.developers);
   const publishers = arrCsv(f.publishers);
   const platforms = arrCsv(f.platforms);
+  const review = f.reviewScoreDesc ?? [REVIEW_FILTER_ALL];
   if (genres) p.set("genres", genres);
   if (tags) p.set("tags", tags);
   if (developers) p.set("developers", developers);
   if (publishers) p.set("publishers", publishers);
   if (platforms) p.set("platforms", platforms);
+  if (review.length === 0 || review.includes(REVIEW_FILTER_ALL)) {
+    p.set("reviewScoreDesc", REVIEW_FILTER_ALL);
+  } else {
+    p.set("reviewScoreDesc", review.join(","));
+  }
   if (typeof f.popularityScore === "number") p.set("popularityScore", String(f.popularityScore));
   if (f.sortBy) p.set("sortBy", String(f.sortBy));
   if (f.sortOrder) p.set("sortOrder", String(f.sortOrder));

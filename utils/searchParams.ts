@@ -1,5 +1,9 @@
 // app/games/utils/searchParams.ts
 import type { FiltersState } from "@/types/game.types";
+import {
+  REVIEW_FILTER_ALL,
+  sanitizeReviewFilters,
+} from "@/utils/reviewScore";
 export type SearchParams = Record<string, string | string[] | undefined>;
 
 export function getFirst(sp: SearchParams, key: string): string | null {
@@ -70,6 +74,15 @@ export function parseFiltersFromSearchParams(
   const developers = csv(get("developers", ""));
   const publishers = csv(get("publishers", ""));
   const platforms = csv(get("platforms", "")); // string[]
+  const reviewParam = csv(get("reviewScoreDesc", ""));
+  const normalizedReview = sanitizeReviewFilters(reviewParam);
+  const hasAll = reviewParam.some((value) => value.toLowerCase() === REVIEW_FILTER_ALL);
+  const reviewScoreDesc =
+    hasAll && normalizedReview.length === 0
+      ? [REVIEW_FILTER_ALL]
+      : normalizedReview.length === 0
+        ? [REVIEW_FILTER_ALL]
+        : normalizedReview;
   const sortBy = (get("sortBy", "popularity") as FiltersState["sortBy"]) ?? "popularity";
   const sortOrder = (get("sortOrder", "DESC") as FiltersState["sortOrder"]) ?? "DESC";
 
@@ -87,6 +100,7 @@ export function parseFiltersFromSearchParams(
     developers,
     publishers,
     platforms,
+    reviewScoreDesc,
     sortBy,
     sortOrder,
     pageSize,
