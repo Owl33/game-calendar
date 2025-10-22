@@ -18,7 +18,7 @@ export interface ModalOverlayProps extends MotionLike {
   onClose: () => void;
   children: React.ReactNode;
 
-  title:string | undefined;
+  title: string | undefined;
   /** 기본값으로도 충분하도록 내부 프리셋 제공 */
   variant?: Variant; // "centered"(모바일 풀, 데스크톱 센터 카드) | "fullscreen"
   size?: Size; // centered일 때만 적용 (max-w)
@@ -43,8 +43,6 @@ const DEFAULT_INITIAL = { opacity: 0, y: 16 };
 const DEFAULT_ANIMATE = { opacity: 1, y: 0 };
 const DEFAULT_EXIT = { opacity: 0, y: 8 };
 const DEFAULT_TRANSITION: Transition = { duration: 0.28, ease: [0.22, 1, 0.36, 1] };
-
-
 
 export function ModalOverlay({
   open,
@@ -102,28 +100,28 @@ export function ModalOverlay({
         "fixed inset-0 z-[105] flex flex-col overflow-hidden",
         "bg-card/95",
         border && "border-t border-border/60 sm:border sm:rounded-none",
-        shadow && "sm:shadow-2xl",
+        shadow && "sm:shadow-2xl"
       );
     }
     // centered: 모바일 풀스크린, 데스크톱 센터 카드
     return cn(
-  "fixed inset-0 z-[105] flex flex-col overflow-hidden",
-  "h-dvh w-full bg-card/95",            // 모바일(기본) 꽉 차게
-  border && "border-t border-border/60",
-  // centered 전환
-  "lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2",
-  "lg:w-full lg:max-w-2xl",
-  `lg:h-[${desktopHeight}]`,                       // 데스크탑 높이
-  shadow && "lg:shadow-2xl",
-  border && "lg:border lg:border-border/60 lg:rounded-2xl",
-  contentClassName
+      "fixed inset-0 z-[105] flex flex-col overflow-hidden",
+      "sm:h-dvh w-full bg-card/95", // 모바일(기본) 꽉 차게
+      border && "border-t border-border/60",
+      // centered 전환
+      "lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2",
+      "lg:w-full lg:max-w-2xl",
+      `lg:h-[540px]`, // 데스크탑 높이
+      shadow && "lg:shadow-2xl",
+      border && "lg:border lg:border-border/60 lg:rounded-2xl",
+      contentClassName
     );
   }, [variant, size, border, shadow]);
 
- 
-
   return (
-    <AnimatePresence initial={false} mode="wait">
+    <AnimatePresence
+      initial={false}
+      mode="wait">
       {open && (
         <>
           <motion.div
@@ -146,19 +144,17 @@ export function ModalOverlay({
             exit={exit}
             transition={transition}
             className={cn(contentBase, contentClassName)}
-            onClick={(e) => e.stopPropagation()}
-          >
-             <div className="px-5 pt-5 pb-3 border-b flex items-center justify-between">
-                <h2 className="text-base font-semibold">{title}</h2>
-                <Button
-                  onClick={() => onClose()}
-                  variant="ghost"
-                  className="h-8 w-8 rounded-full inline-flex items-center justify-center "
-                  aria-label={`${title} 닫기`}
-                >
-                  <X></X>
-                </Button>
-              </div>
+            onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 pt-5 pb-3 border-b flex items-center justify-between">
+              <h2 className="text-base font-semibold">{title}</h2>
+              <Button
+                onClick={() => onClose()}
+                variant="ghost"
+                className="h-8 w-8 rounded-full inline-flex items-center justify-center "
+                aria-label={`${title} 닫기`}>
+                <X></X>
+              </Button>
+            </div>
 
             {children}
           </motion.div>
