@@ -76,7 +76,7 @@ export async function generateMetadata({
 
 export const revalidate = 0;
 
-export default async function Page({
+export default async function CalendarPage({
   searchParams,
 }: {
   searchParams: Promise<CalendarSearchParams>;
