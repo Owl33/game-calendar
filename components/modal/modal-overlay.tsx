@@ -6,7 +6,7 @@ import type { MotionProps } from "motion/react";
 import { useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 import { X } from "lucide-react";
 type MotionLike = Pick<MotionProps, "initial" | "animate" | "exit" | "transition">;
 

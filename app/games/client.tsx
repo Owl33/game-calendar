@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { GameVirtualList } from "@/components/games/GameVirtualList";
 import { REVIEW_FILTER_ALL, sanitizeReviewFilters } from "@/utils/reviewScore";
-import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { ModalOverlay } from "@/components/modal/modal-overlay";
 
 // 서버와 동일 정렬
 function canonicalize(f: FiltersState): FiltersState {

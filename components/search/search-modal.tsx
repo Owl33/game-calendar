@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X, Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { ModalOverlay } from "@/components/modal/modal-overlay";
 
 /* ====== Types ====== */
 export type SearchItem = {
