@@ -73,8 +73,8 @@ export function FiltersPanel({
       selectedAll || unique.length === 0
         ? "전체"
         : unique.length === 1
-        ? REVIEW_OPTIONS.find((opt) => opt.value === unique[0])?.label ?? "선택됨 1개"
-        : `선택됨 ${unique.length}개`;
+        ? REVIEW_OPTIONS.find((opt) => opt.value === unique[0])?.label ?? "1개 선택됨"
+        : `${unique.length}개 선택됨`;
     const indeterminate = !selectedAll && unique.length > 0 && unique.length < total;
     return {
       selectedAll,
