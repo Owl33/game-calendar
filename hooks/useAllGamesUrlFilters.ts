@@ -18,7 +18,7 @@ const DEFAULT: FiltersState = {
   platforms: [], // string[] 그대로 사용
   sortBy: "releaseDate",
   sortOrder: "ASC",
-  pageSize: 24,
+  pageSize: 9,
   popularityScore: 40,
   reviewScoreDesc: []
 };
@@ -49,7 +49,7 @@ export function useAllGamesUrlFilters(
         (g("sortOrder", DEFAULT.sortOrder) as FiltersState["sortOrder"]) ?? DEFAULT.sortOrder,
       pageSize: Math.min(
         50,
-        Math.max(10, toNum(g("pageSize", String(DEFAULT.pageSize)), DEFAULT.pageSize))
+        Math.max(9, toNum(g("pageSize", String(DEFAULT.pageSize)), DEFAULT.pageSize))
       ),
       reviewScoreDesc:['all'],
       popularityScore: toNum(

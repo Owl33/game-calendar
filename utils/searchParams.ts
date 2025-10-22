@@ -86,8 +86,8 @@ export function parseFiltersFromSearchParams(
   const sortBy = (get("sortBy", "popularity") as FiltersState["sortBy"]) ?? "popularity";
   const sortOrder = (get("sortOrder", "DESC") as FiltersState["sortOrder"]) ?? "DESC";
 
-  const pageSizeRaw = Number(get("pageSize", "18"));
-  const pageSize = Math.min(40, Math.max(12, Number.isFinite(pageSizeRaw) ? pageSizeRaw : 18));
+  const pageSizeRaw = Number(get("pageSize", "9"));
+  const pageSize = Math.min(40, Math.max(9, Number.isFinite(pageSizeRaw) ? pageSizeRaw : 9));
   const popRaw = Number(get("popularityScore", "40"));
   const popularityScore = Number.isFinite(popRaw) ? popRaw : 40;
 

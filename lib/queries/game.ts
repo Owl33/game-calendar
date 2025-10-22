@@ -26,7 +26,7 @@ const arrCsv = (v?: string[]) => (Array.isArray(v) && v.length ? v.join(",") : u
 function buildListParams(page: number, f: FiltersState) {
   const p = new URLSearchParams();
   p.set("page", String(page));
-  p.set("pageSize", String(f.pageSize ?? 24));
+  p.set("pageSize", String(f.pageSize ?? 9));
   if (f.startDate) p.set("startDate", f.startDate);
   if (f.endDate) p.set("endDate", f.endDate);
   if (f.onlyUpcoming) p.set("onlyUpcoming", "true");

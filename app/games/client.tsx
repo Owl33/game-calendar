@@ -120,7 +120,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
   });
-
+console.log(data)
   const flat = useMemo(
     () => data?.pages?.flatMap((p: any) => (Array.isArray(p?.data) ? p.data : [])) ?? [],
     [data]
@@ -150,7 +150,7 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     params.set("popularityScore", String(newFilters.popularityScore ?? 40));
     params.set("sortBy", newFilters.sortBy ?? "releaseDate");
     params.set("sortOrder", newFilters.sortOrder ?? "ASC");
-    params.set("pageSize", String(newFilters.pageSize ?? 24));
+    params.set("pageSize", String(newFilters.pageSize ?? 9));
 
     router.replace(`/games?${params.toString()}`, { scroll: false });
   };
@@ -267,13 +267,13 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
               <Select
                 value={String(filters.pageSize)}
                 onValueChange={(v) =>
-                  updateFilters((f) => ({ ...f, pageSize: Math.min(40, Math.max(12, Number(v))) }))
+                  updateFilters((f) => ({ ...f, pageSize: Math.min(40, Math.max(9, Number(v))) }))
                 }>
                 <SelectTrigger className="w-[80px] h-9">
                   <SelectValue placeholder="페이지" />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  {[12, 18, 24, 30, 40].map((n) => (
+                  {[9, 15, 24, 30, 40].map((n) => (
                     <SelectItem
                       key={n}
                       value={String(n)}>

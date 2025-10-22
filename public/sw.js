@@ -71,13 +71,13 @@ self.addEventListener('fetch', (event) => {
     caches.open(IMAGE_CACHE_NAME).then(async (cache) => {
       const cached = await cache.match(request);
       if (cached) {
-        console.log('[SW] Cache HIT:', url.pathname.slice(0, 80));
+        // console.log('[SW] Cache HIT:', url.pathname.slice(0, 80));
         // Stale-While-Revalidate를 원하면 여기서 백그라운드 업데이트도 가능
         // cache.add(request).catch(() => {});
         return cached;
       }
 
-      console.log('[SW] Cache MISS, fetching:', url.pathname.slice(0, 80));
+      // console.log('[SW] Cache MISS, fetching:', url.pathname.slice(0, 80));
 
       try {
         const networkResponse = await fetch(request);
@@ -90,7 +90,7 @@ self.addEventListener('fetch', (event) => {
 
         return networkResponse;
       } catch (err) {
-        console.error('[SW] Fetch failed:', err);
+        // console.error('[SW] Fetch failed:', err);
         // 필요시 placeholder 이미지 반환 가능
         return new Response('Network error', { status: 408, statusText: 'Request Timeout' });
       }
@@ -106,10 +106,10 @@ async function manageCacheSize(cache) {
       for (let i = 0; i < deleteCount; i++) {
         await cache.delete(keys[i]);
       }
-      console.log(`[SW] Cleaned cache: removed ${deleteCount} old images`);
+      // console.log(`[SW] Cleaned cache: removed ${deleteCount} old images`);
     }
   } catch (e) {
-    console.warn('[SW] Cache trim error:', e);
+    // console.warn('[SW] Cache trim error:', e);
   }
 }
 
@@ -132,7 +132,7 @@ self.addEventListener('message', (event) => {
 
   if (event.data?.type === 'CLEAR_CACHE') {
     caches.delete(IMAGE_CACHE_NAME).then(() => {
-      console.log('[SW] Cache cleared by request');
+      // console.log('[SW] Cache cleared by request');
       event.ports[0]?.postMessage({ type: 'CACHE_CLEARED', success: true });
     });
   }

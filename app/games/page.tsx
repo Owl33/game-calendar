@@ -82,7 +82,7 @@ function resolveCanonicalParams(filters: FiltersState) {
   if (filters.endDate) params.endDate = filters.endDate;
   if (filters.sortBy !== "popularity") params.sortBy = filters.sortBy;
   if (filters.sortOrder !== "DESC") params.sortOrder = filters.sortOrder;
-  if (filters.pageSize !== 18) params.pageSize = String(filters.pageSize);
+  if (filters.pageSize !== 9) params.pageSize = String(filters.pageSize);
   if (filters.reviewScoreDesc.length && !filters.reviewScoreDesc.includes(REVIEW_FILTER_ALL)) {
     params.reviewScoreDesc = filters.reviewScoreDesc.join(",");
   }
