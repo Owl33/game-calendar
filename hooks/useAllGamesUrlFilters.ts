@@ -20,6 +20,7 @@ const DEFAULT: FiltersState = {
   sortOrder: "ASC",
   pageSize: 24,
   popularityScore: 40,
+  reviewScoreDesc: []
 };
 
 export function useAllGamesUrlFilters(
@@ -50,6 +51,7 @@ export function useAllGamesUrlFilters(
         50,
         Math.max(10, toNum(g("pageSize", String(DEFAULT.pageSize)), DEFAULT.pageSize))
       ),
+      reviewScoreDesc:['all'],
       popularityScore: toNum(
         g("popularityScore", String(DEFAULT.popularityScore)),
         DEFAULT.popularityScore
