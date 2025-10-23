@@ -87,9 +87,7 @@ export function FiltersPanel({
 
   const [reviewPopoverOpen, setReviewPopoverOpen] = useState(false);
   const [pendingReviewValues, setPendingReviewValues] = useState(() =>
-    reviewState.selectedAll
-      ? REVIEW_OPTIONS.map((opt) => opt.value)
-      : reviewState.activeValues,
+    reviewState.selectedAll ? REVIEW_OPTIONS.map((opt) => opt.value) : reviewState.activeValues
   );
 
   const skipPendingSyncRef = useRef(false);
@@ -101,9 +99,7 @@ export function FiltersPanel({
     }
     if (!reviewPopoverOpen) {
       setPendingReviewValues(
-        reviewState.selectedAll
-          ? REVIEW_OPTIONS.map((opt) => opt.value)
-          : reviewState.activeValues,
+        reviewState.selectedAll ? REVIEW_OPTIONS.map((opt) => opt.value) : reviewState.activeValues
       );
     }
   }, [reviewPopoverOpen, reviewState.selectedAll, reviewState.activeValues]);
@@ -131,9 +127,7 @@ export function FiltersPanel({
     setReviewPopoverOpen(open);
     if (open) {
       setPendingReviewValues(
-        reviewState.selectedAll
-          ? REVIEW_OPTIONS.map((opt) => opt.value)
-          : reviewState.activeValues,
+        reviewState.selectedAll ? REVIEW_OPTIONS.map((opt) => opt.value) : reviewState.activeValues
       );
     }
   };
@@ -149,7 +143,7 @@ export function FiltersPanel({
       | "Mostly Negative"
       | "Very Negative"
       | "Overwhelmingly Negative"
-      | "none",
+      | "none"
   ) => {
     setPendingReviewValues((prev) => {
       const exists = prev.includes(value);
@@ -170,9 +164,7 @@ export function FiltersPanel({
       onChange({ ...f, reviewScoreDesc: final });
     }
     skipPendingSyncRef.current = true;
-    setPendingReviewValues(
-      isAllSelected ? REVIEW_OPTIONS.map((opt) => opt.value) : sanitized,
-    );
+    setPendingReviewValues(isAllSelected ? REVIEW_OPTIONS.map((opt) => opt.value) : sanitized);
     setReviewPopoverOpen(false);
   };
 
@@ -356,7 +348,7 @@ export function FiltersPanel({
           <label
             htmlFor="onlyUpcoming"
             className="cursor-pointer text-sm">
-            미출시만
+            출시 예정작
           </label>
         </div>
       </section>
