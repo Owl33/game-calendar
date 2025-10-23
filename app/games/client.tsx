@@ -120,7 +120,6 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
     staleTime: 10 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
   });
-console.log(data)
   const flat = useMemo(
     () => data?.pages?.flatMap((p: any) => (Array.isArray(p?.data) ? p.data : [])) ?? [],
     [data]
@@ -187,37 +186,33 @@ console.log(data)
       <div className="grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-3">
           <div className="lg:hidden mb-4">
-      <div className="lg:hidden mb-4">
-  {/* 트리거 버튼 */}
-  <Button
-    variant="outline"
-    className="w-full justify-center gap-2 h-11"
-    onClick={() => setMobileFiltersOpen(true)}
-  >
-    <SlidersHorizontal className="w-4 h-4" />
-    필터 열기
-  </Button>
+            <div className="lg:hidden mb-4">
+              {/* 트리거 버튼 */}
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-2 h-11"
+                onClick={() => setMobileFiltersOpen(true)}>
+                <SlidersHorizontal className="w-4 h-4" />
+                필터 열기
+              </Button>
 
-  {/* 오버레이 */}
-<ModalOverlay
-  open={mobileFiltersOpen}
-  onClose={() => setMobileFiltersOpen(false)}
-  title="필터"
-  // 기본: variant="centered", size="xl", blur/border/shadow=true
-  // 닫힘/열림 애니메이션 기본값 사용
->
- 
-  <div className="overflow-y-auto p-4">
-    <FiltersPanel
-      value={filters}
-      onChange={(newFilters) => updateFilters(() => newFilters)}
-      onResetAll={() => updateFilters(() => initialFilters)}
-    />
-  </div>
-</ModalOverlay>
-
-</div>
-
+              {/* 오버레이 */}
+              <ModalOverlay
+                open={mobileFiltersOpen}
+                onClose={() => setMobileFiltersOpen(false)}
+                title="필터"
+                // 기본: variant="centered", size="xl", blur/border/shadow=true
+                // 닫힘/열림 애니메이션 기본값 사용
+              >
+                <div className="overflow-y-auto p-4">
+                  <FiltersPanel
+                    value={filters}
+                    onChange={(newFilters) => updateFilters(() => newFilters)}
+                    onResetAll={() => updateFilters(() => initialFilters)}
+                  />
+                </div>
+              </ModalOverlay>
+            </div>
           </div>
           <div className="hidden lg:block sticky top-5 space-y-4">
             <div className="rounded-xl border border-border/50 bg-card/60 p-4">
