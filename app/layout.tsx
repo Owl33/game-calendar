@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     "스팀 신작",
     "신규 게임",
     "출시 게임",
+    "출시 예정작"
   ],
   creator: "releasePicks",
   publisher: "releasePicks",

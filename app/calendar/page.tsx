@@ -37,16 +37,19 @@ export async function generateMetadata({
   const canonicalPath = hasExplicitMonth ? `/calendar?m=${yearMonth}` : "/calendar";
   const canonicalUrl = absoluteUrl(canonicalPath);
 
-  const title = `${fullLabel} 게임 출시 캘린더`;
+  const title = `${fullLabel} 게임 출시 예정작`;
   const description = `${fullLabel} 출시 예정 게임 일정을 캘린더로 확인하세요. ${monthLabel} 신작·신규 게임을 한눈에 확인하고 놓치지 마세요!`;
   const keywords = [
     `${fullLabel} 신작 게임`,
     `${fullLabel} 신규 게임`,
     `${fullLabel} 출시 게임`,
+    `${fullLabel} 출시 예정작`,
     `${monthLabel} 신규 게임`,
     `${monthLabel} 신작 출시 게임`,
     `${monthLabel} 게임 일정`,
+    `${monthLabel} 출시 예정작`,
     "게임 출시 일정",
+    "게임 출시 예정",
     "PC 콘솔 신작 일정",
     "게임 캘린더",
     "게임 신작",
