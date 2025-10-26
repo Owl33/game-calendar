@@ -2,18 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SearchModal from "@/components/search/search-modal";
 import Image from "next/image";
+import { primaryNavLinks } from "@/lib/navigation";
 interface HeaderProps {
   className?: string;
 }
 
 export function Header({ className }: HeaderProps) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   // Cmd/Ctrl+K 단축키로 열기
   useEffect(() => {
@@ -52,21 +55,22 @@ export function Header({ className }: HeaderProps) {
         {/* 네비 + 검색 버튼 */}
         <div className="flex items-center gap-4">
           <nav className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              홈
-            </Link>
-            <Link
-              href="/calendar"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              캘린더
-            </Link>
-            <Link
-              href="/games"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              전체게임
-            </Link>
+            {primaryNavLinks.map((link) => {
+              const isActive =
+                pathname === link.path || (link.path !== "/" && pathname?.startsWith(link.path));
+              return (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}>
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* 데스크톱 검색 버튼 */}

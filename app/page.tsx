@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import HighlightsPage from "./highlights/client";
 import { absoluteUrl } from "@/lib/seo";
+import { primaryNavLinks } from "@/lib/navigation";
 
-const HOME_DESCRIPTION =
+export const HOME_DESCRIPTION =
   "릴리즈픽에서는 멀티 플랫폼의 게임 발매일과 정보를 한눈에 확인할 수 있습니다. Steam, PlayStation, Nintendo 등 주요 플랫폼의 신작 출시 정보를 한곳에서 확인하고, 신작을 놓치지 마세요!";
 
 export const metadata: Metadata = {
@@ -65,13 +66,36 @@ const collectionLd = {
   },
 };
 
+const websiteLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "릴리즈픽",
+  alternateName: "ReleasePicks",
+  url: absoluteUrl("/"),
+  inLanguage: "ko",
+};
+
+const siteNavigationLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "릴리즈픽 주요 내비게이션",
+  itemListElement: primaryNavLinks.map((link, index) => ({
+    "@type": "SiteNavigationElement",
+    position: index + 1,
+    name: link.label,
+    url: absoluteUrl(link.path),
+  })),
+};
+
 export default function RootPage() {
+  const structuredData = [organizationLd, collectionLd, websiteLd, siteNavigationLd];
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([organizationLd, collectionLd]),
+          __html: JSON.stringify(structuredData),
         }}
       />
       <HighlightsPage />

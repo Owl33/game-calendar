@@ -125,12 +125,42 @@ export default async function Page({ params }: { params: GamePageParams }) {
     notFound();
   }
   const ensuredDetail = detail as NonNullable<typeof detail>;
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "홈",
+        item: absoluteUrl("/"),
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "전체 게임",
+        item: absoluteUrl("/games"),
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: ensuredDetail.game.name,
+        item: absoluteUrl(`/games/${id}`),
+      },
+    ],
+  };
 
   const qc = new QueryClient();
   qc.setQueryData(gameKeys.detail(id), ensuredDetail.raw);
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbLd),
+        }}
+      />
       <GameDetailClient gameId={id} />
     </HydrationBoundary>
   );

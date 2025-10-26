@@ -37,12 +37,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.8,
     },
-    {
-      url: `${siteUrl}/highlights`,
-      lastModified,
-      changeFrequency: "always",
-      priority: 0.7,
-    },
 
   ];
 }
