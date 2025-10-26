@@ -23,7 +23,7 @@ export interface ModalOverlayProps extends MotionLike {
   /** 기본값으로도 충분하도록 내부 프리셋 제공 */
   variant?: Variant; // "centered"(모바일 풀, 데스크톱 센터 카드) | "fullscreen"
   size?: Size; // centered일 때만 적용 (max-w)
-  desktopHeight?: string; // 예: "540px" | "90vh" (centered일 때만)
+  desktopHeight?: string; // 예: "740px" | "90vh" (centered일 때만)
 
   /** 시각 옵션(오버레이/콘텐츠) */
   blur?: boolean; // overlay blur, 기본 true
@@ -176,7 +176,7 @@ export function ModalOverlay({
       );
     }
     // centered: 모바일 풀스크린, 데스크톱 센터 카드
-    const desktopHeightClass = desktopHeight ? undefined : "lg:h-[540px]"; // desktopHeight가 있으면 인라인 style로 처리
+    const desktopHeightClass = desktopHeight ? undefined : "lg:h-[740px]"; // desktopHeight가 있으면 인라인 style로 처리
     return cn(
       "fixed inset-0 z-[105] flex flex-col overflow-hidden",
       "sm:h-dvh w-full bg-card/95", // 모바일(기본) 꽉 차게
@@ -184,7 +184,7 @@ export function ModalOverlay({
       // centered 전환
       "lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2",
       "lg:w-full",
-      "lg:h-[540px]",
+      "lg:h-[740px]",
       size === "sm" && "lg:max-w-sm",
       size === "md" && "lg:max-w-md",
       size === "lg" && "lg:max-w-lg",

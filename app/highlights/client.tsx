@@ -89,7 +89,7 @@ const onPasteMail = () =>{
       <section className="my-8">
         <SectionTitle
           title="인기게임"
-          subtitle="인기도가 높은 게임 16종을 랜덤으로 보여줍니다."
+          subtitle="±4년 범위의 인기도가 높은 게임 16종을 랜덤으로 보여줍니다."
         />
 
         <GameList
