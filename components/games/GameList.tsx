@@ -62,7 +62,6 @@ export const GameList = memo(function GameList({
 
   // scrollKey 변경 시 맨 위로 스크롤 (기존 동작 유지, 지속 스크롤 사용 시 제외)
   useEffect(() => {
-    console.log(persistScroll)
  
     if (persistScroll) return;
     if (!persistScroll&& scrollKey && listRef.current) {

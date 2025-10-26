@@ -150,7 +150,7 @@ export function ModalOverlay({
         pushedRef.current = false;
         try {
           closingRef.current = true;
-          history.back();
+          // history.back();
         } finally {
           setTimeout(() => {
             closingRef.current = false;
