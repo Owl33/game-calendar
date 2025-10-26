@@ -51,13 +51,14 @@ export function useBodyScrollLock(locked: boolean) {
       }
       return null;
     };
+const epsilon = 1; // 1px 오차 허용
 
-    const canScroll = (el: HTMLElement, deltaY: number) => {
-      if (el.scrollHeight <= el.clientHeight) return false;
-      if (deltaY < 0) return el.scrollTop > 0; // 위로
-      if (deltaY > 0) return el.scrollTop + el.clientHeight < el.scrollHeight; // 아래로
-      return true;
-    };
+const canScroll = (el: HTMLElement, deltaY: number) => {
+  if (el.scrollHeight <= el.clientHeight) return false;
+  if (deltaY < 0) return el.scrollTop > epsilon; // 위
+  if (deltaY > 0) return el.scrollTop + el.clientHeight + epsilon < el.scrollHeight; // 아래
+  return true;
+};
 
     const onWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement | null;
