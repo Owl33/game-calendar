@@ -1,7 +1,7 @@
 // app/calendar/CalendarClient.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GameCalendar } from "./components/GameCalendar";
 import { CalendarHeader } from "./components/CalendarHeader";
@@ -40,7 +40,6 @@ export default function CalendarClient({
     yearMonth,
   } = useCalendarUrlState(initialSearchParams);
   const monthScrollKey = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}`;
-
   const { data: apiResponse, isLoading } = useQuery({
     queryKey: gameKeys.calendar(yearMonth),
     queryFn: ({ signal }) => fetchCalendarMonth(yearMonth, signal),
@@ -153,6 +152,7 @@ export default function CalendarClient({
 
           <GameList
             className="p-4 space-y-4 overflow-y-auto overflow-x-hidden lg:[scrollbar-gutter:stable]"
+            sortBy={sortBy}
             games={sortedGames}
             isLoading={isLoading}
             viewMode={viewMode}
