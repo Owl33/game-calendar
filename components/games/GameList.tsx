@@ -37,6 +37,7 @@ interface GameListProps {
   mode?: "vertical" | "horizontal";
   scrollKey?: string;
   persistScroll?: boolean;
+  setPersistScroll?:(value:boolean)=>void;
 }
 
 export const GameList = memo(function GameList({
@@ -46,7 +47,7 @@ export const GameList = memo(function GameList({
   viewMode = "card",
   mode = "vertical",
   scrollKey,
-  persistScroll = false,
+  persistScroll = false,setPersistScroll
 }: GameListProps) {
   // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
   const OPTIONS: EmblaOptionsType = {
@@ -61,12 +62,14 @@ export const GameList = memo(function GameList({
 
   // scrollKey 변경 시 맨 위로 스크롤 (기존 동작 유지, 지속 스크롤 사용 시 제외)
   useEffect(() => {
+    console.log(persistScroll)
+ 
     if (persistScroll) return;
-    if (scrollKey && listRef.current) {
+    if (!persistScroll && scrollKey && listRef.current) {
       listRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-  }, [scrollKey, persistScroll]);
+  }, [scrollKey, persistScroll,games]);
 
 
   const storageKey = scrollKey ? `game-list-scroll:${String(scrollKey)}` : null;
@@ -157,6 +160,10 @@ export const GameList = memo(function GameList({
   const displayGames = isLoading ? skeletonGames : games;
 
   const handleClickCapture = (e: React.MouseEvent) => {
+    if(setPersistScroll){
+
+      setPersistScroll(true);
+    }
     saveNow();
   };
 

@@ -50,7 +50,7 @@ export default function CalendarClient({
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
-
+  const [persistScroll,setPersistScroll] = useState(true);
   const games: Game[] = useMemo(() => apiResponse?.data ?? [], [apiResponse]);
 
   const gamesByDate: GamesByDate = useMemo(() => {
@@ -75,7 +75,12 @@ export default function CalendarClient({
       arr.sort((a, b) => +new Date(a.releaseDate) - +new Date(b.releaseDate));
     return arr;
   }, [filteredGames, sortBy]);
-
+  const handleSetSortBy = (value:any) =>{
+    setPersistScroll(false);
+    console.log(value)
+    console.log(persistScroll)
+    setSortBy(value)
+  }
   const handleYearChange = (y: number) => {
     setSelectedYear(y);
     setSelectedDay(null);
@@ -145,7 +150,7 @@ export default function CalendarClient({
             title="게임 목록"
             sortBy={sortBy}
             sortOptions={CALENDAR_SORT_OPTIONS}
-            onSortChange={setSortBy}
+            onSortChange={(value)=>handleSetSortBy(value)}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
           />
@@ -157,7 +162,8 @@ export default function CalendarClient({
             isLoading={isLoading}
             viewMode={viewMode}
             scrollKey={monthScrollKey}
-            persistScroll
+            persistScroll={persistScroll}
+            setPersistScroll={setPersistScroll}
           />
         </div>
       </div>
