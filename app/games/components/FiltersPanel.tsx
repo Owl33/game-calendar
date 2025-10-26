@@ -181,13 +181,13 @@ export function FiltersPanel({
           <Filter className="w-4 h-4" />
           <h2 className="text-sm font-semibold">필터</h2>
         </div>
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           className="h-8 px-2 text-xs"
           onClick={onResetAll}>
           전체 초기화
-        </Button>
+        </Button> */}
       </div>
 
       {/* 인기도 */}
