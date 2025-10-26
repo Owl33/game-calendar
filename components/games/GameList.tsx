@@ -65,8 +65,8 @@ export const GameList = memo(function GameList({
     console.log(persistScroll)
  
     if (persistScroll) return;
-    if (!persistScroll && scrollKey && listRef.current) {
-      listRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    if (!persistScroll&& scrollKey && listRef.current) {
+      listRef.current.scrollTo({ top: 0, behavior: "auto" });
     }
 
   }, [scrollKey, persistScroll,games]);

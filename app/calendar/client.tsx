@@ -64,6 +64,7 @@ export default function CalendarClient({
 
   const filteredGames = useMemo(() => {
     if (!selectedDay) return games;
+
     return games.filter((g) => new Date(g.releaseDate).getDate() === selectedDay);
   }, [games, selectedDay]);
 
@@ -73,7 +74,9 @@ export default function CalendarClient({
     else if (sortBy === "name") arr.sort((a, b) => a.name.localeCompare(b.name));
     else if (sortBy === "date")
       arr.sort((a, b) => +new Date(a.releaseDate) - +new Date(b.releaseDate));
+    
     return arr;
+    
   }, [filteredGames, sortBy]);
   const handleSetSortBy = (value:any) =>{
     setPersistScroll(false);
@@ -98,8 +101,10 @@ export default function CalendarClient({
     syncUrl(y, m, null);
   };
   const handleDaySelect = (d: number | null) => {
+    
     setSelectedDay(d);
     syncUrl(selectedYear, selectedMonth, d);
+    setPersistScroll(false)
   };
 
   return (
