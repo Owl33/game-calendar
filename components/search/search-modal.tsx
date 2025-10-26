@@ -293,7 +293,7 @@ export default function SearchModal({ open, onClose, initialQuery = "" }: Search
       {/* Input */}
       <div
         className="flex-shrink-0 p-4 sm:p-5"
-        data-modal-scroller="true">
+       >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

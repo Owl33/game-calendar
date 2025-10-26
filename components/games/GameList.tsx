@@ -35,6 +35,7 @@ interface GameListProps {
   sortBy?: string;
   mode?: "vertical" | "horizontal";
   scrollKey?: string;
+  persistScroll?: boolean;
 }
 
 export const GameList = memo(function GameList({
@@ -44,6 +45,7 @@ export const GameList = memo(function GameList({
   viewMode ='card',
   mode = "vertical",
   scrollKey,
+  persistScroll = false,
 }: GameListProps) {
   // 클라이언트에서만 localStorage 값 적용 (Hydration 에러 방지)
   const OPTIONS: EmblaOptionsType = {
@@ -55,12 +57,60 @@ export const GameList = memo(function GameList({
 
   const listRef = useRef<HTMLDivElement>(null);
 
-  // scrollKey 변경 시 맨 위로 스크롤
+  // scrollKey 변경 시 맨 위로 스크롤 (기존 동작 유지, 지속 스크롤 사용 시 제외)
   useEffect(() => {
+    if (persistScroll) return;
     if (scrollKey && listRef.current) {
       listRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [scrollKey]);
+  }, [scrollKey, persistScroll]);
+
+  // 세션 단위 스크롤 위치 기억 (캘린더용)
+  useEffect(() => {
+    if (!persistScroll || mode !== "vertical") return;
+    if (!scrollKey) return;
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    const node = listRef.current;
+    if (!node) return;
+
+    const storageKey = `game-list-scroll:${scrollKey}`;
+    const restoredRef = { current: false };
+
+    const restore = () => {
+      if (restoredRef.current) return;
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        node.scrollTo({ top: Number(saved), behavior: "auto" });
+      }
+      restoredRef.current = true;
+    };
+
+    restore();
+    const raf = requestAnimationFrame(restore);
+
+    const save = () => {
+      sessionStorage.setItem(storageKey, String(node.scrollTop));
+    };
+
+    const handleScroll = () => {
+      sessionStorage.setItem(storageKey, String(node.scrollTop));
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") save();
+    };
+
+    node.addEventListener("scroll", handleScroll);
+    window.addEventListener("pagehide", save);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      node.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("pagehide", save);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      save();
+    };
+  }, [persistScroll, scrollKey, mode]);
 
   const skeletonGames = useMemo(() => {
     const count = mode === "horizontal" ? 5 : 6;

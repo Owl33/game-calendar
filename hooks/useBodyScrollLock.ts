@@ -3,68 +3,59 @@
 
 import { useEffect, useRef } from "react";
 
-/**
- * 전역 wheel/touchmove/keydown 이벤트만 막아서
- * 배경 스크롤을 못 하게 합니다.
- * - 스크롤바(우측 gutter)는 건드리지 않음 (깜빡임 X)
- * - 모달 내부 스크롤러([data-modal-scroller="true"])는 그대로 스크롤 허용
- * - iOS 터치 바운스 방지
- */
 export function useBodyScrollLock(locked: boolean) {
   const touchStartY = useRef(0);
 
   useEffect(() => {
     if (!locked) return;
 
-    const KEY_BLOCK = new Set([
-      "ArrowUp",
-      "ArrowDown",
-      "PageUp",
-      "PageDown",
-      "Home",
-      "End",
-      " ",
-    ]);
+    const KEY_BLOCK = new Set(["ArrowUp","ArrowDown","PageUp","PageDown","Home","End"," "]);
 
     const isEditable = (el: HTMLElement | null) => {
       if (!el) return false;
       const tag = el.tagName.toLowerCase();
-      const editableTags = ["input", "textarea", "select"];
-      return (
-        editableTags.includes(tag) ||
-        (el as HTMLElement).isContentEditable === true
-      );
+      return ["input","textarea","select"].includes(tag) || el.isContentEditable === true;
     };
 
-    const findScrollable = (start: HTMLElement | null): HTMLElement | null => {
-      // 명시적으로 표기한 스크롤러를 우선 허용
-      const marked = start?.closest?.("[data-modal-scroller='true']") as
-        | HTMLElement
-        | null;
-      if (marked) return marked;
+    const isScrollable = (el: HTMLElement | null) => {
+      if (!el) return false;
+      const style = getComputedStyle(el);
+      const oy = style.overflowY;
+      return /(auto|scroll)/.test(oy) && el.scrollHeight > el.clientHeight;
+    };
 
-      // fallback: 스크롤 가능한 조상 탐색
+    /**
+     * 모달 영역 한정 탐색 규칙
+     * - 1순위: 타겟 기준 가장 가까운 [data-modal-scroller] 중 "스크롤 가능한" 요소
+     * - 2순위: 타겟→조상으로 올라가며 "스크롤 가능한" 요소
+     * - 3순위: 근처 모달 루트([data-modal-root]) 안에서 명시된 스크롤러를 찾아 스크롤 가능한지 확인
+     */
+    const findScrollable = (start: HTMLElement | null): HTMLElement | null => {
+      const root = start?.closest?.("[data-modal-root='true']") as HTMLElement | null;
+
+      // 1) 가장 가까운 명시 스크롤러가 실제로 스크롤 가능한지
+      const markedClosest = start?.closest?.("[data-modal-scroller='true']") as HTMLElement | null;
+      if (isScrollable(markedClosest)) return markedClosest;
+
+      // 2) 조상 방향으로 스크롤 가능한 요소 찾기 (root를 경계로)
       let el: HTMLElement | null = start;
-      while (el && el !== document.body) {
-        const style = window.getComputedStyle(el);
-        const canScrollY =
-          /(auto|scroll)/.test(style.overflowY) &&
-          el.scrollHeight > el.clientHeight;
-        if (canScrollY) return el;
+      while (el && el !== document.body && (!root || el !== root)) {
+        if (isScrollable(el)) return el;
         el = el.parentElement;
+      }
+
+      // 3) 루트 안에서 명시된 스크롤러를 찾아보되, 스크롤 가능한지 검증
+      if (root) {
+        const fallbackMarked = root.querySelector("[data-modal-scroller='true']") as HTMLElement | null;
+        if (isScrollable(fallbackMarked)) return fallbackMarked;
       }
       return null;
     };
 
     const canScroll = (el: HTMLElement, deltaY: number) => {
       if (el.scrollHeight <= el.clientHeight) return false;
-      if (deltaY < 0) {
-        // 위로 스크롤
-        return el.scrollTop > 0;
-      } else if (deltaY > 0) {
-        // 아래로 스크롤
-        return el.scrollTop + el.clientHeight < el.scrollHeight;
-      }
+      if (deltaY < 0) return el.scrollTop > 0; // 위로
+      if (deltaY > 0) return el.scrollTop + el.clientHeight < el.scrollHeight; // 아래로
       return true;
     };
 
@@ -84,10 +75,8 @@ export function useBodyScrollLock(locked: boolean) {
       const target = e.target as HTMLElement | null;
       const scroller = findScrollable(target);
       const currentY = e.touches?.[0]?.clientY ?? 0;
-      const deltaY = touchStartY.current - currentY; // +면 아래로 스크롤 의도
-
+      const deltaY = touchStartY.current - currentY;
       if (!scroller || !canScroll(scroller, deltaY)) {
-        // 배경/꼭대기/바닥에서의 바운스 방지
         e.preventDefault();
       }
     };
@@ -95,26 +84,20 @@ export function useBodyScrollLock(locked: boolean) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!KEY_BLOCK.has(e.key)) return;
       const target = e.target as HTMLElement | null;
-      if (isEditable(target)) return; // 입력 중에는 허용
+      if (isEditable(target)) return;
 
-      // 방향키/스페이스 등으로 배경 스크롤되는 것 차단.
-      // 포커스된 요소가 스크롤러 위라면, 스크롤 가능할 때만 허용
       const scroller = findScrollable(target);
       if (!scroller) {
         e.preventDefault();
         return;
       }
-      // 키 방향을 delta로 매핑
       const keyDelta =
-        e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Home"
-          ? -1
-          : 1;
+        e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Home" ? -1 : 1;
       if (!canScroll(scroller, keyDelta)) {
         e.preventDefault();
       }
     };
 
-    // passive: false 여야 preventDefault 가능
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: false });
     window.addEventListener("touchmove", onTouchMove, { passive: false });

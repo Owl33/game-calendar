@@ -4,55 +4,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, Calendar as CalendarIcon, ArrowUpDown, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { FiltersPanel } from "./components/FiltersPanel";
 import { allGamesKey, parseFiltersFromSearchParams } from "@/utils/searchParams";
 import type { FiltersState } from "@/types/game.types";
 import { fetchAllGamesPage } from "@/lib/queries/game";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { GameVirtualList } from "@/components/games/GameVirtualList";
-import { REVIEW_FILTER_ALL, sanitizeReviewFilters } from "@/utils/reviewScore";
+import { REVIEW_FILTER_ALL } from "@/utils/reviewScore";
+import { canonicalizeFilters, stableSerialize } from "@/lib/filters/games";
 import { ModalOverlay } from "@/components/modal/modal-overlay";
-
-// 서버와 동일 정렬
-function canonicalize(f: FiltersState): FiltersState {
-  const sort = (a?: string[]) => (Array.isArray(a) ? [...a].sort() : []);
-  const review =
-    !f.reviewScoreDesc ||
-    f.reviewScoreDesc.length === 0 ||
-    f.reviewScoreDesc.includes(REVIEW_FILTER_ALL)
-      ? [REVIEW_FILTER_ALL]
-      : (() => {
-          const sanitized = sanitizeReviewFilters(f.reviewScoreDesc);
-          return sanitized.length === 0 ? [REVIEW_FILTER_ALL] : sanitized;
-        })();
-  return {
-    ...f,
-    genres: sort(f.genres),
-    tags: sort(f.tags),
-    developers: sort(f.developers),
-    publishers: sort(f.publishers),
-    platforms: sort(f.platforms),
-    reviewScoreDesc: review,
-  };
-}
-
-function stableSerialize(obj: unknown) {
-  if (obj == null) return "null";
-  const keys: string[] = [];
-  JSON.stringify(obj, (k, v) => (keys.push(k), v));
-  keys.sort();
-  return JSON.stringify(obj, keys);
-}
+import { GameResultsToolbar, type SortOption } from "@/components/games/GameResultsToolbar";
 
 function useDebouncedValue<T>(value: T, delay = 250) {
   const [debounced, setDebounced] = useState(value);
@@ -82,14 +46,14 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
   // URL에서 현재 필터 파싱 (서버와 동일한 로직)
   const filters = useMemo(() => {
     const parsed = parseFiltersFromSearchParams(currentParams);
-    return canonicalize(parsed);
+    return canonicalizeFilters(parsed);
   }, [currentParams]);
 
   // 디바운스된 필터 값 (쿼리 키와 API 호출용)
   const debounced = useDebouncedValue(filters, 250);
 
   // 🔑 현재 필터를 정규화해서 키/메타에 사용
-  const normalized = useMemo(() => canonicalize(debounced), [debounced]);
+  const normalized = useMemo(() => canonicalizeFilters(debounced), [debounced]);
   const keyStamp = useMemo(() => stableSerialize(normalized), [normalized]);
   const queryKey = useMemo(() => allGamesKey(normalized, keyStamp), [normalized, keyStamp]);
 
@@ -153,6 +117,15 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
 
     router.replace(`/games?${params.toString()}`, { scroll: false });
   };
+
+  const sortOptions = useMemo<SortOption<FiltersState["sortBy"]>[]>(
+    () => [
+      { value: "releaseDate", label: "출시일", icon: CalendarIcon },
+      { value: "popularity", label: "인기순", icon: TrendingUp },
+      { value: "name", label: "이름순", icon: ArrowUpDown },
+    ],
+    []
+  );
 
   // 필터 변경 시 스크롤 상단 이동 (키가 바뀔 때만)
   const prevKeyRef = useRef<string>("");
@@ -226,59 +199,21 @@ export default function GamesClient({ initialFilters }: { initialFilters: Filter
         </aside>
 
         <main className="col-span-12 lg:col-span-9 ">
-          <div className="flex items-center flex-wrap justify-between mb-4 lg:mb-3">
-            <div className="text-sm flex items-center gap-4"></div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Select
-                value={filters.sortBy}
-                onValueChange={(v: FiltersState["sortBy"]) =>
-                  updateFilters((f) => ({ ...f, sortBy: v }))
-                }>
-                <SelectTrigger className="w-[90px] h-9">
-                  <SelectValue placeholder="정렬 기준" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectItem value="releaseDate">출시일</SelectItem>
-                  <SelectItem value="popularity">인기도</SelectItem>
-                  <SelectItem value="name">이름</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filters.sortOrder}
-                onValueChange={(v: FiltersState["sortOrder"]) =>
-                  updateFilters((f) => ({ ...f, sortOrder: v as "ASC" | "DESC" }))
-                }>
-                <SelectTrigger className="w-[100px] h-9">
-                  <SelectValue placeholder="정렬" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectItem value="DESC">내림차순</SelectItem>
-                  <SelectItem value="ASC">오름차순</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={String(filters.pageSize)}
-                onValueChange={(v) =>
-                  updateFilters((f) => ({ ...f, pageSize: Math.min(40, Math.max(9, Number(v))) }))
-                }>
-                <SelectTrigger className="w-[80px] h-9">
-                  <SelectValue placeholder="페이지" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {[9, 15, 24, 30, 40].map((n) => (
-                    <SelectItem
-                      key={n}
-                      value={String(n)}>
-                      {n}개
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <GameResultsToolbar
+            className="mb-4 lg:mb-3"
+            sortBy={filters.sortBy}
+            sortOptions={sortOptions}
+            onSortChange={(v) => updateFilters((f) => ({ ...f, sortBy: v }))}
+            sortOrder={filters.sortOrder}
+            onSortOrderChange={(v) => updateFilters((f) => ({ ...f, sortOrder: v }))}
+            pageSize={filters.pageSize}
+            onPageSizeChange={(size) =>
+              updateFilters((f) => ({
+                ...f,
+                pageSize: Math.min(40, Math.max(9, size)),
+              }))
+            }
+          />
 
           <GameVirtualList
             className={cn("grid gap-4", "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3")}

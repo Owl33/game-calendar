@@ -1,61 +1,56 @@
 // app/games/hooks/useCalendarUrlState.ts
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  getFirst,
-  buildSearch,
-  isYYYYMM,
-  isDD,
-  toYYYYMM,
-  type SearchParams,
-} from "../utils/searchParams";
+  resolveCalendarContext,
+  buildCalendarPath,
+  type CalendarSearchParams,
+  type CalendarSort,
+} from "@/lib/url/calendar";
+import { toYYYYMM } from "@/utils/searchParams";
 
-export type SortBy = "name" | "date" | "popularityScore";
+export type SortBy = CalendarSort;
 export type ViewMode = "card" | "list";
 export type LayoutMode = "split" | "list-only";
 
 /** 캘린더 페이지: URL ↔ 상태 공통 처리 */
-export function useCalendarUrlState(initialSearchParams: SearchParams) {
+export function useCalendarUrlState(initialSearchParams: CalendarSearchParams) {
   const router = useRouter();
-  const today = new Date();
+  const todayRef = useRef(new Date());
+  const initialContext = useMemo(
+    () => resolveCalendarContext(initialSearchParams, todayRef.current),
+    [initialSearchParams]
+  );
 
-  const urlM = getFirst(initialSearchParams, "m"); // YYYY-MM
-  const urlD = getFirst(initialSearchParams, "d"); // DD
-
-  const initialYear = isYYYYMM(urlM) ? Number(urlM.slice(0, 4)) : today.getFullYear();
-  const initialMonth = isYYYYMM(urlM) ? Number(urlM.slice(5, 7)) : today.getMonth() + 1;
-  const initialDay = isDD(urlD) ? Number(urlD) : null;
-
-  const [selectedYear, setSelectedYear] = useState(initialYear);
-  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
-  const [selectedDay, setSelectedDay] = useState<number | null>(initialDay);
+  const [selectedYear, setSelectedYear] = useState(initialContext.year);
+  const [selectedMonth, setSelectedMonth] = useState(initialContext.month);
+  const [selectedDay, setSelectedDay] = useState<number | null>(initialContext.day ?? null);
+  const [sortBy, setSortByState] = useState<SortBy>(initialContext.sortBy);
 
   // 🔑 URL 파라미터 변경 시 상태 동기화 (뒤로가기 대응)
   useEffect(() => {
-    const currentUrlM = getFirst(initialSearchParams, "m");
-    const currentUrlD = getFirst(initialSearchParams, "d");
-
-    const year = isYYYYMM(currentUrlM) ? Number(currentUrlM.slice(0, 4)) : today.getFullYear();
-    const month = isYYYYMM(currentUrlM) ? Number(currentUrlM.slice(5, 7)) : today.getMonth() + 1;
-    const day = isDD(currentUrlD) ? Number(currentUrlD) : null;
+    const context = resolveCalendarContext(initialSearchParams, todayRef.current);
+    const { year, month, day, sortBy: nextSort } = context;
 
     if (year !== selectedYear) setSelectedYear(year);
     if (month !== selectedMonth) setSelectedMonth(month);
     if (day !== selectedDay) setSelectedDay(day);
-  }, [initialSearchParams, selectedYear, selectedMonth, selectedDay, today]);
-
-  const [sortBy, setSortBy] = useState<SortBy>("popularityScore");
+    if (nextSort !== sortBy) setSortByState(nextSort);
+  }, [initialSearchParams, selectedYear, selectedMonth, selectedDay, sortBy]);
   const [viewMode, setViewMode] = useState<ViewMode>("card");
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("split");
   const [mounted, setMounted] = useState(false);
 
   // 최초 진입 시 URL 정규화
   useEffect(() => {
-    if (!isYYYYMM(urlM)) {
-      const sp = buildSearch({ m: toYYYYMM(initialYear, initialMonth), d: initialDay });
-      router.replace(`/calendar?${sp.toString()}`, { scroll: false });
+    if (!initialContext.hasExplicitMonth) {
+      const path = buildCalendarPath(initialContext.year, initialContext.month, {
+        day: initialContext.day,
+        sort: initialContext.sortBy,
+      });
+      router.replace(path, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,11 +76,22 @@ export function useCalendarUrlState(initialSearchParams: SearchParams) {
   }, [layoutMode, mounted]);
 
   const syncUrl = useCallback(
-    (y = selectedYear, m = selectedMonth, d = selectedDay) => {
-      const sp = buildSearch({ m: toYYYYMM(y, m), d: d && d > 0 ? d : null });
-      router.replace(`/calendar?${sp.toString()}`, { scroll: false });
+    (y = selectedYear, m = selectedMonth, d = selectedDay, s = sortBy) => {
+      const path = buildCalendarPath(y, m, {
+        day: d && d > 0 ? d : null,
+        sort: s,
+      });
+      router.replace(path, { scroll: false });
     },
-    [router, selectedYear, selectedMonth, selectedDay]
+    [router, selectedYear, selectedMonth, selectedDay, sortBy]
+  );
+
+  const setSortBy = useCallback(
+    (next: SortBy) => {
+      setSortByState(next);
+      syncUrl(selectedYear, selectedMonth, selectedDay, next);
+    },
+    [selectedYear, selectedMonth, selectedDay, syncUrl]
   );
 
   return {

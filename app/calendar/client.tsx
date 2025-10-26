@@ -8,9 +8,16 @@ import { CalendarHeader } from "./components/CalendarHeader";
 import { GameList } from "@/components/games/GameList";
 import { Game, GamesByDate } from "@/types/game.types";
 import { cn } from "@/lib/utils";
-import { GameListHeader } from "@/components/games/GameListHeader";
 import { gameKeys, fetchCalendarMonth } from "@/lib/queries/game";
-import { useCalendarUrlState } from "@/hooks/useCalendarUrlState";
+import { SortBy, useCalendarUrlState } from "@/hooks/useCalendarUrlState";
+import { GameResultsToolbar, type SortOption } from "@/components/games/GameResultsToolbar";
+import { ArrowUpDown, Calendar as CalendarIcon,  TrendingUp } from "lucide-react";
+
+const CALENDAR_SORT_OPTIONS: SortOption<SortBy>[] = [
+  { value: "date", label: "출시일", icon: CalendarIcon },
+  { value: "popularityScore", label: "인기순", icon: TrendingUp },
+  { value: "name", label: "이름순", icon: ArrowUpDown },
+] as const;
 
 export default function CalendarClient({
   initialSearchParams,
@@ -32,6 +39,7 @@ export default function CalendarClient({
     syncUrl,
     yearMonth,
   } = useCalendarUrlState(initialSearchParams);
+  const monthScrollKey = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}`;
 
   const { data: apiResponse, isLoading } = useQuery({
     queryKey: gameKeys.calendar(yearMonth),
@@ -133,21 +141,24 @@ export default function CalendarClient({
             </div>
           )}
 
-          <GameListHeader
-            sortBy={sortBy}
-            onSortChange={setSortBy}viewMode={viewMode}
-            onViewModeChange={setViewMode}
+          <GameResultsToolbar
             className="mb-4"
+            title="게임 목록"
+            sortBy={sortBy}
+            sortOptions={CALENDAR_SORT_OPTIONS}
+            onSortChange={setSortBy}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
 
           <GameList
             className="p-4 space-y-4 overflow-y-auto overflow-x-hidden lg:[scrollbar-gutter:stable]"
-
             games={sortedGames}
             isLoading={isLoading}
             viewMode={viewMode}
-            scrollKey={`${selectedYear}-${selectedMonth}-${selectedDay}`}
-            />
+            scrollKey={monthScrollKey}
+            persistScroll
+          />
         </div>
       </div>
     </div>
