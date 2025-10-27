@@ -1,7 +1,6 @@
 "use client";
 
 import { memo } from "react";
-import DOMPurify from "isomorphic-dompurify";
 
 function GameDescription({ html }: { html?: string | null }) {
   if (!html) return null;
@@ -10,7 +9,7 @@ function GameDescription({ html }: { html?: string | null }) {
       <h2 className="text-lg font-semibold mb-2">게임 소개</h2>
       <div
         className="prose dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
+        dangerouslySetInnerHTML={{ __html: html }}
       />
     </section>
   );

@@ -189,32 +189,31 @@ export default function GameDetailClient({ gameId }: { gameId: string }) {
               mediaList={mediaList}
               headerImage={game.headerImage}
             />
-            <GameDescription html={game.description} />
-                {/* DLC */}
-        <section className=" p-5 ">
-          <h2 className="text-xl font-bold mb-2">DLC 및 추가 콘텐츠</h2>
-          {Array.isArray(game.dlcs) && game.dlcs.length > 0 ? (
-            <div className="space-y-2 ">
-              {game.dlcs.map((dlc: any) => (
-                <div
-                  key={dlc.name}
-                  className="rounded-xl py-3">
-                  <div className="flex  flex-wrap lg:flex-nowrap gap-4 items-center justify-between">
-                    <h3 className="font-medium text-sm truncate ">{dlc.name}</h3>
-                    <div className="w-20 lg:text-end">
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(dlc.releaseDate).toLocaleDateString("ko-KR")}
-                      </p>
+            <GameDescription html={game.safeDescription ?? game.description} />
+            {/* DLC */}
+            <section className=" p-5 ">
+              <h2 className="text-xl font-bold mb-2">DLC 및 추가 콘텐츠</h2>
+              {Array.isArray(game.dlcs) && game.dlcs.length > 0 ? (
+                <div className="space-y-2 ">
+                  {game.dlcs.map((dlc: any) => (
+                    <div
+                      key={dlc.name}
+                      className="rounded-xl py-3">
+                      <div className="flex  flex-wrap lg:flex-nowrap gap-4 items-center justify-between">
+                        <h3 className="font-medium text-sm truncate ">{dlc.name}</h3>
+                        <div className="w-20 lg:text-end">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(dlc.releaseDate).toLocaleDateString("ko-KR")}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-             
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">DLC 및 추가 컨텐츠 정보 없음</p>
-          )}
-        </section>
+              ) : (
+                <p className="text-sm text-muted-foreground">DLC 및 추가 컨텐츠 정보 없음</p>
+              )}
+            </section>
           </div>
           <div className="order-1 lg:order-2 col-span-12 lg:col-span-5 animate-fadeIn">
             <div className="bg-card/40 rounded-2xl lg:sticky lg:top-6 ">

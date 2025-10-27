@@ -16,6 +16,7 @@ export const gameKeys = {
   calendar: (yearMonth: string) => ["games", "calendar", yearMonth] as const,
   highlights: () => ["highlights"] as const,
 };
+import sanitizeHtml from "sanitize-html";
 
 const API_BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
@@ -79,7 +80,64 @@ export async function fetchAllGamesPage({
 
 export async function fetchGameDetail(gameId: string | number, signal?: AbortSignal) {
   const res = await fetch(`${API_BASE}/api/games/${gameId}`, { signal });
-  return unwrap<GameDetailApiResponse>(res);
+
+  // 수동 처리: unwrap을 사용하면 json을 이미 consume하므로 여기선 직접 처리
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} :: ${txt}`);
+  }
+
+  const json = await res.json().catch(() => null);
+  // 보수적으로 엔벨로프 형태를 보장
+  const payload = json && typeof json === "object" && "data" in json ? json : { data: json };
+
+  const game = payload.data as any;
+
+  if (game && typeof game.description === "string" && game.description.trim().length > 0) {
+    try {
+      const cleaned = sanitizeHtml(game.description, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+          "img",
+          "br",
+          "p",
+          "ul",
+          "ol",
+          "li",
+          "strong",
+          "em",
+          "a",
+        ]),
+        allowedAttributes: {
+          a: ["href", "target", "rel"],
+          img: ["src", "alt", "width", "height"],
+          "*": ["class", "style"],
+        },
+        transformTags: {
+          a: (tagName, attribs) => {
+            const href = attribs.href || "";
+            return {
+              tagName: "a",
+              attribs: {
+                ...attribs,
+                href,
+                target: "_blank",
+                rel: "noopener noreferrer",
+              },
+            };
+          },
+        },
+      });
+      payload.data = { ...game, safeDescription: cleaned };
+    } catch (e) {
+      // 정화 실패 시 원본을 유지하되 safeDescription은 null로 둬서 소비자가 판단하도록 함
+      payload.data = { ...game, safeDescription: null };
+      console.error("[fetchGameDetail] sanitize-html failed for gameId=", gameId, e);
+    }
+  } else {
+    payload.data = { ...(game ?? {}), safeDescription: null };
+  }
+
+  return payload as GameDetailApiResponse;
 }
 
 /** ✅ 월 말일 계산 */
