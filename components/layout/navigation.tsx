@@ -33,7 +33,7 @@ export function Navigation({ className }: HeaderProps) {
 
   return (
     <>
-      <nav className={cn("grid grid-cols-4 items-center gap-4 text-sm font-semibold", className)}>
+      <nav className={cn("grid grid-cols-4  items-center gap-4 text-sm font-semibold", className)}>
         {primaryNavLinks.map((link) => {
           const isActive =
             pathname === link.path || (link.path !== "/" && pathname?.startsWith(link.path));
@@ -42,8 +42,10 @@ export function Navigation({ className }: HeaderProps) {
               key={link.path}
               href={link.path}
               aria-current={isActive ? "page" : undefined}
-              className={cn(isActive ? "opacity-100" : "transition opacity-70 hover:opacity-100")}>
-              <div className="px-2 flex flex-col lg:flex-row justify-center items-center gap-1">
+              className={cn(
+                isActive ? "opacity-100" : "col-sapn-2 transition opacity-70 hover:opacity-100"
+              )}>
+              <div className="px-2  flex flex-col lg:flex-row justify-center items-center gap-1">
                 {link.path == "/" ? (
                   <Home className="w-5 h-5 lg:h-4 lg:w-4"></Home>
                 ) : link.path == "/calendar" ? (
@@ -58,7 +60,7 @@ export function Navigation({ className }: HeaderProps) {
         })}
 
         <div
-          className={"cursor-pointer transition opacity-70 hover:opacity-100"}
+          className={"col-sapn-1 cursor-pointer transition opacity-70 hover:opacity-100"}
           onClick={() => setOpen(true)}>
           <div className="px-2 flex flex-col lg:flex-row  justify-center items-center gap-1">
             <Search className="w-5 h-5 lg:h-4 lg:w-4" />

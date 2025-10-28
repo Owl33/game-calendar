@@ -34,7 +34,7 @@ export function TabBar({ className }: HeaderProps) {
   return (
     <div className="fixed lg:hidden bottom-0 w-full bg-card  py-4">
       <div></div>
-      <Navigation className="flex justify-around"></Navigation>
+      <Navigation className=""></Navigation>
     </div>
   );
 }
