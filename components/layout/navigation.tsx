@@ -45,11 +45,11 @@ export function Navigation({ className }: HeaderProps) {
               className={cn(isActive ? "opacity-100" : "transition opacity-70 hover:opacity-100")}>
               <div className="px-2 flex flex-col lg:flex-row min-w-18 lg:min-w-0 justify-center items-center gap-1">
                 {link.path == "/" ? (
-                  <Home className="h-4 w-4"></Home>
+                  <Home className="w-5 h-5 lg:h-4 lg:w-4"></Home>
                 ) : link.path == "/calendar" ? (
-                  <CalendarCheck2 className="h-4 w-4"></CalendarCheck2>
+                  <CalendarCheck2 className="w-5 h-5 lg:h-4 lg:w-4"></CalendarCheck2>
                 ) : (
-                  <Gamepad2 className="h-4 w-4"></Gamepad2>
+                  <Gamepad2 className="w-5 h-5 lg:h-4 lg:w-4"></Gamepad2>
                 )}
                 {link.label}
               </div>
@@ -61,7 +61,7 @@ export function Navigation({ className }: HeaderProps) {
           className={"cursor-pointer transition opacity-70 hover:opacity-100"}
           onClick={() => setOpen(true)}>
           <div className="px-2 flex flex-col lg:flex-row min-w-18 lg:min-w-0 justify-center items-center gap-2">
-            <Search className="h-4 w-4" />
+            <Search className="w-5 h-5 lg:h-4 lg:w-4" />
             <div className="">게임 검색</div>
           </div>
         </div>
