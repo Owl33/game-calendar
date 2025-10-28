@@ -60,7 +60,7 @@ export function Navigation({ className }: HeaderProps) {
         <div
           className={"cursor-pointer transition opacity-70 hover:opacity-100"}
           onClick={() => setOpen(true)}>
-          <div className="px-2 flex flex-col lg:flex-row  justify-center items-center gap-2">
+          <div className="px-2 flex flex-col lg:flex-row  justify-center items-center gap-1">
             <Search className="w-5 h-5 lg:h-4 lg:w-4" />
             <div className="">게임 검색</div>
           </div>
