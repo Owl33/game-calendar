@@ -8,6 +8,7 @@ import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { absoluteUrl, getSiteOrigin } from "@/lib/seo";
 import { Analytics } from "@vercel/analytics/next";
 import "../styles/globals.css";
+import { TabBar } from "@/components/layout/Tabbar";
 const resolvedSiteUrl = getSiteOrigin();
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     "스팀 신작",
     "신규 게임",
     "출시 게임",
-    "출시 예정작"
+    "출시 예정작",
   ],
   creator: "releasePicks",
   publisher: "releasePicks",
@@ -108,10 +109,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             forcedTheme="dark">
             <Header />
             <main className="py-4 lg:py-8 ">{children}</main>
+            <TabBar></TabBar>
           </ThemeProvider>
         </QueryProvider>
+
         <Analytics></Analytics>
-  
       </body>
     </html>
   );

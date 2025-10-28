@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Navigation } from "./navigation";
 import SearchModal from "@/components/search/search-modal";
 import Image from "next/image";
 import { primaryNavLinks } from "@/lib/navigation";
+import { Navigation } from "./navigation";
 interface HeaderProps {
   className?: string;
 }
 
-export function Header({ className }: HeaderProps) {
+export function TabBar({ className }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -32,21 +32,9 @@ export function Header({ className }: HeaderProps) {
   }, []);
 
   return (
-    <header className={cn("border-b border-border/40 h-16", className)}>
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between ">
-        {/* 로고 */}
-        <Link
-          href="/"
-          className="relative flex items-center gap-2">
-          <Image
-            src="/header-logo.png"
-            alt="ReleasePicks"
-            width={156}
-            height={0}></Image>
-        </Link>
-        {/* 네비 + 검색 버튼 */}
-        <Navigation className="hidden lg:flex"></Navigation>
-      </div>
-    </header>
+    <div className="fixed lg:hidden bottom-0 w-full bg-card  py-4">
+      <div></div>
+      <Navigation className="flex justify-around"></Navigation>
+    </div>
   );
 }
